@@ -20,7 +20,7 @@
     "@capacitor/keyboard": "6.0.0",
     "@capacitor/status-bar": "6.0.0",
     "@capacitor/cli": "6.0.0",
-    "@capacitor-community/sqlite": "^7.0.2",
+    "@capacitor-community/sqlite": "6.0.0",
     "@google/generative-ai": "^0.24.1",
     "firebase-functions": "^7.0.1",
     "cors": "^2.8.5",
