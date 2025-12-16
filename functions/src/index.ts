@@ -1,7 +1,7 @@
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import {GoogleGenerativeAI} from "@google/generative-ai";
-import * as cors from "cors";
+import cors from "cors";
 
 const corsHandler = cors({origin: true});
 const API_KEY = process.env.GEMINI_API_KEY;
