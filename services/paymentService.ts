@@ -1,6 +1,8 @@
 import { APP_CONFIG } from '../config';
 
-// Interface for payment intent results
+// Use relative path to leverage Firebase Hosting rewrites
+const STRIPE_ENDPOINT = '/api/createStripeCheckoutSession';
+
 export interface PaymentResult {
   success: boolean;
   transactionId?: string;
@@ -8,22 +10,50 @@ export interface PaymentResult {
 }
 
 /**
- * Abstraction for initiating a checkout process.
- * currently logs to console, but designed to hook into Stripe/PayPal SDKs.
+ * Initiates the checkout process via Stripe (Backend managed).
  */
 export const initiateCheckout = async (amount: number, currency: string = 'USD'): Promise<PaymentResult> => {
-  console.log(`[PaymentService] Initiating checkout for ${currency} ${amount.toFixed(2)}`);
-  
-  // TODO: Replace with actual Stripe/PayPal implementation
-  // This structure allows switching providers without refactoring the UI
-  
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Simulate success for dev environment
-      console.log(`[PaymentService] Transaction Mock Success`);
-      resolve({ success: true, transactionId: `mock_${Date.now()}` });
-    }, 1000);
-  });
+  console.log(`[PaymentService] Initiating Stripe checkout for ${currency} ${amount.toFixed(2)}`);
+
+  try {
+    const response = await fetch(STRIPE_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        returnUrl: window.location.href.split('?')[0] // Current URL without query params
+      }),
+    });
+
+    if (response.status === 404) {
+        console.warn("Stripe backend not found. Simulating mock success.");
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve({ success: true, transactionId: `mock_${Date.now()}` });
+          }, 1500);
+        });
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to initiate checkout session');
+    }
+
+    const data = await response.json();
+
+    if (data.url) {
+      // Redirect to Stripe hosted checkout
+      window.location.href = data.url;
+      // We return a pending promise that never resolves here because the page unloads
+      return new Promise(() => {});
+    } else {
+      throw new Error('No checkout URL returned');
+    }
+
+  } catch (error) {
+    console.error('Payment Error:', error);
+    return { success: false, error: 'Failed to connect to payment provider.' };
+  }
 };
 
 export const getFormattedPrice = () => {

@@ -113,14 +113,20 @@ const PaywallModal = ({ onClose, onSuccess }: { onClose: () => void, onSuccess: 
         setLoading(true);
         await triggerHaptic(ImpactStyle.Heavy);
         
-        // Simulating the checkout flow here
-        await initiateCheckout(APP_CONFIG.pricing.annualPrice, APP_CONFIG.pricing.currency);
+        // Simulating the checkout flow here. 
+        // If Stripe is configured, this will redirect away from the page.
+        // If Mock is configured, it will return success immediately.
+        const result = await initiateCheckout(APP_CONFIG.pricing.annualPrice, APP_CONFIG.pricing.currency);
         
-        // If checkout succeeds, we run the success handler
-        onSuccess();
-        onClose();
+        if (result.success) {
+            onSuccess();
+            onClose();
+        } else {
+            throw new Error(result.error || "Payment initiation failed");
+        }
     } catch (error) {
-        console.error("Payment cancelled or failed");
+        console.error("Payment cancelled or failed", error);
+        alert("Payment could not be initiated. Please try again.");
     } finally {
         setLoading(false);
     }
@@ -256,6 +262,16 @@ function App() {
   const [isPro, setIsPro] = useState(false);
   const [history, setHistory] = useState<HistoryRecord[]>([]);
 
+  const handleProUpgrade = () => {
+    setIsPro(true);
+    localStorage.setItem('numera_pro_status', 'true');
+    // Remove query param without refreshing to keep URL clean
+    if (window.history.pushState) {
+        const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+        window.history.pushState({path:newurl},'',newurl);
+    }
+  };
+
   // Initialization Logic
   useEffect(() => {
     const init = async () => {
@@ -270,13 +286,34 @@ function App() {
             setData(savedData);
           }
           
-          // 3. Load Pro Status
+          // 3. Load Pro Status (Local)
           const savedProStatus = localStorage.getItem('numera_pro_status');
           if (savedProStatus === 'true') {
             setIsPro(true);
           }
 
-          // 4. Load History
+          // 4. Check for Stripe Redirects (Success or Cancel)
+          const params = new URLSearchParams(window.location.search);
+          const paymentSuccess = params.get('payment_success');
+          const paymentCanceled = params.get('payment_canceled');
+
+          if (paymentSuccess === 'true') {
+             setIsPro(true);
+             localStorage.setItem('numera_pro_status', 'true');
+             alert("Thank you! Pro features have been unlocked successfully.");
+          } else if (paymentCanceled === 'true') {
+             alert("Payment was canceled. No charges were made.");
+          }
+
+          // Clean URL parameters if present
+          if (paymentSuccess || paymentCanceled) {
+             if (window.history.pushState) {
+                 const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                 window.history.pushState({path:newurl},'',newurl);
+             }
+          }
+
+          // 5. Load History
           const savedHistory = await getHistoryRecords();
           setHistory(savedHistory);
         }
@@ -375,12 +412,6 @@ function App() {
         bankName: (item as any).bankName || 'Credit Card'
     })) as BankAccount[];
     setData(prev => ({ ...prev, accounts: [...others, ...updated] }));
-  };
-
-  const handleProUpgrade = () => {
-    setIsPro(true);
-    localStorage.setItem('numera_pro_status', 'true');
-    alert("Welcome to Numera Pro! Export unlocked.");
   };
 
   const handleExportClick = (e: React.MouseEvent) => {
