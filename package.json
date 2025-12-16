@@ -20,7 +20,8 @@
     "@capacitor/keyboard": "6.0.0",
     "@capacitor/status-bar": "6.0.0",
     "@capacitor/cli": "6.0.0",
-    "@capacitor-community/sqlite": "^7.0.2"
+    "@capacitor-community/sqlite": "^7.0.2",
+    "@revenuecat/purchases-capacitor": "^7.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
