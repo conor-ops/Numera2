@@ -10,10 +10,27 @@ export const generateFinancialInsight = async (
   rawBreakdown: string
 ): Promise<string> => {
   
-  // Safety check to ensure URL is configured
-  if (FUNCTION_URL.includes('YOUR_CLOUD_FUNCTION_URL')) {
-      console.warn("Cloud Function URL not set. Returning mock data.");
-      return "AI Configuration Incomplete. Please deploy the backend functions.";
+  // Graceful Fallback / Demo Mode if URL is not set
+  if (!FUNCTION_URL || FUNCTION_URL.includes('YOUR_CLOUD_FUNCTION_URL')) {
+      console.warn("Cloud Function URL not set. Returning demo data.");
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const isHealthy = data.bne > 0;
+      const isLiquid = data.netBank > 0;
+
+      return `[DEMO MODE] Executive Summary:
+
+The business is currently in a ${isHealthy ? 'stable' : 'vulnerable'} solvency position with a Business Net Exact (BNE) of $${data.bne.toLocaleString()}. 
+
+Liquidity is ${isLiquid ? 'sufficient' : 'tight'}, with ${isLiquid ? 'surplus cash available' : 'a reliance on credit'} to cover immediate obligations.
+
+Recommendation: ${isHealthy 
+    ? 'Consider allocating excess operational float into high-yield savings or reinvesting in growth channels.' 
+    : 'Prioritize Accounts Receivable collections immediately and defer non-essential payables to preserve cash flow.'}
+
+(Note: Deploy Firebase Functions to enable live Gemini 2.5 AI analysis)`;
   }
 
   try {

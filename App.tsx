@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Decimal } from 'decimal.js';
 import { 
@@ -18,7 +17,9 @@ import {
   Database,
   Crown,
   History,
-  Save
+  Save,
+  Shield,
+  FileText
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Capacitor } from '@capacitor/core';
@@ -46,6 +47,61 @@ const INITIAL_DATA: BusinessData = {
     { id: '1', name: 'Operating', bankName: 'Chase', type: AccountType.CHECKING, amount: 28000 },
     { id: '2', name: 'Tax Savings', bankName: 'Chase', type: AccountType.SAVINGS, amount: 12000 },
   ]
+};
+
+// --- LEGAL MODAL COMPONENT ---
+const LegalModal = ({ type, onClose }: { type: 'privacy' | 'terms', onClose: () => void }) => {
+  const isPrivacy = type === 'privacy';
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white border-2 border-black shadow-swiss max-w-2xl w-full relative flex flex-col max-h-[85vh] animate-in fade-in zoom-in duration-200">
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-black transition-colors"
+        >
+          <X size={24} />
+        </button>
+        
+        <div className="p-6 border-b-2 border-black">
+          <div className="flex items-center gap-2 text-black">
+            {isPrivacy ? <Shield size={28} strokeWidth={2.5} /> : <FileText size={28} strokeWidth={2.5} />}
+            <h2 className="text-xl font-extrabold uppercase tracking-tight">{isPrivacy ? 'Privacy Policy' : 'Terms of Use'}</h2>
+          </div>
+        </div>
+
+        <div className="overflow-y-auto p-6 text-sm text-gray-600 leading-relaxed space-y-4">
+          {isPrivacy ? (
+             <>
+               <p><strong>Last Updated: {new Date().toLocaleDateString()}</strong></p>
+               <p>At {APP_CONFIG.branding.name}, we prioritize your privacy. This policy outlines how we handle your data.</p>
+               <h3 className="text-black font-bold uppercase mt-4">1. Data Minimization</h3>
+               <p>We practice local-first data storage. Your financial data is stored primarily on your device (via SQLite on mobile or LocalStorage on web). We do not sell your personal data.</p>
+               <h3 className="text-black font-bold uppercase mt-4">2. AI Processing</h3>
+               <p>When you use the AI Analysis feature, a momentary snapshot of your balance data is sent to our secure servers to interface with Google's Gemini API. This data is not persisted on our servers after the analysis is returned.</p>
+               <h3 className="text-black font-bold uppercase mt-4">3. Third Party Services</h3>
+               <p>We use RevenueCat for payment processing on mobile and Google Cloud for hosting. These services may collect standard usage telemetry.</p>
+             </>
+          ) : (
+             <>
+               <p><strong>Last Updated: {new Date().toLocaleDateString()}</strong></p>
+               <h3 className="text-black font-bold uppercase mt-4">1. Acceptance</h3>
+               <p>By using {APP_CONFIG.branding.name}, you agree to these terms.</p>
+               <h3 className="text-black font-bold uppercase mt-4">2. Disclaimer</h3>
+               <p>{APP_CONFIG.legal.disclaimer} The calculations provided are for estimation purposes only. Always consult a certified accountant.</p>
+               <h3 className="text-black font-bold uppercase mt-4">3. Subscriptions</h3>
+               <p>Pro subscriptions are billed annually. You may cancel at any time via your device settings (iOS/Android) or account dashboard (Web).</p>
+             </>
+          )}
+        </div>
+        
+        <div className="p-4 border-t-2 border-black bg-gray-50 flex justify-end">
+          <button onClick={onClose} className="px-6 py-2 bg-black text-white font-bold uppercase text-sm hover:bg-gray-800 transition-colors">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 // --- PAYWALL COMPONENT ---
@@ -239,6 +295,7 @@ function App() {
   const [useStrictFormula, setUseStrictFormula] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [legalView, setLegalView] = useState<'privacy' | 'terms' | null>(null);
 
   // Persistence: Auto-save when data changes
   useEffect(() => {
@@ -441,6 +498,13 @@ function App() {
         />
       )}
       
+      {legalView && (
+        <LegalModal 
+          type={legalView} 
+          onClose={() => setLegalView(null)} 
+        />
+      )}
+      
       <div className="max-w-7xl mx-auto space-y-8 md:space-y-12">
         <header className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 border-b-4 border-black pb-6">
           <div>
@@ -638,8 +702,8 @@ function App() {
         <footer className="border-t-4 border-black mt-16 pt-12 pb-8">
            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-sm font-bold">
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
-                  <a href={APP_CONFIG.legal.privacyUrl} className="hover:text-brand-blue underline decoration-2">Privacy Policy</a>
-                  <a href={APP_CONFIG.legal.termsUrl} className="hover:text-brand-blue underline decoration-2">Terms of Use</a>
+                  <button onClick={() => setLegalView('privacy')} className="hover:text-brand-blue underline decoration-2 text-left">Privacy Policy</button>
+                  <button onClick={() => setLegalView('terms')} className="hover:text-brand-blue underline decoration-2 text-left">Terms of Use</button>
               </div>
               <button 
                 onClick={(e) => { e.stopPropagation(); handleClearData(); }}

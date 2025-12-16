@@ -9,7 +9,7 @@
 
 import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import * as cors from "cors";
 
 // Initialize CORS handler to allow requests from any domain (or restrict to yours)
@@ -44,8 +44,7 @@ export const generateFinancialInsight = onRequest(
         }
 
         // 3. Initialize Gemini (Server-Side)
-        const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const ai = new GoogleGenAI({ apiKey: API_KEY });
 
         // 4. Construct Prompt
         const prompt = `
@@ -68,11 +67,14 @@ export const generateFinancialInsight = onRequest(
         `;
 
         // 5. Generate Content
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
+        // Using 'gemini-2.5-flash' as it is optimized for text summarization tasks.
+        const result = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt
+        });
 
         // 6. Return Response to Client
-        response.json({ insight: text });
+        response.json({ insight: result.text });
 
       } catch (error: any) {
         logger.error("Gemini Error", error);
