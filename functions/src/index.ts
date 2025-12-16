@@ -1,84 +1,58 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-
-import { onRequest } from "firebase-functions/v2/https";
+import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { GoogleGenAI } from "@google/genai";
+import {GoogleGenerativeAI} from "@google/generative-ai";
 import * as cors from "cors";
 
-// Initialize CORS handler to allow requests from any domain (or restrict to yours)
-const corsHandler = cors({ origin: true });
-
-// 1. Get the API Key from the environment (Secure)
-// In Firebase console: firebase functions:secrets:set GEMINI_API_KEY
+const corsHandler = cors({origin: true});
 const API_KEY = process.env.GEMINI_API_KEY;
 
 export const generateFinancialInsight = onRequest(
-  { secrets: ["GEMINI_API_KEY"] }, // Access the secret
+  {secrets: ["GEMINI_API_KEY"]},
   (request, response) => {
     corsHandler(request, response, async () => {
-      // 2. Validate Request
+      // Validate Method
       if (request.method !== "POST") {
         response.status(405).send("Method Not Allowed");
         return;
       }
 
+      // Validate Key
       if (!API_KEY) {
         logger.error("GEMINI_API_KEY is not set");
-        response.status(500).json({ error: "Server misconfiguration" });
+        response.status(500).json({error: "Server misconfiguration"});
         return;
       }
 
       try {
-        const { calculations, bankBreakdown } = request.body;
+        // Extract Data
+        const {calculations, bankBreakdown} = request.body;
 
-        if (!calculations) {
-            response.status(400).json({ error: "Missing calculation data" });
-            return;
-        }
+        // Init AI
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = genAI.getGenerativeModel({model: "gemini-pro"});
 
-        // 3. Initialize Gemini (Server-Side)
-        const ai = new GoogleGenAI({ apiKey: API_KEY });
-
-        // 4. Construct Prompt
         const prompt = `
           As a senior financial analyst, provide a brief, actionable executive summary (max 100 words) for a business with the following current snapshot:
           
-          - Total Liquid Cash (Bank): $${calculations.totalBank}
+          - Total Liquid Cash: $${calculations.totalBank}
           - Total Credit Debt: $${calculations.totalCredit}
           - Net Cash Position: $${calculations.netBank}
+          - BNE: $${calculations.bne}
           
-          - Accounts Receivable (AR): $${calculations.totalAR}
-          - Accounts Payable (AP): $${calculations.totalAP}
-          - Net Operational Float: $${calculations.netReceivables}
+          Bank Breakdown: ${bankBreakdown}
           
-          - Business Net Exact (BNE): $${calculations.bne}
-          
-          Additional Context on Bank Breakdown:
-          ${bankBreakdown}
-          
-          Focus on liquidity and solvency. Provide one key recommendation. Use a professional but direct tone.
+          Focus on liquidity. Provide one key recommendation.
         `;
 
-        // 5. Generate Content
-        // Using 'gemini-2.5-flash' as it is optimized for text summarization tasks.
-        const result = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: prompt
-        });
+        // Generate
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text();
 
-        // 6. Return Response to Client
-        response.json({ insight: result.text });
+        response.json({insight: responseText});
 
       } catch (error: any) {
         logger.error("Gemini Error", error);
-        response.status(500).json({ error: error.message || "Failed to generate insight" });
+        response.status(500).json({error: "Failed to generate insight"});
       }
     });
   }
