@@ -101,6 +101,66 @@ GEMINI_API_KEY="your-gemini-api-key"
 ```
 **Fallback**: `geminiService.ts` has embedded demo key (NOT for production).
 
+## App Store Deployment (iOS & Android)
+
+### Prerequisites
+- Node.js (already installed)
+- **iOS**: CocoaPods — `sudo gem install cocoapods` (Mac only)
+- RevenueCat plugin: `npm install @revenuecat/purchases-capacitor && npx cap sync`
+
+### Asset Generation (Icons & Splash)
+```bash
+npm install @capacitor/assets --save-dev
+# Place: assets/logo.png (1024x1024), assets/splash.png (2732x2732)
+npx capacitor-assets generate
+```
+
+### Critical Build Order (NEVER SKIP STEP 1)
+```bash
+# 1. Build web assets FIRST (creates dist/)
+npm run build
+
+# 2. Sync to native projects (copies dist/ to iOS/Android)
+npx cap sync
+
+# 3. Open platform IDEs
+npx cap open ios      # Mac only - opens Xcode
+npx cap open android  # Opens Android Studio
+```
+
+**Common Error**: `Could not find web assets directory: .\dist`  
+**Cause**: You ran `npx cap sync` before `npm run build`
+
+### Pre-Build Checklist
+- [ ] `paymentService.ts` — Set real RevenueCat keys in `API_KEYS.ios`/`API_KEYS.android`
+- [ ] `geminiService.ts` — **SECURITY**: API key is client-side exposed
+  - ⚠️ **Production**: Move to Firebase Cloud Function (recommended)
+  - Alternative: Restrict API key in Google Cloud Console to your Bundle IDs
+
+### iOS Build (Xcode - Mac Only)
+1. Open: `npx cap open ios`
+2. **Signing**: App → Signing & Capabilities → Select Team
+3. **Display Name**: Change to "Numera"
+4. **Add Capability**: `+ Capability` → "In-App Purchase"
+5. **Archive**: Product → Archive → Distribute App → App Store Connect → Upload
+
+### Android Build (Android Studio)
+1. Open: `npx cap open android`
+2. **Sign**: Build → Generate Signed Bundle/APK → Android App Bundle
+3. **Keystore**: Create new (SAVE FILE SAFELY — cannot update app without it)
+4. **Upload**: Upload `.aab` to Google Play Console (Production or Closed Testing)
+
+### App Store Privacy Compliance (Apple)
+- **Data Used to Track You**: No
+- **Data Linked to You**: Purchases (RevenueCat User ID), Financial Info (local-only, not server-linked)
+
+### Troubleshooting
+| Error | Fix |
+|-------|-----|
+| `Could not find web assets directory` | Run `npm run build` first |
+| `Cocoapods not found` (iOS) | `sudo gem install cocoapods` (Mac) |
+| `Google Service Info Plist not found` | If using Firebase: Download from Console → Place in `ios/App/App` or `android/app` |
+
 ## Gotchas
 - ✗ Don't use `number` for money math (use Decimal.js)
 - ✗ Don't call native APIs without platform check
