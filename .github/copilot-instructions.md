@@ -4,20 +4,44 @@
 
 ## Project Architecture
 
+### CRITICAL: Environment Separation
+**Numera2 has TWO completely separate environments that must NEVER be mixed:**
+
+#### **Frontend & Mobile** (Root `/`)
+- **Stack**: React 19, TypeScript 5.8, Vite 6.2, Tailwind CSS, Lucide React
+- **Config**: `package.json` (root)
+- **Data**: `@capacitor-community/sqlite` v6.0.0 (mobile) / localStorage (web)
+- **Build**: `npm run build` → `dist/`
+- **Math**: MANDATORY use Decimal.js for all financial calculations
+- **Constraint**: ⛔ NEVER import backend libraries (`firebase-functions`, `firebase-admin`)
+
+#### **Backend Proxy** (`/functions`)
+- **Stack**: Node.js 18, Firebase Cloud Functions v2, TypeScript
+- **Config**: `functions/package.json` (separate from root)
+- **Role**: Securely holds API keys (Gemini) and proxies AI requests
+- **Deploy**: `firebase deploy --only functions`
+- **Constraint**: ⛔ NEVER import React or UI libraries
+
 ### Core Tech Stack
 - **Frontend**: React 19, TypeScript 5.8, Vite 6.2, Tailwind CSS, Lucide React icons
 - **Mobile**: Capacitor 6 (iOS/Android) with SQLite persistence via `@capacitor-community/sqlite` v6.0.0
-- **AI**: Google Gemini 2.5 via Firebase Cloud Functions (demo mode active—deployment pending)
-- **Payments**: RevenueCat Purchases v8.0.0+ (subscription management, includes sandbox testing)
+- **AI**: Google Gemini 2.5 via Firebase Cloud Functions (client proxies through `/functions`)
+- **Payments**: RevenueCat Purchases v8.0.0+ (mobile only; web uses mock)
 - **Precision Math**: Decimal.js (mandatory for all financial calculations to prevent floating-point errors)
 
 ### Data Flow & Business Logic
 1. **Input Layer** (`components/`): User enters transactions (AR/AP) and bank accounts
-2. **Calculation Core** (`App.tsx`): Computes BNE metric
+2. **Calculation Core** (`App.tsx`): Computes BNE metric locally on device
    - **BNE = (Total AR + Total Bank) - (Total AP + Total Credit)**
    - Uses Decimal.js throughout for precision
-3. **AI Layer** (`services/geminiService.ts`): Calls Firebase Cloud Function for insights (demo fallback active)
-4. **Persistence** (`services/databaseService.ts`): Saves snapshots & history to SQLite (native) or localStorage (web)
+3. **AI Layer** (`services/geminiService.ts` → `functions/src/index.ts`): 
+   - Client calls Cloud Function URL with calculation data
+   - Server (`/functions`) calls Gemini API using API key from Google Secret Manager
+   - Client never holds the API key—security via backend proxy
+4. **Persistence** (`services/databaseService.ts`): 
+   - Mobile: SQLite v6.0.0 for durability
+   - Web: localStorage for demo/testing
+   - Auto-detects platform and switches seamlessly
 
 ### Key Data Types (`types.ts`)
 - `Transaction`: Represents AR (INCOME) or AP (EXPENSE) items with date
@@ -77,7 +101,24 @@ if (Capacitor.getPlatform() === 'web') {
 
 ## Development Workflow
 
-### Build & Run
+### Dependency Management - CRITICAL
+**Root and `/functions` have SEPARATE `node_modules`. Never mix them.**
+
+#### Frontend (Root)
+```bash
+npm install  # Installs root dependencies
+```
+
+#### Backend (Functions)
+```bash
+cd functions
+npm install  # Installs function-specific dependencies ONLY
+cd ..
+```
+
+**Common Error**: "Module not found" → You installed a backend library in root instead of `/functions`. Run `cd functions && npm install`.
+
+### Build & Run Frontend
 ```bash
 npm install
 npm run dev       # Vite dev server on localhost:3000
@@ -85,14 +126,29 @@ npm run build     # Production build to dist/
 npm run preview   # Preview production build locally
 ```
 
-### Environment Setup
-- Create `.env.local` with `GEMINI_API_KEY=your_key` (not committed to git)
-- `vite.config.ts` exposes via `process.env.GEMINI_API_KEY`
-- For RevenueCat: API key configured in `config.ts` (set before build)
+### Mobile Sync Workflow (Capacitor)
+**Native projects (ios/android) depend on built web assets. Order matters:**
+```bash
+npm run build                # 1. Build React app to dist/
+npx cap sync                 # 2. Sync dist/ and plugins to ios/android folders
+npx cap open ios             # 3. Open Xcode to build iOS app
+npx cap open android         # 4. Open Android Studio to build APK
+```
 
-### Critical Deployment Blocker
-`services/geminiService.ts` contains placeholder `FUNCTION_URL = 'YOUR_CLOUD_FUNCTION_URL_HERE'`. 
-**Until Firebase Functions are deployed**, the app returns demo-mode insights. Replace with actual Cloud Run endpoint once deployed.
+**Critical**: Never run `npx cap sync` without `npm run build` first—native code won't reflect your changes.
+
+### Backend Deployment
+```bash
+firebase deploy --only functions  # Deploy Cloud Functions (run from root or functions/ folder)
+```
+
+**Note**: The lint script in `functions/package.json` is set to "exit 0" to prevent style issues from blocking deployment.
+
+### Environment Setup
+- **Frontend**: Create `.env.local` with `GEMINI_API_KEY=your_key` (for local dev only; not committed)
+  - `vite.config.ts` exposes via `process.env.GEMINI_API_KEY`
+- **Backend**: Gemini API key stored in Google Secret Manager (accessed by Cloud Functions, not in code)
+- **RevenueCat**: API key configured in `config.ts` for mobile (not for web)
 
 ## Common Tasks & Code Locations
 
