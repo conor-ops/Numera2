@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< Updated upstream
     "react": "^19.2.3",
     "recharts": "^3.5.1",
     "lucide-react": "^0.560.0",
@@ -21,6 +22,21 @@
     "@capacitor/status-bar": "6.0.0",
     "@capacitor/cli": "6.0.0",
     "@capacitor-community/sqlite": "^7.0.2"
+=======
+    "@capacitor-community/sqlite": "^5.4.0",
+    "@capacitor/cli": "^5.0.0",
+    "@capacitor/core": "^5.0.0",
+    "@capacitor/haptics": "^5.0.0",
+    "@capacitor/keyboard": "^5.0.0",
+    "@capacitor/status-bar": "^5.0.0",
+    "@google/genai": "^1.33.0",
+    "@revenuecat/purchases-capacitor": "^7.7.1",
+    "decimal.js": "10.4.3",
+    "lucide-react": "^0.560.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "recharts": "^3.5.1"
+>>>>>>> Stashed changes
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
