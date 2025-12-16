@@ -7,10 +7,10 @@
 - **Frontend**: React 19 + TypeScript + Vite
 - **UI**: Tailwind CSS (custom Swiss-style design with black borders, bold typography)
 - **Persistence**: Capacitor SQLite (native) + localStorage (web fallback)
-- **Mobile**: Capacitor 6 (iOS/Android support)
+- **Mobile**: Capacitor 5 (iOS/Android support)
 - **AI**: Google Gemini API for financial insights
 - **Charts**: Recharts for data visualization
-- **Payments**: Stripe/PayPal abstraction (currently mocked)
+- **Payments**: RevenueCat (native subscriptions) + web fallback (Stripe/PayPal needed)
 
 **Key Files**:
 - `App.tsx` - Main business logic, state management, modals
