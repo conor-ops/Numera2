@@ -161,7 +161,164 @@ if (Capacitor.getPlatform() === 'web') {
 | AI insights logic | `functions/src/index.ts` (backend) | Requires Gemini API key in Secret Manager |
 | Payment flow | `services/paymentService.ts`, check `config.ts` for pricing | RevenueCat API key required for mobile |
 
-## 6. Project Structure
+## 6. Technical Reference & Integration Specs
+
+### A. Firebase Cloud Functions (Gemini Proxy)
+
+**Function Configuration:**
+- **Name**: `generateFinancialInsight`
+- **Trigger**: HTTPS onRequest (v2)
+- **Location**: `functions/src/index.ts`
+- **Security**: Accesses `GEMINI_API_KEY` via Google Secret Manager
+
+**Request Contract:**
+```json
+POST https://generatefinancialinsight-4di2enm25a-uc.a.run.app
+
+{
+  "calculations": {
+    "totalBank": number,
+    "totalCredit": number,
+    "totalAR": number,
+    "totalAP": number,
+    "bne": number,
+    "assets": number,
+    "liabilities": number,
+    "bankBreakdown": Record<string, number>,
+    "netReceivables": number,
+    "netBank": number,
+    "bneFormulaStr": string
+  },
+  "bankBreakdown": "String summary of accounts"
+}
+```
+
+**Response Contract:**
+```json
+{
+  "insight": "AI-generated financial recommendation text"
+}
+```
+
+**Backend Implementation Pattern:**
+- Uses `@google/generative-ai` package
+- Retrieves API key from Google Secret Manager (never expose in code)
+- Validates all incoming data (frontend is untrusted)
+- Returns JSON response or error payload
+
+### B. Mobile & Capacitor Concerns
+
+**Sync Workflow (CRITICAL ORDER):**
+```bash
+npm run build                # Build React to dist/
+npx cap sync                 # Copies dist/ to ios/ and android/ folders
+npx cap open ios             # Open Xcode
+npx cap open android         # Open Android Studio
+```
+
+**Critical Plugin Versions:**
+- `@capacitor/core`: **v6.x** (must match other Capacitor packages)
+- `@capacitor-community/sqlite`: **v6.0.0** (must match Capacitor 6)
+- `@revenuecat/purchases-capacitor`: **^8.0.0+** (requires Capacitor 6+)
+- `@capacitor/haptics`: **v6.x** (matches core)
+- `@capacitor/keyboard`: **v6.x** (matches core)
+- `@capacitor/status-bar`: **v6.x** (matches core)
+
+**Version Mismatch Error**: "peer dependency conflict" → Ensure ALL Capacitor packages are v6.x. Mix-and-match versions break the build.
+
+**Haptic Feedback Patterns:**
+```typescript
+import { ImpactStyle } from '@capacitor/haptics';
+
+triggerHaptic(ImpactStyle.Light);   // User input (amount changes, focus)
+triggerHaptic(ImpactStyle.Medium);  // Structural actions (add item, delete, save)
+```
+
+### C. Testing Patterns
+
+**Financial Math Validation:**
+```typescript
+// ✗ WRONG - Floating point errors
+0.1 + 0.2 === 0.3  // false!
+
+// ✓ CORRECT - Use Decimal.js
+import { Decimal } from 'decimal.js';
+new Decimal(0.1).plus(new Decimal(0.2)).equals(new Decimal(0.3))  // true
+```
+
+**BNE Formula Verification:**
+```typescript
+// Assets - Liabilities = BNE
+const bne = (new Decimal(totalAR).plus(totalBank))
+  .minus(new Decimal(totalAP).plus(totalCredit))
+  .toNumber();
+
+// Validate:
+// If bne > 0: Business is solvent
+// If bne < 0: Business has negative net equity
+```
+
+**Web Testing (localStorage mock):**
+```javascript
+// Simulate SQLite persistence on web
+localStorage.setItem('numera_mock_db', JSON.stringify({
+  transactions: [],
+  accounts: [],
+  history: []
+}));
+
+// Inspect mock database
+console.log(JSON.parse(localStorage.getItem('numera_mock_db')));
+```
+
+### D. Payment Flow (RevenueCat)
+
+**Entitlement Configuration:**
+- **Entitlement ID**: `pro_access` (must match RevenueCat Dashboard exactly)
+- **Product ID**: `numera_pro_annual` (Annual subscription, $10 USD)
+- **Platform**: Mobile only (Capacitor). Web uses mock in `paymentService.ts`
+
+**Check Subscription Status:**
+```typescript
+import Purchases from "@revenuecat/purchases-capacitor";
+
+const { customerInfo } = await Purchases.getCustomerInfo();
+const isPro = typeof customerInfo.entitlements.active['pro_access'] !== "undefined";
+
+if (!isPro) {
+  // Show paywall or restrict features
+}
+```
+
+**Purchase Flow:**
+```typescript
+// 1. Fetch offerings
+const offerings = await Purchases.getOfferings();
+
+// 2. Select current offering and package
+const currentOffering = offerings.current;
+const annualPackage = currentOffering?.getPackage('numera_pro_annual');
+
+// 3. Initiate purchase
+try {
+  const { customerInfo } = await Purchases.purchasePackage(annualPackage!);
+  if (typeof customerInfo.entitlements.active['pro_access'] !== "undefined") {
+    // Purchase successful
+  }
+} catch (error) {
+  console.error("Purchase failed:", error);
+}
+```
+
+**Restore Purchases (for app reinstalls):**
+```typescript
+const { customerInfo } = await Purchases.restorePurchases();
+const hasAccess = typeof customerInfo.entitlements.active['pro_access'] !== "undefined";
+```
+
+## 7. Project Structure
+
+
 
 ```
 Numera2/
