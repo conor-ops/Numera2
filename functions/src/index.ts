@@ -1,7 +1,8 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import {GoogleGenerativeAI} from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import * as cors from "cors";
+import Stripe from "stripe";
 
 // Initialize CORS handler to allow requests from any domain
 const corsHandler = cors({ origin: true });

@@ -26,15 +26,6 @@ export const initiateCheckout = async (amount: number, currency: string = 'USD')
       }),
     });
 
-    if (response.status === 404) {
-        console.warn("Stripe backend not found. Simulating mock success.");
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({ success: true, transactionId: `mock_${Date.now()}` });
-          }, 1500);
-        });
-    }
-
     if (!response.ok) {
       throw new Error('Failed to initiate checkout session');
     }

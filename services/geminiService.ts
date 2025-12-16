@@ -21,12 +21,6 @@ export const generateFinancialInsight = async (
         })
     });
 
-    // If the backend is not deployed or 404s, we fall back to local demo mode for UI testing
-    if (response.status === 404) {
-        console.warn("Backend function not found (404). Falling back to demo mode.");
-        return getDemoInsight(data);
-    }
-
     if (!response.ok) {
         throw new Error(`Server error: ${response.status}`);
     }
@@ -36,27 +30,6 @@ export const generateFinancialInsight = async (
 
   } catch (error) {
     console.error("AI Service Error:", error);
-    // Fallback for network errors or offline usage
-    return getDemoInsight(data);
+    throw error;
   }
-};
-
-const getDemoInsight = async (data: CalculationResult): Promise<string> => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    const isHealthy = data.bne > 0;
-    const isLiquid = data.netBank > 0;
-
-    return `[DEMO MODE] Executive Summary:
-
-The business is currently in a ${isHealthy ? 'stable' : 'vulnerable'} solvency position with a Business Net Exact (BNE) of $${data.bne.toLocaleString()}. 
-
-Liquidity is ${isLiquid ? 'sufficient' : 'tight'}, with ${isLiquid ? 'surplus cash available' : 'a reliance on credit'} to cover immediate obligations.
-
-Recommendation: ${isHealthy 
-    ? 'Consider allocating excess operational float into high-yield savings or reinvesting in growth channels.' 
-    : 'Prioritize Accounts Receivable collections immediately and defer non-essential payables to preserve cash flow.'}
-
-(Note: Ensure Firebase Functions are deployed and rewrites are configured in firebase.json)`;
 };

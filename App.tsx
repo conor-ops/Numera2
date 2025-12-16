@@ -452,14 +452,19 @@ function App() {
 
   const handleAiGenerate = async () => {
     await triggerHaptic(ImpactStyle.Medium);
-    setIsGeneratingAi(true);
-    const bankDetails = Object.entries(calculations.bankBreakdown)
-        .map(([name, amount]) => `${name}: $${amount.toFixed(2)}`)
-        .join(', ');
-        
-    const result = await generateFinancialInsight(calculations, bankDetails);
-    setAiInsight(result);
-    setIsGeneratingAi(false);
+    try {
+        setIsGeneratingAi(true);
+        const bankDetails = Object.entries(calculations.bankBreakdown)
+            .map(([name, amount]) => `${name}: $${amount.toFixed(2)}`)
+            .join(', ');
+            
+        const result = await generateFinancialInsight(calculations, bankDetails);
+        setAiInsight(result);
+    } catch (e) {
+        setAiInsight("Unable to generate insight at this time.");
+    } finally {
+        setIsGeneratingAi(false);
+    }
   };
 
   const handleClearData = async () => {
@@ -467,7 +472,7 @@ function App() {
     if (window.confirm("Are you sure you want to clear all data? This cannot be undone.")) {
       setData({ transactions: [], accounts: [] });
       if (Capacitor.getPlatform() === 'web') {
-        localStorage.removeItem('numera_mock_db');
+        localStorage.removeItem('numera_web_db');
       }
     }
   };
@@ -672,12 +677,12 @@ function App() {
           </div>
 
           <div className="space-y-8 lg:col-span-2 2xl:col-span-1">
-              <div className="bg-white p-4 md:p-6 border-2 border-black shadow-swiss flex flex-col">
+              <div className="bg-white p-4 md:p-6 border-2 border-black shadow-swiss flex flex-col min-w-0">
                  <h3 className="text-black font-bold uppercase mb-4 flex items-center gap-2 shrink-0">
                     <TrendingUp size={20} />
                     Distribution
                  </h3>
-                 <div className="h-48 md:h-56 w-full">
+                 <div className="h-48 md:h-56 w-full relative">
                    <ResponsiveContainer width="100%" height="100%">
                        <BarChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontFamily: 'Inter', fontWeight: 600 }} />

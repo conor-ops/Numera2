@@ -8,7 +8,7 @@ let db: SQLiteDBConnection;
 
 export const setupDatabase = async (): Promise<boolean> => {
   if (Capacitor.getPlatform() === 'web') {
-    console.warn('Web platform: SQLite disabled. Using localStorage mock.');
+    // Web implementation uses LocalStorage directly
     return true;
   }
 
@@ -58,7 +58,7 @@ export const setupDatabase = async (): Promise<boolean> => {
 
 export const saveSnapshot = async (data: BusinessData): Promise<void> => {
   if (Capacitor.getPlatform() === 'web') {
-    localStorage.setItem('numera_mock_db', JSON.stringify(data));
+    localStorage.setItem('numera_web_db', JSON.stringify(data));
     return;
   }
 
@@ -98,7 +98,7 @@ export const saveSnapshot = async (data: BusinessData): Promise<void> => {
 
 export const loadSnapshot = async (): Promise<BusinessData | null> => {
   if (Capacitor.getPlatform() === 'web') {
-    const raw = localStorage.getItem('numera_mock_db');
+    const raw = localStorage.getItem('numera_web_db');
     return raw ? JSON.parse(raw) : null;
   }
 
@@ -135,10 +135,10 @@ export const loadSnapshot = async (): Promise<BusinessData | null> => {
  */
 export const saveHistoryRecord = async (record: HistoryRecord): Promise<void> => {
   if (Capacitor.getPlatform() === 'web') {
-    const raw = localStorage.getItem('numera_mock_history');
+    const raw = localStorage.getItem('numera_web_history');
     const history = raw ? JSON.parse(raw) : [];
     history.unshift(record); // Add to beginning
-    localStorage.setItem('numera_mock_history', JSON.stringify(history));
+    localStorage.setItem('numera_web_history', JSON.stringify(history));
     return;
   }
 
@@ -163,7 +163,7 @@ export const saveHistoryRecord = async (record: HistoryRecord): Promise<void> =>
 
 export const getHistoryRecords = async (): Promise<HistoryRecord[]> => {
   if (Capacitor.getPlatform() === 'web') {
-    const raw = localStorage.getItem('numera_mock_history');
+    const raw = localStorage.getItem('numera_web_history');
     return raw ? JSON.parse(raw) : [];
   }
 
