@@ -23,4 +23,22 @@ dist-ssr
 *.sln
 *.sw?
 
+# Android
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+android/local.properties
+*.apk
+*.aab
+
+# iOS
+ios/App/Pods/
+ios/App/build/
+ios/App/*.xcworkspace/xcuserdata/
+*.ipa
+
+# Capacitor
+.capacitor/
+
 .fake
