@@ -50,8 +50,8 @@ export const sanitizeText = (value: string, maxLength: number = 100): string => 
     sanitized = sanitized.substring(0, maxLength);
   }
   
-  // Remove control characters (except newlines/tabs if needed)
-  sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
+  // Remove control characters (preserve tabs and newlines if needed)
+  sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
   
   return sanitized;
 };
