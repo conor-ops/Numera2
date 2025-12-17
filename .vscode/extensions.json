@@ -10,7 +10,6 @@
     "formulahendry.auto-rename-tag",
     "christian-kohler.path-intellisense",
     "visualstudioexptteam.vscodeintellicode",
-    "ms-vscode.js-debug",
     "firefox-devtools.vscode-firefox-debug"
   ]
 }
