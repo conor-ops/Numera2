@@ -4,6 +4,7 @@ import { Decimal } from 'decimal.js';
 import { FinancialItem } from '../types';
 import { triggerHaptic } from '../services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
+import { parseAmount, sanitizeText } from '../utils/validation';
 
 interface FinancialInputProps {
   title: string;
@@ -29,6 +30,11 @@ const FinancialInput: React.FC<FinancialInputProps> = ({
     
     const newItems = items.map(item => {
       if (item.id === id) {
+        if (field === 'amount') {
+          return { ...item, [field]: parseAmount(value) };
+        } else if (field === 'name') {
+          return { ...item, [field]: sanitizeText(value as string) };
+        }
         return { ...item, [field]: value };
       }
       return item;

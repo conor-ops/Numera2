@@ -15,11 +15,11 @@
     "react-dom": "^19.2.3",
     "@google/genai": "^1.33.0",
     "decimal.js": "10.4.3",
-    "@capacitor/core": "6.0.0",
-    "@capacitor/haptics": "6.0.0",
-    "@capacitor/keyboard": "6.0.0",
-    "@capacitor/status-bar": "6.0.0",
-    "@capacitor/cli": "6.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/haptics": "^7.0.0",
+    "@capacitor/keyboard": "^7.0.0",
+    "@capacitor/status-bar": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
     "@capacitor-community/sqlite": "^7.0.2",
     "@google/generative-ai": "^0.24.1",
     "firebase-functions": "^7.0.1",
@@ -30,6 +30,7 @@
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "terser": "^5.36.0"
   }
 }

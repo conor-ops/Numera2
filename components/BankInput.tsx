@@ -4,6 +4,7 @@ import { Decimal } from 'decimal.js';
 import { BankAccount, AccountType } from '../types';
 import { triggerHaptic } from '../services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
+import { parseAmount, sanitizeText } from '../utils/validation';
 
 interface BankInputProps {
   accounts: BankAccount[];
@@ -29,6 +30,11 @@ const BankInput: React.FC<BankInputProps> = ({ accounts, onUpdate }) => {
     triggerHaptic(ImpactStyle.Light);
     const newAccounts = accounts.map(acc => {
       if (acc.id === id) {
+        if (field === 'amount') {
+          return { ...acc, [field]: parseAmount(value as string | number) };
+        } else if (field === 'name' || field === 'bankName') {
+          return { ...acc, [field]: sanitizeText(value as string) };
+        }
         return { ...acc, [field]: value };
       }
       return acc;
