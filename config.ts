@@ -1,6 +1,6 @@
 export const APP_CONFIG = {
   branding: {
-    name: "Numera", // Rebranded from FlowState to avoid trademark conflict (Class 009/036)
+    name: "Numera",
     packageId: "com.numera.finance",
     description: "Precision financial clarity tool.",
     currencySymbol: "$",
@@ -9,6 +9,15 @@ export const APP_CONFIG = {
     annualPrice: 10.00,
     currency: 'USD',
     productName: "Numera Pro Annual"
+  },
+  products: {
+    starter: { id: 'starter', name: 'Starter', price: 4.99, duration: '3 months' },
+    pro: { id: 'pro', name: 'Pro', price: 9.99, duration: '1 year' },
+    business: { id: 'business', name: 'Business', price: 24.99, duration: 'Lifetime' },
+    annual: { id: 'annual', name: 'Annual Pro', price: 10.00, interval: 'year' }
+  },
+  stripe: {
+    publicKey: import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_placeholder',
   },
   legal: {
     disclaimer: "For informational purposes only. Not financial advice.",
