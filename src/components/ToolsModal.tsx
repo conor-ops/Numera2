@@ -23,20 +23,51 @@ const ToolsModal: React.FC<ToolsModalProps> = ({ isPro, onUpgradeClick, onClose 
     { id: 'forecast', name: 'Cash Flow Forecast', icon: TrendingUp, description: '30/60/90 day cash projections', color: 'bg-orange-600' },
   ];
 
-  if (selectedTool === 'todo') {
-    return <TodoList isPro={isPro} onUpgradeClick={onUpgradeClick} onClose={() => setSelectedTool(null)} />;
-  }
+  const renderTool = () => {
+    switch (selectedTool) {
+      case 'todo':
+        return <TodoList />;
+      case 'pricing':
+        return <PricingSheet />;
+      case 'hourly':
+        return <HourlyRateCalculator />;
+      case 'forecast':
+        return <CashFlowForecast />;
+      default:
+        return null;
+    }
+  };
 
-  if (selectedTool === 'pricing') {
-    return <PricingSheet isPro={isPro} onUpgradeClick={onUpgradeClick} onClose={() => setSelectedTool(null)} />;
-  }
-
-  if (selectedTool === 'hourly') {
-    return <HourlyRateCalculator isPro={isPro} onUpgradeClick={onUpgradeClick} onClose={() => setSelectedTool(null)} />;
-  }
-
-  if (selectedTool === 'forecast') {
-    return <CashFlowForecast isPro={isPro} onUpgradeClick={onUpgradeClick} onClose={() => setSelectedTool(null)} />;
+  if (selectedTool) {
+    return (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="bg-white border-2 border-black shadow-swiss max-w-5xl w-full relative max-h-[90vh] flex flex-col animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
+          <div className="p-4 border-b-2 border-black flex items-center justify-between flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSelectedTool(null)}
+                className="px-4 py-2 bg-gray-200 text-black font-bold uppercase text-sm hover:bg-gray-300 transition-colors"
+              >
+                ← Back
+              </button>
+              <h2 className="text-xl font-extrabold uppercase tracking-tight text-black">
+                {tools.find(t => t.id === selectedTool)?.name}
+              </h2>
+            </div>
+            <button 
+              onClick={onClose}
+              className="text-gray-400 hover:text-black transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-6">
+            {renderTool()}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
