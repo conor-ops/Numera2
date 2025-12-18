@@ -4,8 +4,26 @@ import { GoogleGenAI } from "@google/genai";
 import * as cors from "cors";
 import Stripe from "stripe";
 
-// Initialize CORS handler to allow requests from any domain
-const corsHandler = cors({ origin: true });
+// Initialize CORS handler - whitelist only production and localhost
+const allowedOrigins = [
+  'https://numera-481417.web.app',
+  'https://numera-481417.firebaseapp.com',
+  'http://localhost:3000',
+  'http://localhost:5173' // Vite default port
+];
+
+const corsHandler = cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+});
 
 // --- GEN AI FUNCTION ---
 // The secret "API_KEY" must be set in Firebase via `firebase functions:secrets:set API_KEY`

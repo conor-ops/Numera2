@@ -20,7 +20,7 @@ import {
   Save,
   Shield,
   FileText,
-  ListTodo
+  Wrench
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Capacitor } from '@capacitor/core';
@@ -31,6 +31,10 @@ import FinancialInput from './components/FinancialInput';
 import BankInput from './components/BankInput';
 import RecurringTransactions from './components/RecurringTransactions';
 import TodoList from './components/TodoList';
+import ToolsMenu from './components/ToolsMenu';
+import PricingSheet from './components/PricingSheet';
+import HourlyRateCalculator from './components/HourlyRateCalculator';
+import CashFlowForecast from './components/CashFlowForecast';
 import { generateFinancialInsight } from './services/geminiService';
 import { APP_CONFIG } from './config';
 import { initiateCheckout, getFormattedPrice } from './services/paymentService';
@@ -389,6 +393,9 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showRecurring, setShowRecurring] = useState(false);
   const [showTodo, setShowTodo] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
+  const [showHourlyRate, setShowHourlyRate] = useState(false);
+  const [showCashForecast, setShowCashForecast] = useState(false);
   const [legalView, setLegalView] = useState<'privacy' | 'terms' | null>(null);
 
   // Persistence: Auto-save when data changes
@@ -642,13 +649,14 @@ function App() {
                  <RefreshCcw size={18} />
                  Recurring
                </button>
-               <button
-                 onClick={() => setShowTodo(true)}
-                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white font-bold uppercase text-sm border-2 border-black hover:bg-green-700 transition-all"
-               >
-                 <ListTodo size={18} />
-                 Todo
-               </button>
+               <ToolsMenu 
+                 onToolSelect={(tool) => {
+                   if (tool === 'todo') setShowTodo(true);
+                   else if (tool === 'pricing') setShowPricing(true);
+                   else if (tool === 'hourly') setShowHourlyRate(true);
+                   else if (tool === 'forecast') setShowCashForecast(true);
+                 }}
+               />
                <button
                  onClick={handleLogBalance}
                  className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-black text-white font-bold uppercase text-sm border-2 border-transparent hover:bg-brand-blue hover:shadow-swiss transition-all"
@@ -857,6 +865,27 @@ function App() {
             isPro={isPro}
             onUpgradeClick={() => { setShowTodo(false); setShowPaywall(true); }}
             onClose={() => setShowTodo(false)}
+          />
+        )}
+
+        {showPricing && (
+          <PricingSheet
+            onClose={() => setShowPricing(false)}
+          />
+        )}
+
+        {showHourlyRate && (
+          <HourlyRateCalculator
+            onClose={() => setShowHourlyRate(false)}
+          />
+        )}
+
+        {showCashForecast && (
+          <CashFlowForecast
+            currentBNE={result.bne}
+            isPro={isPro}
+            onUpgradeClick={() => { setShowCashForecast(false); setShowPaywall(true); }}
+            onClose={() => setShowCashForecast(false)}
           />
         )}
 
