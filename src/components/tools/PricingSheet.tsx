@@ -46,7 +46,7 @@ const PricingSheet: React.FC = () => {
     const date = new Date().toLocaleDateString();
     const content = `
 ═══════════════════════════════════════════════════════════════
-                        PRICING SHEET
+                           INVOICE
 ═══════════════════════════════════════════════════════════════
 
 Date: ${date}
