@@ -4,26 +4,8 @@ import { GoogleGenAI } from "@google/genai";
 import * as cors from "cors";
 import Stripe from "stripe";
 
-// Initialize CORS handler - whitelist only production and localhost
-const allowedOrigins = [
-  'https://numera-481417.web.app',
-  'https://numera-481417.firebaseapp.com',
-  'http://localhost:3000',
-  'http://localhost:5173' // Vite default port
-];
-
-const corsHandler = cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-});
+// Initialize CORS handler to allow requests from any domain
+const corsHandler = cors({ origin: true });
 
 // --- GEN AI FUNCTION ---
 // The secret "API_KEY" must be set in Firebase via `firebase functions:secrets:set API_KEY`
@@ -128,11 +110,24 @@ export const createStripeCheckoutSession = onRequest(
               },
               quantity: 1,
             },
-          ],
-          mode: 'payment',
-          success_url: `${returnUrl}?payment_success=true`,
-          cancel_url: `${returnUrl}?payment_canceled=true`,
-        });
+      try {
+        const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
+        const { returnUrl } = request.body;
+
+        // Validate returnUrl against allowed origins
+        if (!returnUrl || typeof returnUrl !== 'string') {
+          response.status(400).json({ error: "Missing or invalid returnUrl" });
+          return;
+        }
+
+        const isValidOrigin = allowedOrigins.some(origin => returnUrl.startsWith(origin));
+        if (!isValidOrigin) {
+          logger.warn(`Invalid returnUrl attempted: ${returnUrl}`);
+          response.status(400).json({ error: "Invalid returnUrl" });
+          return;
+        }
+
+        const session = await stripe.checkout.sessions.create({
 
         response.json({ url: session.url });
       } catch (error: any) {

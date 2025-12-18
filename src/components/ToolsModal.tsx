@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { X, ListTodo, DollarSign, Clock, TrendingUp } from 'lucide-react';
+import { X, ListTodo, DollarSign, Clock, TrendingUp, Package } from 'lucide-react';
 import TodoList from './tools/TodoList';
 import PricingSheet from './tools/PricingSheet';
 import HourlyRateCalculator from './tools/HourlyRateCalculator';
 import CashFlowForecast from './tools/CashFlowForecast';
+import MaterialsSheet from './tools/MaterialsSheet';
 
 interface ToolsModalProps {
   isPro: boolean;
@@ -11,7 +12,7 @@ interface ToolsModalProps {
   onClose: () => void;
 }
 
-type ToolType = 'todo' | 'pricing' | 'hourly' | 'forecast' | null;
+type ToolType = 'todo' | 'pricing' | 'hourly' | 'forecast' | 'materials' | null;
 
 const ToolsModal: React.FC<ToolsModalProps> = ({ isPro, onUpgradeClick, onClose }) => {
   const [selectedTool, setSelectedTool] = useState<ToolType>(null);
@@ -19,6 +20,7 @@ const ToolsModal: React.FC<ToolsModalProps> = ({ isPro, onUpgradeClick, onClose 
   const tools = [
     { id: 'todo', name: 'To-Do List', icon: ListTodo, description: 'Track your tasks and reminders', color: 'bg-purple-600' },
     { id: 'pricing', name: 'Pricing Sheet', icon: DollarSign, description: 'Create estimates and quotes', color: 'bg-green-600' },
+    { id: 'materials', name: 'Materials Sheet', icon: Package, description: 'Track supplier costs with markup', color: 'bg-indigo-600' },
     { id: 'hourly', name: 'Hourly Rate Calculator', icon: Clock, description: 'Calculate your ideal hourly rate', color: 'bg-blue-600' },
     { id: 'forecast', name: 'Cash Flow Forecast', icon: TrendingUp, description: '30/60/90 day cash projections', color: 'bg-orange-600' },
   ];
@@ -29,6 +31,8 @@ const ToolsModal: React.FC<ToolsModalProps> = ({ isPro, onUpgradeClick, onClose 
         return <TodoList />;
       case 'pricing':
         return <PricingSheet />;
+      case 'materials':
+        return <MaterialsSheet />;
       case 'hourly':
         return <HourlyRateCalculator />;
       case 'forecast':
