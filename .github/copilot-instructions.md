@@ -8,97 +8,109 @@ npm run dev                      # Runs on http://localhost:3000
 ```
 
 ## Architecture Overview
-Single-file React app (`App.tsx`, 669 lines) with service abstraction layer for cross-platform compatibility (web vs native iOS/Android).
+Single-page React app (App.tsx + modular components) with cross-platform service layer.
 
-**Core Stack**: React 19 + TypeScript + Vite + Capacitor 5 + RevenueCat + Tailwind + SQLite  
-**Key Pattern**: Platform detection via `Capacitor.getPlatform()` — web uses localStorage, native uses SQLite  
-**State**: Pure React hooks (no Redux), auto-saves on every data change via `useEffect`
+**Core Stack**: React 19 + TypeScript + Vite + Capacitor 5 + Tailwind + SQLite  
+**Key Pattern**: Platform-aware services — web uses localStorage, native uses SQLite  
+**State**: Pure React hooks (no Redux), auto-saves on every change  
+**BNE (Business Net Equity)**: Core calculation = Total Bank + Net Receivables - Total Credit Debt
 
 ## Critical Conventions
 
 ### 1. Money Math = Decimal.js (ALWAYS)
 ```typescript
-// ✓ CORRECT
+// ✓ CORRECT - use Decimal for all calculations
 const total = items.reduce((acc, i) => acc.plus(new Decimal(i.amount || 0)), new Decimal(0));
-const result = total.toNumber().toFixed(2); // Convert for display
+const forDisplay = total.toNumber().toLocaleString('en-US', { minimumFractionDigits: 2 });
 
-// ✗ WRONG - Never use plain JavaScript arithmetic for money
+// ✗ WRONG - JavaScript arithmetic causes float errors
 const total = items.reduce((sum, i) => sum + i.amount, 0);
 ```
-**Storage**: DB stores cents (`amount_cents` column) to eliminate float errors. Always multiply by 100 on save, divide by 100 on load (see `databaseService.ts` L107-L130).  
-**Components**: Display uses `.toLocaleString()` for currency formatting (e.g., `BankInput.tsx` L47).
+**Storage**: All DB columns store cents as integers (`amount_cents`) — multiply by 100 on save, divide on load (see [databaseService.ts](../services/databaseService.ts))  
+**Components**: `.toLocaleString()` for display formatting (see [BankInput.tsx](../components/BankInput.tsx))
 
-### 2. Cross-Platform Service Pattern
-All `services/` files check platform before using native APIs:
+### 2. Platform Abstraction Pattern
+All services check `Capacitor.getPlatform()` before accessing device APIs:
 ```typescript
 if (Capacitor.getPlatform() === 'web') {
-  localStorage.setItem('key', value);  // Web fallback
+  // LocalStorage fallback
+  localStorage.setItem('key', value);
 } else {
-  await db.run('INSERT...');            // Native SQLite
+  // Native SQLite (iOS/Android)
+  await db.run('INSERT INTO ...', params);
 }
 ```
-Never call native APIs (`Keyboard.hide()`, `Haptics`, `SQLite`) without this guard.
+Never assume platform — guard all: `Keyboard`, `Haptics`, `SQLite`, `StatusBar` calls.
 
-### 3. Component Data Flow
-```
-App.tsx (single source of truth)
-├─ State: data, isPro, history, useStrictFormula
-├─ Handlers: handleUpdate* (immutable updates via spread)
-└─ Components: FinancialInput, BankInput, BudgetPlanner (presentational only)
-```
-All business logic lives in `App.tsx`. Components only receive data + callbacks via props. Use `useMemo()` for expensive calculations (e.g., BNE calculation loops through all items).
+### 3. State & Component Data Flow
+- **Source of truth**: [App.tsx](../App.tsx) centralized state (`data`, `isPro`, `history`, `useStrictFormula`)
+- **Handlers**: `handleUpdate*` methods use immutable spread pattern → `useEffect` watchers trigger auto-save
+- **Components**: Presentational only (props: `items`, `onUpdate`) — no business logic
+- **Expensive calculations**: Wrap in `useMemo([data, isPro, ...deps])` (BNE loops all accounts/transactions)
 
-### 4. Data State Structure
-- `data: BusinessData` → transactions (INCOME/EXPENSE) + accounts (CHECKING/SAVINGS/CREDIT)
-- `transactions` track AR (receivable) and AP (payable) via `type` field
-- `accounts` track bank balance via type; only CREDIT accounts used for debt calculation
-- All amounts stored as plain numbers in state; converted to cents for DB, back to dollars on load
+### 4. Business Data Model
+```typescript
+BusinessData = {
+  transactions: [],  // INCOME (AR) / EXPENSE (AP), type field distinguishes
+  accounts: []       // CHECKING/SAVINGS/CREDIT; only CREDIT used for debt
+}
+```
+- AR/AP tracked by `type: 'INCOME' | 'EXPENSE'` + `date_occurred` for recurrence checks
+- Bank total = sum of CHECKING + SAVINGS only
+- Credit debt = sum of CREDIT accounts (subtracted in BNE formula)
+
+### 5. Recurring Transaction Processing
+- Stored in localStorage via [recurringService.ts](../services/recurringService.ts)
+- Frequencies: `daily|weekly|biweekly|monthly|quarterly|annually`
+- `processPendingRecurring()` checks `isDueToday()` and auto-adds transactions to main list
+- Call this in `App.tsx` `useEffect` on init to apply pending transactions
 
 ## Key Files & Responsibilities
 
-| File | Purpose | Lines |
-|------|---------|-------|
-| `App.tsx` | State, handlers, modals, BNE calculation | 669 |
-| `services/databaseService.ts` | SQLite/localStorage abstraction | 225 |
-| `services/paymentService.ts` | RevenueCat integration (iOS/Android only) | 102 |
-| `services/geminiService.ts` | AI insights via Gemini API | 40 |
-| `types.ts` | TypeScript interfaces (no logic) | 70 |
-| `config.ts` | APP_CONFIG (branding, pricing, legal) | 15 |
-| `vite.config.ts` | Env var mapping: `GEMINI_API_KEY` → `process.env.API_KEY` | 20 |
+| File | Purpose |
+|------|---------|
+| [App.tsx](../App.tsx) | State, handlers, calculation, modals (893 lines) |
+| [types.ts](../types.ts) | Interfaces: `BusinessData`, `Transaction`, `BankAccount`, `CalculationResult` |
+| [services/databaseService.ts](../services/databaseService.ts) | SQLite (native) / LocalStorage (web) abstraction |
+| [services/recurringService.ts](../services/recurringService.ts) | Recurring transaction logic & scheduling |
+| [services/paymentService.ts](../services/paymentService.ts) | Stripe payment link (opens in new tab) |
+| [services/geminiService.ts](../services/geminiService.ts) | Calls `/api/generateFinancialInsight` Cloud Function |
+| [services/hapticService.ts](../services/hapticService.ts) | Platform-safe haptic feedback wrapper |
+| [config.ts](../config.ts) | `APP_CONFIG`: branding, pricing, legal text |
+| [components/FinancialInput.tsx](../components/FinancialInput.tsx) | Reusable INCOME/EXPENSE input list |
+| [components/BankInput.tsx](../components/BankInput.tsx) | Bank account list with type selector |
 
-## Auto-Save & Immutable Updates Pattern
-- **Auto-save**: All state changes trigger `useEffect` watchers → call `saveSnapshot()` automatically
-  - No manual save buttons; persistence happens on every interaction
-  - `useMemo()` dependencies track `[data, isPro, history, useStrictFormula]` for recalculation on changes
-- **Immutable updates**: Always use spread operator or `map()` to create new objects
-  ```typescript
-  // ✓ CORRECT - triggers re-render AND auto-save via useEffect
-  const updated = items.map(item => item.id === id ? {...item, [field]: value} : item);
-  setData(prev => ({...prev, transactions: updated}));
-  ```
-- **Pattern**: Handler function → immutable state update → `useEffect` fires → `saveSnapshot()` → component re-renders
+## Auto-Save Pattern
+1. State change → `setData(newData)` (immutable update)
+2. React re-renders with new state
+3. `useEffect([data, isPro, history, useStrictFormula])` fires
+4. `saveSnapshot(data)` called → localStorage or SQLite
+5. No manual save buttons — transparency on every keystroke
+
+## Pro Feature Limits (Free Tier)
+- Max 1 credit card account (Pro: unlimited)
+- Max 3 bank accounts (Pro: unlimited)
+- Upgrade triggers: disabled "+" button calls `onUpgradeClick()` → Stripe modal
+
+## Integration Points
+- **Gemini AI**: POST to `/api/generateFinancialInsight` with `{ calculations, bankBreakdown }`
+- **Stripe**: Direct payment link (config in [paymentService.ts](../services/paymentService.ts))
+- **Capacitor**: Native APIs only on iOS/Android (web falls back to localStorage)
 
 ## Common Workflows
 
-### Add New Financial Input Type
-1. Define interface in `types.ts` (extend `FinancialItem`)
-2. Add state in `App.tsx`: `const [newData, setNewData] = useState<NewType[]>([])`
-3. Create handler: `const handleUpdateNew = (items) => { setNewData(items); ... }`
-4. Add to `BusinessData` interface and update `saveSnapshot`/`loadSnapshot` in `databaseService.ts`
+### Add New Input Field
+1. Extend interface in [types.ts](../types.ts)
+2. Add state in [App.tsx](../App.tsx): `useState`
+3. Create `handleUpdateNew()` handler
+4. Add to [databaseService.ts](../services/databaseService.ts) schema + `saveSnapshot()`/`loadSnapshot()`
 
-### Test Cross-Platform
-- **Web**: `npm run dev` → localStorage mock
-- **Native**: Capacitor CLI build → test SQLite, Haptics, Keyboard APIs
-- Always verify platform checks in services when adding native functionality
+### Modify BNE Calculation
+Edit `useMemo()` block in [App.tsx](../App.tsx) — verify calculation formula matches current `CalculationResult` structure
 
-### Debug Database
-```typescript
-// Web: Clear mock
-localStorage.removeItem('numera_mock_db');
-
-// Native: Check schema
-await db.query('SELECT * FROM sqlite_master WHERE type="table"');
-```
+### Debug Cross-Platform
+- Web: Open DevTools → LocalStorage tab (`numera_web_db` key)
+- Native: Run `capacitor run ios` or `capacitor run android` → check SQLite via native debugger
 
 ## State Management Patterns
 

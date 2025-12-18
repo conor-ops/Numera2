@@ -20,19 +20,19 @@ import {
   Save,
   Shield,
   FileText,
-  ListTodo
+  Wrench
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Capacitor } from '@capacitor/core';
 import { Keyboard } from '@capacitor/keyboard';
 
 import { FinancialItem, BusinessData, CalculationResult, BankAccount, AccountType, Transaction, HistoryRecord } from './types';
-import FinancialInput from './components/FinancialInput';
-import BankInput from './components/BankInput';
-import RecurringTransactions from './components/RecurringTransactions';
-import TodoList from './components/TodoList';
+import FinancialInput from './components/financial/FinancialInput';
+import BankInput from './components/financial/BankInput';
+import RecurringTransactions from './components/financial/RecurringTransactions';
+import ToolsModal from './components/ToolsModal';
 import { generateFinancialInsight } from './services/geminiService';
-import { APP_CONFIG } from './config';
+import { APP_CONFIG } from './config/constants';
 import { initiateCheckout, getFormattedPrice } from './services/paymentService';
 import { triggerHaptic } from './services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
@@ -388,7 +388,7 @@ function App() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showRecurring, setShowRecurring] = useState(false);
-  const [showTodo, setShowTodo] = useState(false);
+  const [showTools, setShowTools] = useState(false);
   const [legalView, setLegalView] = useState<'privacy' | 'terms' | null>(null);
 
   // Persistence: Auto-save when data changes
@@ -643,11 +643,11 @@ function App() {
                  Recurring
                </button>
                <button
-                 onClick={() => setShowTodo(true)}
+                 onClick={() => setShowTools(true)}
                  className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white font-bold uppercase text-sm border-2 border-black hover:bg-green-700 transition-all"
                >
-                 <ListTodo size={18} />
-                 Todo
+                 <Wrench size={18} />
+                 Tools
                </button>
                <button
                  onClick={handleLogBalance}
@@ -852,11 +852,11 @@ function App() {
           />
         )}
 
-        {showTodo && (
-          <TodoList
+        {showTools && (
+          <ToolsModal
             isPro={isPro}
-            onUpgradeClick={() => { setShowTodo(false); setShowPaywall(true); }}
-            onClose={() => setShowTodo(false)}
+            onUpgradeClick={() => { setShowTools(false); setShowPaywall(true); }}
+            onClose={() => setShowTools(false)}
           />
         )}
 
