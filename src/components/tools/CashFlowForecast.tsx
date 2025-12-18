@@ -131,26 +131,41 @@ const CashFlowForecast: React.FC = () => {
               <XAxis 
                 dataKey="label" 
                 stroke="#000"
-                style={{ fontSize: '12px', fontWeight: 'bold' }}
+                style={{ fontSize: '12px', fontWeight: 'bold', fontFamily: 'Roboto Mono' }}
               />
               <YAxis 
                 stroke="#000"
-                style={{ fontSize: '12px', fontWeight: 'bold' }}
+                style={{ fontSize: '12px', fontWeight: 'bold', fontFamily: 'Roboto Mono' }}
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
               />
               <Tooltip 
-                formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']}
+                formatter={(value: number) => [`$${value.toLocaleString()}`, 'Projected Balance']}
                 contentStyle={{ 
                   border: '2px solid black', 
                   backgroundColor: 'white',
-                  fontFamily: 'monospace',
-                  fontWeight: 'bold'
+                  fontFamily: 'Roboto Mono',
+                  fontWeight: 'bold',
+                  borderRadius: 0
                 }}
               />
-              <ReferenceLine y={5000} stroke="#ef4444" strokeDasharray="3 3" />
+              <ReferenceLine 
+                y={5000} 
+                stroke="#ef4444" 
+                strokeDasharray="5 5" 
+                strokeWidth={2}
+                label={{ 
+                  value: 'Safety Threshold ($5k)', 
+                  position: 'insideTopRight', 
+                  fill: '#ef4444',
+                  fontSize: 11,
+                  fontWeight: 'bold',
+                  fontFamily: 'Roboto Mono'
+                }}
+              />
               <Bar 
                 dataKey="balance" 
                 fill="#000000"
+                radius={[4, 4, 0, 0]}
               />
             </BarChart>
           </ResponsiveContainer>

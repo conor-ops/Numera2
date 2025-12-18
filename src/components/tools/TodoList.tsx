@@ -110,8 +110,22 @@ const TodoList: React.FC = () => {
       </div>
 
       {todos.length > 0 && (
-        <div className="pt-4 border-t-2 border-gray-200 text-sm text-gray-600 font-mono">
-          {todos.filter(t => !t.completed).length} active • {todos.filter(t => t.completed).length} completed
+        <div className="pt-4 border-t-2 border-gray-200 flex items-center justify-between">
+          <div className="text-sm text-gray-600 font-mono">
+            {todos.filter(t => !t.completed).length} active • {todos.filter(t => t.completed).length} completed
+          </div>
+          {todos.some(t => t.completed) && (
+            <button
+              onClick={() => {
+                if (window.confirm('Delete all completed tasks?')) {
+                  setTodos(todos.filter(t => !t.completed));
+                }
+              }}
+              className="text-xs px-3 py-1 bg-gray-200 hover:bg-gray-300 font-bold uppercase transition-colors"
+            >
+              Clear Completed
+            </button>
+          )}
         </div>
       )}
     </div>
