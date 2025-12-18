@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, ListTodo, DollarSign, Clock, TrendingUp, Package } from 'lucide-react';
+import { X, ListTodo, DollarSign, Clock, TrendingUp, Package, FileText } from 'lucide-react';
 import TodoList from './tools/TodoList';
 import PricingSheet from './tools/PricingSheet';
+import CogsSheet from './tools/CogsSheet';
 import HourlyRateCalculator from './tools/HourlyRateCalculator';
 import CashFlowForecast from './tools/CashFlowForecast';
 import MaterialsSheet from './tools/MaterialsSheet';
@@ -12,14 +13,15 @@ interface ToolsModalProps {
   onClose: () => void;
 }
 
-type ToolType = 'todo' | 'pricing' | 'hourly' | 'forecast' | 'materials' | null;
+type ToolType = 'todo' | 'invoice' | 'cogs' | 'materials' | 'hourly' | 'forecast' | null;
 
 const ToolsModal: React.FC<ToolsModalProps> = ({ isPro, onUpgradeClick, onClose }) => {
   const [selectedTool, setSelectedTool] = useState<ToolType>(null);
 
   const tools = [
     { id: 'todo', name: 'To-Do List', icon: ListTodo, description: 'Track your tasks and reminders', color: 'bg-purple-600' },
-    { id: 'pricing', name: 'Pricing Sheet', icon: DollarSign, description: 'Create estimates and quotes', color: 'bg-green-600' },
+    { id: 'invoice', name: 'Invoice Generator', icon: FileText, description: 'Create and export invoices', color: 'bg-green-600' },
+    { id: 'cogs', name: 'COGS Sheet', icon: DollarSign, description: 'Track cost of goods sold', color: 'bg-blue-600' },
     { id: 'materials', name: 'Materials Sheet', icon: Package, description: 'Track supplier costs with markup', color: 'bg-indigo-600' },
     { id: 'hourly', name: 'Hourly Rate Calculator', icon: Clock, description: 'Calculate your ideal hourly rate', color: 'bg-blue-600' },
     { id: 'forecast', name: 'Cash Flow Forecast', icon: TrendingUp, description: '30/60/90 day cash projections', color: 'bg-orange-600' },
@@ -29,8 +31,10 @@ const ToolsModal: React.FC<ToolsModalProps> = ({ isPro, onUpgradeClick, onClose 
     switch (selectedTool) {
       case 'todo':
         return <TodoList />;
-      case 'pricing':
+      case 'invoice':
         return <PricingSheet />;
+      case 'cogs':
+        return <CogsSheet />;
       case 'materials':
         return <MaterialsSheet />;
       case 'hourly':
