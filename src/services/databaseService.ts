@@ -1,12 +1,17 @@
 
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
+<<<<<<< HEAD
 <<<<<<<< HEAD:src/services/databaseService.ts
 import { BusinessData, Transaction, BankAccount, AccountType, HistoryRecord } from '@/types';
 import { validateFinancialData } from '@/utils/validation';
 ========
 import { BusinessData, Transaction, BankAccount, AccountType, HistoryRecord } from '../types';
 >>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a:services/databaseService.ts
+=======
+import { BusinessData, Transaction, BankAccount, AccountType, HistoryRecord } from '@/types';
+import { validateFinancialData } from '@/utils/validation';
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 
 let sqlite: SQLiteConnection;
 let db: SQLiteDBConnection;
@@ -104,7 +109,24 @@ export const saveSnapshot = async (data: BusinessData): Promise<void> => {
 export const loadSnapshot = async (): Promise<BusinessData | null> => {
   if (Capacitor.getPlatform() === 'web') {
     const raw = localStorage.getItem('numera_web_db');
+<<<<<<< HEAD
     return raw ? JSON.parse(raw) : null;
+=======
+    if (!raw) return null;
+    
+    try {
+      const data = JSON.parse(raw);
+      // Validate data structure before returning
+      if (!validateFinancialData(data)) {
+        console.error('Invalid data structure in storage');
+        return null;
+      }
+      return data;
+    } catch (err) {
+      console.error('Failed to parse stored data:', err);
+      return null;
+    }
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
   }
 
   if (!db) return null;
@@ -128,7 +150,19 @@ export const loadSnapshot = async (): Promise<BusinessData | null> => {
       date_occurred: row.date_occurred
     }));
 
+<<<<<<< HEAD
     return { accounts, transactions };
+=======
+    const data = { accounts, transactions };
+    
+    // Validate loaded data
+    if (!validateFinancialData(data)) {
+      console.error('Invalid data structure loaded from database');
+      return null;
+    }
+
+    return data;
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
   } catch (err) {
     console.error('Load Snapshot Failed:', err);
     return null;

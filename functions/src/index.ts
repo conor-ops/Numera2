@@ -1,12 +1,32 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { GoogleGenAI } from "@google/genai";
-import * as cors from "cors";
+import cors from "cors";
 import Stripe from "stripe";
 
-// Initialize CORS handler to allow requests from any domain
-const corsHandler = cors({ origin: true });
+// Initialize CORS handler with an explicit origin whitelist
+const allowedOrigins = [
+  "http://localhost:3000",
+  // Add your production frontend origins here, e.g.:
+  // "https://your-production-domain.com",
+];
+const allowedOriginsSet = new Set(allowedOrigins);
 
+const corsHandler = cors({
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Require an explicit Origin header and only allow whitelisted origins
+    if (!origin) {
+      callback(new Error("Origin required"));
+      return;
+    }
+
+    if (allowedOriginsSet.has(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+});
 // --- GEN AI FUNCTION ---
 // The secret "API_KEY" must be set in Firebase via `firebase functions:secrets:set API_KEY`
 export const generateFinancialInsight = onRequest(
@@ -96,6 +116,19 @@ export const createStripeCheckoutSession = onRequest(
         const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
         const { returnUrl } = request.body;
 
+        // Validate returnUrl against allowed origins
+        if (!returnUrl || typeof returnUrl !== 'string') {
+          response.status(400).json({ error: "Missing or invalid returnUrl" });
+          return;
+        }
+
+        const isValidOrigin = allowedOrigins.some(origin => returnUrl.startsWith(origin));
+        if (!isValidOrigin) {
+          logger.warn(`Invalid returnUrl attempted: ${returnUrl}`);
+          response.status(400).json({ error: "Invalid returnUrl" });
+          return;
+        }
+
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ['card'],
           line_items: [
@@ -112,8 +145,8 @@ export const createStripeCheckoutSession = onRequest(
             },
           ],
           mode: 'payment',
-          success_url: `${returnUrl}?payment_success=true`,
-          cancel_url: `${returnUrl}?payment_canceled=true`,
+          success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: returnUrl,
         });
 
         response.json({ url: session.url });

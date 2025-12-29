@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { X, ListTodo, DollarSign, Clock, TrendingUp } from 'lucide-react';
 import TodoList from './tools/TodoList';
 import PricingSheet from './tools/PricingSheet';
 import HourlyRateCalculator from './tools/HourlyRateCalculator';
 import CashFlowForecast from './tools/CashFlowForecast';
 =======
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 import { X, ListTodo, DollarSign, Clock, TrendingUp, Package, FileText } from 'lucide-react';
 import TodoList from './tools/TodoList';
 import PricingSheet from './tools/PricingSheet';
@@ -13,6 +16,9 @@ import CogsSheet from './tools/CogsSheet';
 import HourlyRateCalculator from './tools/HourlyRateCalculator';
 import CashFlowForecast from './tools/CashFlowForecast';
 import MaterialsSheet from './tools/MaterialsSheet';
+<<<<<<< HEAD
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
+=======
 >>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 
 interface ToolsModalProps {
@@ -22,7 +28,11 @@ interface ToolsModalProps {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 type ToolType = 'todo' | 'pricing' | 'hourly' | 'forecast' | null;
+=======
+type ToolType = 'todo' | 'invoice' | 'cogs' | 'materials' | 'hourly' | 'forecast' | null;
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 =======
 type ToolType = 'todo' | 'invoice' | 'cogs' | 'materials' | 'hourly' | 'forecast' | null;
 >>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
@@ -33,7 +43,13 @@ const ToolsModal: React.FC<ToolsModalProps> = ({ isPro, onUpgradeClick, onClose 
   const tools = [
     { id: 'todo', name: 'To-Do List', icon: ListTodo, description: 'Track your tasks and reminders', color: 'bg-purple-600' },
 <<<<<<< HEAD
+<<<<<<< HEAD
     { id: 'pricing', name: 'Pricing Sheet', icon: DollarSign, description: 'Create estimates and quotes', color: 'bg-green-600' },
+=======
+    { id: 'invoice', name: 'Invoice Generator', icon: FileText, description: 'Create and export invoices', color: 'bg-green-600' },
+    { id: 'cogs', name: 'COGS Sheet', icon: DollarSign, description: 'Track cost of goods sold', color: 'bg-blue-600' },
+    { id: 'materials', name: 'Materials Sheet', icon: Package, description: 'Track supplier costs with markup', color: 'bg-indigo-600' },
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 =======
     { id: 'invoice', name: 'Invoice Generator', icon: FileText, description: 'Create and export invoices', color: 'bg-green-600' },
     { id: 'cogs', name: 'COGS Sheet', icon: DollarSign, description: 'Track cost of goods sold', color: 'bg-blue-600' },
@@ -43,6 +59,7 @@ const ToolsModal: React.FC<ToolsModalProps> = ({ isPro, onUpgradeClick, onClose 
     { id: 'forecast', name: 'Cash Flow Forecast', icon: TrendingUp, description: '30/60/90 day cash projections', color: 'bg-orange-600' },
   ];
 
+<<<<<<< HEAD
 <<<<<<< HEAD
   if (selectedTool === 'todo') {
     return <TodoList isPro={isPro} onUpgradeClick={onUpgradeClick} onClose={() => setSelectedTool(null)} />;
@@ -59,6 +76,8 @@ const ToolsModal: React.FC<ToolsModalProps> = ({ isPro, onUpgradeClick, onClose 
   if (selectedTool === 'forecast') {
     return <CashFlowForecast isPro={isPro} onUpgradeClick={onUpgradeClick} onClose={() => setSelectedTool(null)} />;
 =======
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
   const renderTool = () => {
     switch (selectedTool) {
       case 'todo':
@@ -108,6 +127,9 @@ const ToolsModal: React.FC<ToolsModalProps> = ({ isPro, onUpgradeClick, onClose 
         </div>
       </div>
     );
+<<<<<<< HEAD
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
+=======
 >>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
   }
 

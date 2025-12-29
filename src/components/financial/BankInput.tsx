@@ -4,14 +4,19 @@ import { Decimal } from 'decimal.js';
 import { BankAccount, AccountType } from '@/types';
 import { triggerHaptic } from '@/services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
+<<<<<<< HEAD
 <<<<<<<< HEAD:src/components/financial/BankInput.tsx
 import { parseAmount, sanitizeText } from '@/utils/validation';
 ========
 >>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a:components/BankInput.tsx
+=======
+import { parseAmount, sanitizeText } from '@/utils/validation';
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 
 interface BankInputProps {
   accounts: BankAccount[];
   onUpdate: (accounts: BankAccount[]) => void;
+<<<<<<< HEAD
   isPro?: boolean;
   onUpgradeClick?: () => void;
 }
@@ -28,6 +33,13 @@ const BankInput: React.FC<BankInputProps> = ({ accounts, onUpdate, isPro = false
       return;
     }
     
+=======
+}
+
+const BankInput: React.FC<BankInputProps> = ({ accounts, onUpdate }) => {
+  const addAccount = () => {
+    triggerHaptic(ImpactStyle.Medium);
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
     onUpdate([
       ...accounts, 
       { 
@@ -44,6 +56,14 @@ const BankInput: React.FC<BankInputProps> = ({ accounts, onUpdate, isPro = false
     triggerHaptic(ImpactStyle.Light);
     const newAccounts = accounts.map(acc => {
       if (acc.id === id) {
+<<<<<<< HEAD
+=======
+        if (field === 'amount') {
+          return { ...acc, [field]: parseAmount(value as string | number) };
+        } else if (field === 'name' || field === 'bankName') {
+          return { ...acc, [field]: sanitizeText(value as string) };
+        }
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
         return { ...acc, [field]: value };
       }
       return acc;
@@ -145,10 +165,17 @@ const BankInput: React.FC<BankInputProps> = ({ accounts, onUpdate, isPro = false
 
       <button
         onClick={addAccount}
+<<<<<<< HEAD
         className={`mt-6 w-full py-3 flex justify-center items-center gap-2 text-sm font-bold uppercase border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all shrink-0 ${canAddMore ? 'bg-brand-blue text-white' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
       >
         <Plus size={16} />
         {canAddMore ? 'Add Bank Account' : `Max ${FREE_ACCOUNTS_LIMIT} accounts (Free) - Upgrade for unlimited`}
+=======
+        className="mt-6 w-full py-3 flex justify-center items-center gap-2 text-sm font-bold uppercase bg-brand-blue text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all shrink-0"
+      >
+        <Plus size={16} />
+        Add Bank Account
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
       </button>
     </div>
   );

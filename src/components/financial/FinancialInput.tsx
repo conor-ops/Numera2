@@ -4,10 +4,14 @@ import { Decimal } from 'decimal.js';
 import { FinancialItem } from '@/types';
 import { triggerHaptic } from '@/services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
+<<<<<<< HEAD
 <<<<<<<< HEAD:src/components/financial/FinancialInput.tsx
 import { parseAmount, sanitizeText } from '@/utils/validation';
 ========
 >>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a:components/FinancialInput.tsx
+=======
+import { parseAmount, sanitizeText } from '@/utils/validation';
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 
 interface FinancialInputProps {
   title: string;
@@ -15,15 +19,19 @@ interface FinancialInputProps {
   onUpdate: (items: FinancialItem[]) => void;
   colorClass?: string;
   icon?: React.ReactNode;
+<<<<<<< HEAD
   isPro?: boolean;
   onUpgradeClick?: () => void;
   isCreditCard?: boolean;
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 }
 
 const FinancialInput: React.FC<FinancialInputProps> = ({ 
   title, 
   items, 
   onUpdate, 
+<<<<<<< HEAD
   icon,
   isPro = false,
   onUpgradeClick,
@@ -40,6 +48,12 @@ const FinancialInput: React.FC<FinancialInputProps> = ({
       return;
     }
     
+=======
+  icon
+}) => {
+  const addItem = () => {
+    triggerHaptic(ImpactStyle.Medium);
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
     onUpdate([...items, { id: crypto.randomUUID(), name: '', amount: 0 }]);
   };
 
@@ -48,6 +62,14 @@ const FinancialInput: React.FC<FinancialInputProps> = ({
     
     const newItems = items.map(item => {
       if (item.id === id) {
+<<<<<<< HEAD
+=======
+        if (field === 'amount') {
+          return { ...item, [field]: parseAmount(value) };
+        } else if (field === 'name') {
+          return { ...item, [field]: sanitizeText(value as string) };
+        }
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
         return { ...item, [field]: value };
       }
       return item;
@@ -127,6 +149,7 @@ const FinancialInput: React.FC<FinancialInputProps> = ({
 
       <button
         onClick={addItem}
+<<<<<<< HEAD
         className={`mt-6 w-full py-3 flex justify-center items-center gap-2 text-sm font-bold uppercase border-2 transition-all shrink-0 ${
           canAddMore 
             ? 'bg-white border-dashed border-gray-300 text-gray-500 hover:text-brand-blue hover:border-brand-blue hover:bg-blue-50' 
@@ -138,6 +161,12 @@ const FinancialInput: React.FC<FinancialInputProps> = ({
           ? 'Add Item' 
           : `Max ${FREE_CC_LIMIT} credit card (Free) - Upgrade for unlimited`
         }
+=======
+        className="mt-6 w-full py-3 flex justify-center items-center gap-2 text-sm font-bold uppercase bg-white border-2 border-dashed border-gray-300 text-gray-500 hover:text-brand-blue hover:border-brand-blue hover:bg-blue-50 transition-all shrink-0"
+      >
+        <Plus size={16} />
+        Add Item
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
       </button>
     </div>
   );

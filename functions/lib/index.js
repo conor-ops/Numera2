@@ -33,9 +33,12 @@ const genai_1 = require("@google/genai");
 const cors_1 = __importDefault(require("cors"));
 const stripe_1 = __importDefault(require("stripe"));
 <<<<<<< HEAD
+<<<<<<< HEAD
 // Initialize CORS handler to allow requests from any domain
 const corsHandler = (0, cors_1.default)({ origin: true });
 =======
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 // Initialize CORS handler with an explicit origin whitelist
 const allowedOrigins = [
     "http://localhost:3000",
@@ -54,6 +57,9 @@ const corsHandler = (0, cors_1.default)({
         }
     },
 });
+<<<<<<< HEAD
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
+=======
 >>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 // --- GEN AI FUNCTION ---
 // The secret "API_KEY" must be set in Firebase via `firebase functions:secrets:set API_KEY`
@@ -129,7 +135,10 @@ exports.createStripeCheckoutSession = (0, https_1.onRequest)({ secrets: ["STRIPE
             const stripe = new stripe_1.default(stripeKey, { apiVersion: '2023-10-16' });
             const { returnUrl } = request.body;
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
             // Validate returnUrl against allowed origins
             if (!returnUrl || typeof returnUrl !== 'string') {
                 response.status(400).json({ error: "Missing or invalid returnUrl" });
@@ -141,6 +150,9 @@ exports.createStripeCheckoutSession = (0, https_1.onRequest)({ secrets: ["STRIPE
                 response.status(400).json({ error: "Invalid returnUrl" });
                 return;
             }
+<<<<<<< HEAD
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
+=======
 >>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
             const session = await stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
@@ -159,8 +171,13 @@ exports.createStripeCheckoutSession = (0, https_1.onRequest)({ secrets: ["STRIPE
                 ],
                 mode: 'payment',
 <<<<<<< HEAD
+<<<<<<< HEAD
                 success_url: `${returnUrl}?payment_success=true`,
                 cancel_url: `${returnUrl}?payment_canceled=true`,
+=======
+                success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: returnUrl,
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 =======
                 success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: returnUrl,

@@ -19,7 +19,8 @@ import {
   History,
   Save,
   Shield,
-  FileText
+  FileText,
+  Wrench
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Capacitor } from '@capacitor/core';
@@ -28,12 +29,19 @@ import { Keyboard } from '@capacitor/keyboard';
 import { FinancialItem, BusinessData, CalculationResult, BankAccount, AccountType, Transaction, HistoryRecord } from './types';
 import FinancialInput from './components/FinancialInput';
 import BankInput from './components/BankInput';
+import RecurringTransactions from './components/RecurringTransactions';
+import TodoList from './components/TodoList';
+import ToolsMenu from './components/ToolsMenu';
+import PricingSheet from './components/PricingSheet';
+import HourlyRateCalculator from './components/HourlyRateCalculator';
+import CashFlowForecast from './components/CashFlowForecast';
 import { generateFinancialInsight } from './services/geminiService';
 import { APP_CONFIG } from './config';
 import { initiateCheckout, getFormattedPrice } from './services/paymentService';
 import { triggerHaptic } from './services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
 import { setupDatabase, loadSnapshot, saveSnapshot, saveHistoryRecord, getHistoryRecords } from './services/databaseService';
+import { processPendingRecurring } from './services/recurringService';
 
 const INITIAL_DATA: BusinessData = {
   transactions: [
@@ -164,11 +172,19 @@ const PaywallModal = ({ onClose, onSuccess }: { onClose: () => void, onSuccess: 
           <ul className="space-y-3 mb-8">
             <li className="flex items-center gap-3 text-sm font-medium">
               <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
-              Unlimited PDF Reports
+              Unlimited AI Insights
             </li>
             <li className="flex items-center gap-3 text-sm font-medium">
               <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
-              Cross-Device Sync (Mobile/Web)
+              Unlimited Bank Accounts
+            </li>
+            <li className="flex items-center gap-3 text-sm font-medium">
+              <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
+              Full History & Trends
+            </li>
+            <li className="flex items-center gap-3 text-sm font-medium">
+              <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
+              PDF Export (Coming Soon)
             </li>
             <li className="flex items-center gap-3 text-sm font-medium">
               <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
@@ -261,6 +277,11 @@ function App() {
   const [data, setData] = useState<BusinessData>(INITIAL_DATA);
   const [isPro, setIsPro] = useState(false);
   const [history, setHistory] = useState<HistoryRecord[]>([]);
+  
+  // Freemium limits for FREE users
+  const [aiInsightsUsed, setAiInsightsUsed] = useState(0);
+  const FREE_AI_INSIGHTS_LIMIT = 1; // 1 free AI insight per month
+  const FREE_ACCOUNTS_LIMIT = 3; // Max 3 bank accounts
 
   const handleProUpgrade = () => {
     setIsPro(true);
@@ -271,6 +292,26 @@ function App() {
         window.history.pushState({path:newurl},'',newurl);
     }
   };
+
+  // Reset AI insights counter monthly
+  useEffect(() => {
+    const checkAndResetCounter = () => {
+      const lastReset = localStorage.getItem('numera_ai_reset_date');
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${now.getMonth()}`;
+      
+      if (lastReset !== currentMonth) {
+        localStorage.setItem('numera_ai_reset_date', currentMonth);
+        localStorage.setItem('numera_ai_used', '0');
+        setAiInsightsUsed(0);
+      } else {
+        const used = parseInt(localStorage.getItem('numera_ai_used') || '0');
+        setAiInsightsUsed(used);
+      }
+    };
+    
+    checkAndResetCounter();
+  }, []);
 
   // Initialization Logic
   useEffect(() => {
@@ -316,6 +357,24 @@ function App() {
           // 5. Load History
           const savedHistory = await getHistoryRecords();
           setHistory(savedHistory);
+          
+          // 6. Process recurring transactions
+          console.log('[Recurring] Checking for pending recurring transactions...');
+          const { toAdd, toNotify } = processPendingRecurring();
+          console.log('[Recurring] Found:', { toAdd: toAdd.length, toNotify: toNotify.length });
+          
+          if (toAdd.length > 0) {
+            console.log('[Recurring] Auto-adding transactions:', toAdd);
+            setData(prev => ({
+              ...prev,
+              transactions: [...prev.transactions, ...toAdd]
+            }));
+          }
+          
+          if (toNotify.length > 0) {
+            console.log('[Recurring] Items waiting for confirmation:', toNotify);
+            // TODO: Show notification modal
+          }
         }
       } catch (error) {
         console.error("Initialization failed:", error);
@@ -332,6 +391,11 @@ function App() {
   const [useStrictFormula, setUseStrictFormula] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showRecurring, setShowRecurring] = useState(false);
+  const [showTodo, setShowTodo] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
+  const [showHourlyRate, setShowHourlyRate] = useState(false);
+  const [showCashForecast, setShowCashForecast] = useState(false);
   const [legalView, setLegalView] = useState<'privacy' | 'terms' | null>(null);
 
   // Persistence: Auto-save when data changes
@@ -452,6 +516,13 @@ function App() {
 
   const handleAiGenerate = async () => {
     await triggerHaptic(ImpactStyle.Medium);
+    
+    // Check if free user has exceeded limit
+    if (!isPro && aiInsightsUsed >= FREE_AI_INSIGHTS_LIMIT) {
+      setShowPaywall(true);
+      return;
+    }
+    
     try {
         setIsGeneratingAi(true);
         const bankDetails = Object.entries(calculations.bankBreakdown)
@@ -460,6 +531,13 @@ function App() {
             
         const result = await generateFinancialInsight(calculations, bankDetails);
         setAiInsight(result);
+        
+        // Increment usage counter for free users
+        if (!isPro) {
+          const newCount = aiInsightsUsed + 1;
+          setAiInsightsUsed(newCount);
+          localStorage.setItem('numera_ai_used', newCount.toString());
+        }
     } catch (e) {
         setAiInsight("Unable to generate insight at this time.");
     } finally {
@@ -565,11 +643,34 @@ function App() {
                  History
                </button>
                <button
+                 onClick={() => setShowRecurring(true)}
+                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-brand-blue text-white font-bold uppercase text-sm border-2 border-black hover:bg-blue-700 transition-all"
+               >
+                 <RefreshCcw size={18} />
+                 Recurring
+               </button>
+               <ToolsMenu 
+                 onToolSelect={(tool) => {
+                   if (tool === 'todo') setShowTodo(true);
+                   else if (tool === 'pricing') setShowPricing(true);
+                   else if (tool === 'hourly') setShowHourlyRate(true);
+                   else if (tool === 'forecast') setShowCashForecast(true);
+                 }}
+               />
+               <button
                  onClick={handleLogBalance}
                  className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-black text-white font-bold uppercase text-sm border-2 border-transparent hover:bg-brand-blue hover:shadow-swiss transition-all"
                >
                  <Save size={18} />
                  Log Balance
+               </button>
+               <button
+                 onClick={() => window.location.reload()}
+                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-black font-bold uppercase text-sm border-2 border-black hover:bg-gray-200 transition-all"
+                 title="Refresh to process recurring transactions"
+               >
+                 <RefreshCcw size={18} />
+                 Refresh
                </button>
             </div>
 
@@ -651,13 +752,18 @@ function App() {
           <div className="space-y-8">
             <BankInput 
               accounts={bankAccounts} 
-              onUpdate={handleUpdateBanks} 
+              onUpdate={handleUpdateBanks}
+              isPro={isPro}
+              onUpgradeClick={() => setShowPaywall(true)}
             />
             <FinancialInput
               title="Credit Cards"
               items={creditCards}
               onUpdate={handleUpdateCredit}
               icon={<CreditCard className="text-black" size={24} />}
+              isPro={isPro}
+              onUpgradeClick={() => setShowPaywall(true)}
+              isCreditCard={true}
             />
           </div>
 
@@ -706,6 +812,11 @@ function App() {
                     <h3 className="text-black font-bold uppercase flex items-center gap-2">
                         <BrainCircuit size={20} />
                         AI Analysis
+                        {!isPro && (
+                          <span className="text-xs normal-case bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                            {FREE_AI_INSIGHTS_LIMIT - aiInsightsUsed} free left this month
+                          </span>
+                        )}
                     </h3>
                     <button 
                         onClick={(e) => { e.stopPropagation(); handleAiGenerate(); }}
@@ -728,12 +839,55 @@ function App() {
                     ) : (
                         <p className="text-gray-400">
                             Generate an AI executive summary of your liquidity and solvency position.
+                            {!isPro && aiInsightsUsed >= FREE_AI_INSIGHTS_LIMIT && (
+                              <span className="block mt-2 text-red-600 font-bold">
+                                ⚠️ Upgrade to Pro for unlimited AI insights!
+                              </span>
+                            )}
                         </p>
                     )}
                  </div>
               </div>
           </div>
         </div>
+
+        {/* Modals */}
+        {showRecurring && (
+          <RecurringTransactions
+            isPro={isPro}
+            onUpgradeClick={() => { setShowRecurring(false); setShowPaywall(true); }}
+            onClose={() => setShowRecurring(false)}
+          />
+        )}
+
+        {showTodo && (
+          <TodoList
+            isPro={isPro}
+            onUpgradeClick={() => { setShowTodo(false); setShowPaywall(true); }}
+            onClose={() => setShowTodo(false)}
+          />
+        )}
+
+        {showPricing && (
+          <PricingSheet
+            onClose={() => setShowPricing(false)}
+          />
+        )}
+
+        {showHourlyRate && (
+          <HourlyRateCalculator
+            onClose={() => setShowHourlyRate(false)}
+          />
+        )}
+
+        {showCashForecast && (
+          <CashFlowForecast
+            currentBNE={result.bne}
+            isPro={isPro}
+            onUpgradeClick={() => { setShowCashForecast(false); setShowPaywall(true); }}
+            onClose={() => setShowCashForecast(false)}
+          />
+        )}
 
         <footer className="border-t-4 border-black mt-16 pt-12 pb-8">
            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-sm font-bold">

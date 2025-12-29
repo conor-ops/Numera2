@@ -8,11 +8,22 @@ import { ImpactStyle } from '@capacitor/haptics';
 interface BankInputProps {
   accounts: BankAccount[];
   onUpdate: (accounts: BankAccount[]) => void;
+  isPro?: boolean;
+  onUpgradeClick?: () => void;
 }
 
-const BankInput: React.FC<BankInputProps> = ({ accounts, onUpdate }) => {
+const BankInput: React.FC<BankInputProps> = ({ accounts, onUpdate, isPro = false, onUpgradeClick }) => {
+  const FREE_ACCOUNTS_LIMIT = 3;
+  const canAddMore = isPro || accounts.length < FREE_ACCOUNTS_LIMIT;
+  
   const addAccount = () => {
     triggerHaptic(ImpactStyle.Medium);
+    
+    if (!canAddMore) {
+      if (onUpgradeClick) onUpgradeClick();
+      return;
+    }
+    
     onUpdate([
       ...accounts, 
       { 
@@ -130,10 +141,10 @@ const BankInput: React.FC<BankInputProps> = ({ accounts, onUpdate }) => {
 
       <button
         onClick={addAccount}
-        className="mt-6 w-full py-3 flex justify-center items-center gap-2 text-sm font-bold uppercase bg-brand-blue text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all shrink-0"
+        className={`mt-6 w-full py-3 flex justify-center items-center gap-2 text-sm font-bold uppercase border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all shrink-0 ${canAddMore ? 'bg-brand-blue text-white' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
       >
         <Plus size={16} />
-        Add Bank Account
+        {canAddMore ? 'Add Bank Account' : `Max ${FREE_ACCOUNTS_LIMIT} accounts (Free) - Upgrade for unlimited`}
       </button>
     </div>
   );

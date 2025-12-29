@@ -111,9 +111,12 @@ const TodoList: React.FC = () => {
 
       {todos.length > 0 && (
 <<<<<<< HEAD
+<<<<<<< HEAD
         <div className="pt-4 border-t-2 border-gray-200 text-sm text-gray-600 font-mono">
           {todos.filter(t => !t.completed).length} active • {todos.filter(t => t.completed).length} completed
 =======
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
         <div className="pt-4 border-t-2 border-gray-200 flex items-center justify-between">
           <div className="text-sm text-gray-600 font-mono">
             {todos.filter(t => !t.completed).length} active • {todos.filter(t => t.completed).length} completed
@@ -130,6 +133,9 @@ const TodoList: React.FC = () => {
               Clear Completed
             </button>
           )}
+<<<<<<< HEAD
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
+=======
 >>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
         </div>
       )}

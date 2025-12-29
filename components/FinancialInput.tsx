@@ -11,16 +11,31 @@ interface FinancialInputProps {
   onUpdate: (items: FinancialItem[]) => void;
   colorClass?: string;
   icon?: React.ReactNode;
+  isPro?: boolean;
+  onUpgradeClick?: () => void;
+  isCreditCard?: boolean;
 }
 
 const FinancialInput: React.FC<FinancialInputProps> = ({ 
   title, 
   items, 
   onUpdate, 
-  icon
+  icon,
+  isPro = false,
+  onUpgradeClick,
+  isCreditCard = false
 }) => {
+  const FREE_CC_LIMIT = 1;
+  const canAddMore = !isCreditCard || isPro || items.length < FREE_CC_LIMIT;
+  
   const addItem = () => {
     triggerHaptic(ImpactStyle.Medium);
+    
+    if (!canAddMore) {
+      if (onUpgradeClick) onUpgradeClick();
+      return;
+    }
+    
     onUpdate([...items, { id: crypto.randomUUID(), name: '', amount: 0 }]);
   };
 
@@ -108,10 +123,17 @@ const FinancialInput: React.FC<FinancialInputProps> = ({
 
       <button
         onClick={addItem}
-        className="mt-6 w-full py-3 flex justify-center items-center gap-2 text-sm font-bold uppercase bg-white border-2 border-dashed border-gray-300 text-gray-500 hover:text-brand-blue hover:border-brand-blue hover:bg-blue-50 transition-all shrink-0"
+        className={`mt-6 w-full py-3 flex justify-center items-center gap-2 text-sm font-bold uppercase border-2 transition-all shrink-0 ${
+          canAddMore 
+            ? 'bg-white border-dashed border-gray-300 text-gray-500 hover:text-brand-blue hover:border-brand-blue hover:bg-blue-50' 
+            : 'bg-gray-300 border-gray-400 text-gray-600 cursor-not-allowed'
+        }`}
       >
         <Plus size={16} />
-        Add Item
+        {canAddMore 
+          ? 'Add Item' 
+          : `Max ${FREE_CC_LIMIT} credit card (Free) - Upgrade for unlimited`
+        }
       </button>
     </div>
   );

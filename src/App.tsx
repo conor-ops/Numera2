@@ -27,11 +27,15 @@ import { Capacitor } from '@capacitor/core';
 import { Keyboard } from '@capacitor/keyboard';
 
 import { FinancialItem, BusinessData, CalculationResult, BankAccount, AccountType, Transaction, HistoryRecord } from './types';
+<<<<<<< HEAD
 <<<<<<<< HEAD:src/App.tsx
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 import FinancialInput from './components/financial/FinancialInput';
 import BankInput from './components/financial/BankInput';
 import RecurringTransactions from './components/financial/RecurringTransactions';
 import ToolsModal from './components/ToolsModal';
+<<<<<<< HEAD
 ========
 import FinancialInput from './components/FinancialInput';
 import BankInput from './components/BankInput';
@@ -42,6 +46,8 @@ import PricingSheet from './components/PricingSheet';
 import HourlyRateCalculator from './components/HourlyRateCalculator';
 import CashFlowForecast from './components/CashFlowForecast';
 >>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a:App.tsx
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 import { generateFinancialInsight } from './services/geminiService';
 import { APP_CONFIG } from './config/constants';
 import { initiateCheckout, getFormattedPrice } from './services/paymentService';
@@ -399,6 +405,7 @@ function App() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showRecurring, setShowRecurring] = useState(false);
+<<<<<<< HEAD
 <<<<<<<< HEAD:src/App.tsx
   const [showTools, setShowTools] = useState(false);
 ========
@@ -407,6 +414,9 @@ function App() {
   const [showHourlyRate, setShowHourlyRate] = useState(false);
   const [showCashForecast, setShowCashForecast] = useState(false);
 >>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a:App.tsx
+=======
+  const [showTools, setShowTools] = useState(false);
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
   const [legalView, setLegalView] = useState<'privacy' | 'terms' | null>(null);
 
   // Persistence: Auto-save when data changes
@@ -660,7 +670,10 @@ function App() {
                  <RefreshCcw size={18} />
                  Recurring
                </button>
+<<<<<<< HEAD
 <<<<<<<< HEAD:src/App.tsx
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
                <button
                  onClick={() => setShowTools(true)}
                  className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white font-bold uppercase text-sm border-2 border-black hover:bg-green-700 transition-all"
@@ -668,6 +681,7 @@ function App() {
                  <Wrench size={18} />
                  Tools
                </button>
+<<<<<<< HEAD
 ========
                <ToolsMenu 
                  onToolSelect={(tool) => {
@@ -678,6 +692,8 @@ function App() {
                  }}
                />
 >>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a:App.tsx
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
                <button
                  onClick={handleLogBalance}
                  className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-black text-white font-bold uppercase text-sm border-2 border-transparent hover:bg-brand-blue hover:shadow-swiss transition-all"
@@ -881,12 +897,16 @@ function App() {
           />
         )}
 
+<<<<<<< HEAD
 <<<<<<<< HEAD:src/App.tsx
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
         {showTools && (
           <ToolsModal
             isPro={isPro}
             onUpgradeClick={() => { setShowTools(false); setShowPaywall(true); }}
             onClose={() => setShowTools(false)}
+<<<<<<< HEAD
 ========
         {showTodo && (
           <TodoList
@@ -915,6 +935,8 @@ function App() {
             onUpgradeClick={() => { setShowCashForecast(false); setShowPaywall(true); }}
             onClose={() => setShowCashForecast(false)}
 >>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a:App.tsx
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
           />
         )}
 

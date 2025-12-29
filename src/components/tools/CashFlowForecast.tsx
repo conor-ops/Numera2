@@ -132,6 +132,7 @@ const CashFlowForecast: React.FC = () => {
                 dataKey="label" 
                 stroke="#000"
 <<<<<<< HEAD
+<<<<<<< HEAD
                 style={{ fontSize: '12px', fontWeight: 'bold' }}
               />
               <YAxis 
@@ -153,6 +154,8 @@ const CashFlowForecast: React.FC = () => {
                 dataKey="balance" 
                 fill="#000000"
 =======
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
                 style={{ fontSize: '12px', fontWeight: 'bold', fontFamily: 'Roboto Mono' }}
               />
               <YAxis 
@@ -188,6 +191,9 @@ const CashFlowForecast: React.FC = () => {
                 dataKey="balance" 
                 fill="#000000"
                 radius={[4, 4, 0, 0]}
+<<<<<<< HEAD
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
+=======
 >>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
               />
             </BarChart>

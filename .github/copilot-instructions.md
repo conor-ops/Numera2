@@ -9,6 +9,7 @@ npm run dev                      # Runs on http://localhost:3000
 
 ## Architecture Overview
 <<<<<<< HEAD
+<<<<<<< HEAD
 **Numera** is a cash flow management tool for small business owners. It tracks receivables (AR), payables (AP), and bank balances to calculate **Business Net Equity (BNE)** — a proprietary metric combining operational float with liquid cash position.
 
 **Core Stack**: React 19 + TypeScript + Vite + Capacitor 5 + Stripe (web) / RevenueCat (iOS/Android) + Tailwind + SQLite + Decimal.js  
@@ -17,12 +18,17 @@ npm run dev                      # Runs on http://localhost:3000
 **State**: Pure React hooks (no Redux/Context), auto-persists to DB on every change via `useEffect` watchers  
 **Money Math**: ALWAYS use Decimal.js (never plain JavaScript arithmetic); DB stores cents, display as dollars
 =======
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 Single-page React app (App.tsx + modular components) with cross-platform service layer.
 
 **Core Stack**: React 19 + TypeScript + Vite + Capacitor 5 + Tailwind + SQLite  
 **Key Pattern**: Platform-aware services — web uses localStorage, native uses SQLite  
 **State**: Pure React hooks (no Redux), auto-saves on every change  
 **BNE (Business Net Equity)**: Core calculation = Total Bank + Net Receivables - Total Credit Debt
+<<<<<<< HEAD
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
+=======
 >>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 
 ## Critical Conventions
@@ -37,6 +43,7 @@ const forDisplay = total.toNumber().toLocaleString('en-US', { minimumFractionDig
 const total = items.reduce((sum, i) => sum + i.amount, 0);
 ```
 <<<<<<< HEAD
+<<<<<<< HEAD
 **Why**: Floating-point errors compound across transactions (0.1 + 0.2 ≠ 0.3 in JavaScript)  
 **DB Storage**: All amounts stored as `amount_cents` (integers) to eliminate float errors
   - Save: `Math.round(dollars * 100)` → cents
@@ -48,11 +55,16 @@ const total = items.reduce((sum, i) => sum + i.amount, 0);
 ### 2. Cross-Platform Service Pattern (Web vs Native)
 All `services/` files MUST check platform before using native APIs:
 =======
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 **Storage**: All DB columns store cents as integers (`amount_cents`) — multiply by 100 on save, divide on load (see [databaseService.ts](../services/databaseService.ts))  
 **Components**: `.toLocaleString()` for display formatting (see [BankInput.tsx](../components/BankInput.tsx))
 
 ### 2. Platform Abstraction Pattern
 All services check `Capacitor.getPlatform()` before accessing device APIs:
+<<<<<<< HEAD
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
+=======
 >>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 ```typescript
 if (Capacitor.getPlatform() === 'web') {
@@ -63,6 +75,7 @@ if (Capacitor.getPlatform() === 'web') {
   await db.run('INSERT INTO ...', params);
 }
 ```
+<<<<<<< HEAD
 <<<<<<< HEAD
 **Never** call native APIs (`Keyboard.hide()`, `Haptics`, `SQLite`) without this guard — will crash on web.
 
@@ -152,6 +165,8 @@ updateAccount(id, 'name', sanitizeText(value));
 | `config.ts` | APP_CONFIG (branding, pricing, legal) | 15 |
 | `vite.config.ts` | Env var mapping: `GEMINI_API_KEY` → `process.env.API_KEY` | 20 |
 =======
+=======
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 Never assume platform — guard all: `Keyboard`, `Haptics`, `SQLite`, `StatusBar` calls.
 
 ### 3. State & Component Data Flow
@@ -191,6 +206,9 @@ BusinessData = {
 | [config.ts](../config.ts) | `APP_CONFIG`: branding, pricing, legal text |
 | [components/FinancialInput.tsx](../components/FinancialInput.tsx) | Reusable INCOME/EXPENSE input list |
 | [components/BankInput.tsx](../components/BankInput.tsx) | Bank account list with type selector |
+<<<<<<< HEAD
+>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
+=======
 >>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
 
 ## Auto-Save Pattern
