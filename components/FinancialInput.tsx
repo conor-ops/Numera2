@@ -119,7 +119,7 @@ const FinancialInput: React.FC<FinancialInputProps> = ({
                             type="number"
                             placeholder="0.00"
                             value={item.amount || ''}
-                            onChange={(e) => updateItem(item.id, 'amount', parseFloat(e.target.value))}
+                            onChange={(e) => updateItem(item.id, 'amount', parseFloat(e.target.value) || 0)}
                             onFocus={handleFocus}
                             onWheel={(e) => e.currentTarget.blur()}
                             className="w-full py-2 pl-5 pr-2 text-sm font-mono font-bold bg-gray-50/50 focus:bg-white border border-gray-200 focus:border-brand-blue outline-none text-right transition-colors"

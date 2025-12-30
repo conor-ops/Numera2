@@ -72,7 +72,7 @@ export interface HistoryRecord {
 }
 
 export interface LineItem {
-  id: string;
+  id:string;
   description: string;
   quantity: number;
   rate: number;

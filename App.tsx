@@ -407,6 +407,7 @@ function App() {
   const [useStrictFormula, setUseStrictFormula] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [isLogging, setIsLogging] = useState(false);
   const [showRecurring, setShowRecurring] = useState(false);
   const [showTodo, setShowTodo] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
@@ -513,6 +514,10 @@ function App() {
       transactions: [...prev.transactions, tx]
     }));
   };
+
+  const handleUpdateTargets = (targets: BudgetTargets) => {
+    setData(prev => ({ ...prev, targets }));
+  };
   
   const toggleTools = () => {
     triggerHaptic(ImpactStyle.Medium);
@@ -547,7 +552,9 @@ function App() {
   };
 
   const handleLogBalance = async () => {
+    if (isLogging) return;
     await triggerHaptic(ImpactStyle.Heavy);
+    setIsLogging(true);
     
     const assets = calculations.totalAR + calculations.totalBank;
     const liabilities = calculations.totalAP + calculations.totalCredit;
@@ -562,12 +569,13 @@ function App() {
 
     try {
       await saveHistoryRecord(record);
-      // Update local state immediately
       setHistory(prev => [record, ...prev]);
-      alert("Balance Logged Successfully");
+      // alert("Balance Logged Successfully"); // Consider replacing alerts with a less intrusive toast notification system in the future
     } catch (err) {
       console.error(err);
       alert("Failed to log balance");
+    } finally {
+      setIsLogging(false);
     }
   };
 
@@ -689,7 +697,7 @@ function App() {
             <p className="text-sm md:text-lg font-medium text-black">{APP_CONFIG.branding.description}</p>
           </div>
           
-          <div className="flex flex-col md:flex-row items-start md:items-end gap-4 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-start md:items-end gap-4 w-full md:w-auto">
             {/* History and Capture Buttons */}
             <div className="flex gap-2 w-full md:w-auto">
                <button
@@ -701,10 +709,20 @@ function App() {
                </button>
                <button
                  onClick={handleLogBalance}
-                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-black text-white font-bold uppercase text-sm border-2 border-transparent hover:bg-brand-blue hover:shadow-swiss transition-all"
+                 disabled={isLogging}
+                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-black text-white font-bold uppercase text-sm border-2 border-transparent hover:bg-brand-blue hover:shadow-swiss transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                >
-                 <Save size={18} />
-                 Log Balance
+                 {isLogging ? (
+                   <>
+                     <RefreshCcw size={18} className="animate-spin" />
+                     Logging...
+                   </>
+                 ) : (
+                   <>
+                     <Save size={18} />
+                     Log Balance
+                   </>
+                 )}
                </button>
             </div>
 
