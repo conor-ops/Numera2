@@ -513,6 +513,10 @@ function App() {
       transactions: [...prev.transactions, tx]
     }));
   };
+
+  const handleUpdateTargets = (targets: BudgetTargets) => {
+    setData(prev => ({ ...prev, targets }));
+  };
   
   const toggleTools = () => {
     triggerHaptic(ImpactStyle.Medium);
