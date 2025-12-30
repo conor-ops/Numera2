@@ -1,0 +1,100 @@
+mutation CreateSeedData @transaction @auth(level: PUBLIC, insecureReason: "This mutation is used to populate the database with seed data and is safe to expose to the public") {
+  user_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      createdAt: "2024-04-26T10:00:00Z",
+      currencyPreference: "USD",
+      displayName: "demouser1",
+      email: "demouser1@example.com",
+      photoUrl: "https://example.com/demouser1.jpg"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440001",
+      createdAt: "2024-04-26T11:00:00Z",
+      currencyPreference: "EUR",
+      displayName: "demouser2",
+      email: "demouser2@example.com",
+      photoUrl: "https://example.com/demouser2.jpg"
+    }
+  ])
+  financialProfile_insertMany(data: [
+    {
+      id: "650e8400-e29b-41d4-a716-446655440000",
+      userId: "550e8400-e29b-41d4-a716-446655440000",
+      createdAt: "2024-04-26T10:15:00Z",
+      description: "Demo user 1's profile",
+      name: "Demo Profile 1"
+    },
+    {
+      id: "650e8400-e29b-41d4-a716-446655440001",
+      userId: "550e8400-e29b-41d4-a716-446655440001",
+      createdAt: "2024-04-26T11:15:00Z",
+      description: "Demo user 2's profile",
+      name: "Demo Profile 2"
+    }
+  ])
+  expenseCategory_insertMany(data: [
+    {
+      id: "750e8400-e29b-41d4-a716-446655440000",
+      financialProfileId: "650e8400-e29b-41d4-a716-446655440000",
+      budgetAmount: 500.00,
+      createdAt: "2024-04-26T10:30:00Z",
+      description: "Demo user 1's Groceries",
+      name: "Groceries"
+    },
+    {
+      id: "750e8400-e29b-41d4-a716-446655440001",
+      financialProfileId: "650e8400-e29b-41d4-a716-446655440001",
+      budgetAmount: 1000.00,
+      createdAt: "2024-04-26T11:30:00Z",
+      description: "Demo user 2's Rent",
+      name: "Rent"
+    }
+  ])
+  income_insertMany(data: [
+    {
+      id: "850e8400-e29b-41d4-a716-446655440000",
+      financialProfileId: "650e8400-e29b-41d4-a716-446655440000",
+      amount: 2500.00,
+      createdAt: "2024-04-26T10:45:00Z",
+      date: "2024-04-26",
+      description: "Demo user 1's Salary",
+      frequency: "Monthly",
+      name: "Salary"
+    },
+    {
+      id: "850e8400-e29b-41d4-a716-446655440001",
+      financialProfileId: "650e8400-e29b-41d4-a716-446655440001",
+      amount: 5000.00,
+      createdAt: "2024-04-26T11:45:00Z",
+      date: "2024-04-26",
+      description: "Demo user 2's Salary",
+      frequency: "Monthly",
+      name: "Salary"
+    }
+  ])
+  expense_insertMany(data: [
+    {
+      id: "950e8400-e29b-41d4-a716-446655440000",
+      financialProfileId: "650e8400-e29b-41d4-a716-446655440000",
+      expenseCategoryId: "750e8400-e29b-41d4-a716-446655440000",
+      amount: 150.00,
+      createdAt: "2024-04-26T11:00:00Z",
+      date: "2024-04-25",
+      description: "Demo user 1's Grocery Purchase",
+      isRecurring: false,
+      name: "Groceries"
+    },
+    {
+      id: "950e8400-e29b-41d4-a716-446655440001",
+      financialProfileId: "650e8400-e29b-41d4-a716-446655440001",
+      expenseCategoryId: "750e8400-e29b-41d4-a716-446655440001",
+      amount: 2000.00,
+      createdAt: "2024-04-26T12:00:00Z",
+      date: "2024-04-25",
+      description: "Demo user 2's Rent Payment",
+      isRecurring: true,
+      name: "Rent"
+    }
+  ])
+}

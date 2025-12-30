@@ -1,0 +1,61 @@
+mutation CreateFinancialProfile(
+    $userId: UUID!,
+    $name: String!,
+    $description: String!
+) @auth(level: USER) {
+  financialProfile_insert(data: {
+    userId: $userId,
+    name: $name,
+    description: $description
+  })
+}
+
+query GetFinancialProfileByUser(
+    $userId: UUID!
+) @auth(level: USER) {
+  financialProfiles(where: {
+    userId: {
+      eq: $userId
+    }
+  }) {
+    id
+    name
+    description
+  }
+}
+
+mutation CreateExpense(
+    $financialProfileId: UUID!,
+    $expenseCategoryId: UUID,
+    $amount: Float!,
+    $date: Date!,
+    $description: String,
+    $isRecurring: Boolean,
+    $name: String!
+) @auth(level: USER) {
+  expense_insert(data: {
+    financialProfileId: $financialProfileId,
+    expenseCategoryId: $expenseCategoryId,
+    amount: $amount,
+    date: $date,
+    description: $description,
+    isRecurring: $isRecurring,
+    name: $name
+  })
+}
+
+query ListExpensesByCategory(
+    $expenseCategoryId: UUID!
+) @auth(level: USER) {
+  expenses(where: {
+    expenseCategoryId: {
+      eq: $expenseCategoryId
+    }
+  }) {
+    id
+    name
+    amount
+    date
+    description
+  }
+}

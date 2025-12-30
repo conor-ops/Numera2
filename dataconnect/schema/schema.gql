@@ -1,0 +1,43 @@
+type User @table {
+  displayName: String!
+  email: String!
+  createdAt: Timestamp!
+  photoUrl: String
+  currencyPreference: String
+}
+
+type FinancialProfile @table {
+  user: User!
+  name: String!
+  createdAt: Timestamp!
+  description: String
+}
+
+type Income @table {
+  financialProfile: FinancialProfile!
+  name: String!
+  amount: Float!
+  frequency: String!
+  date: Date!
+  createdAt: Timestamp!
+  description: String
+}
+
+type ExpenseCategory @table {
+  financialProfile: FinancialProfile!
+  name: String!
+  createdAt: Timestamp!
+  description: String
+  budgetAmount: Float
+}
+
+type Expense @table {
+  financialProfile: FinancialProfile!
+  expenseCategory: ExpenseCategory
+  name: String!
+  amount: Float!
+  date: Date!
+  createdAt: Timestamp!
+  description: String
+  isRecurring: Boolean
+}
