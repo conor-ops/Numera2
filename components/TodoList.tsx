@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, CheckCircle2, Circle, ListTodo } from 'lucide-react';
 import { TodoItem } from '../types';
-import { loadTodos, addTodo, toggleTodo, deleteTodo, saveTodos } from '../services/todoService'; // <<<--- THIS LINE IS THE TARGET
+import { loadTodos, addTodo, toggleTodo, deleteTodo, saveTodos } from '../services/todoService';
 import { triggerHaptic } from '../services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
 
@@ -54,7 +54,7 @@ const TodoList: React.FC<TodoListProps> = ({ isPro, onUpgradeClick, onClose }) =
   const completedTodos = todos.filter(t => t.completed);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white">
       
       {/* Add Task Form */}
       <div className="p-6 border-b-2 border-black bg-gray-50 flex-shrink-0">
@@ -162,8 +162,9 @@ const TodoList: React.FC<TodoListProps> = ({ isPro, onUpgradeClick, onClose }) =
             <button
               onClick={() => {
                 if (window.confirm('Delete all completed tasks?')) {
-                  setTodos(todos.filter(t => !t.completed));
-                  saveTodos(todos.filter(t => !t.completed)); // Update localStorage
+                  const remaining = todos.filter(t => !t.completed);
+                  setTodos(remaining);
+                  saveTodos(remaining);
                 }
               }}
               className="text-xs px-3 py-1 bg-gray-200 hover:bg-gray-300 font-bold uppercase transition-colors border-2 border-black"

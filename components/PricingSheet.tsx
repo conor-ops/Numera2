@@ -44,8 +44,7 @@ export default function PricingSheet({ onClose, isPro, onUpgradeClick }: Pricing
   const tax = subtotal * taxRate;
   const total = subtotal + tax;
 
-  /*
-  const exportToPDF = () => {
+  const handleExport = () => {
     const content = `
 PRICING SHEET
 ${clientName ? `Client: ${clientName}` : ''}
@@ -69,10 +68,9 @@ TOTAL: $${total.toFixed(2)}
     a.download = `pricing-${projectName || 'sheet'}.txt`;
     a.click();
   };
-  */
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white">
       <div className="p-6 overflow-y-auto flex-1">
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
@@ -175,7 +173,7 @@ TOTAL: $${total.toFixed(2)}
 
       <div className="border-t-4 border-black p-6 bg-gray-50 flex gap-3">
         <button
-          onClick={exportToPDF}
+          onClick={handleExport}
           className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors border-2 border-black flex-1"
         >
           <Download size={18} />
@@ -189,3 +187,5 @@ TOTAL: $${total.toFixed(2)}
         </button>
       </div>
     </div>
+  );
+}

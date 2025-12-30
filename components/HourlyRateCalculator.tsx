@@ -28,7 +28,7 @@ export default function HourlyRateCalculator({ onClose, isPro, onUpgradeClick }:
   const actualProfitMargin = totalCosts > 0 ? (profitAmount / afterTaxRevenue) * 100 : 0;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white">
       <div className="p-6 overflow-y-auto flex-1">
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-4">
@@ -202,3 +202,5 @@ export default function HourlyRateCalculator({ onClose, isPro, onUpgradeClick }:
         </button>
       </div>
     </div>
+  );
+}

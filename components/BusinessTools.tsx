@@ -32,9 +32,10 @@ import { ImpactStyle } from '@capacitor/haptics';
 import { saveDocument, getDocuments, deleteDocument, getSetting, setSetting } from '../services/databaseService';
 import BudgetPlanner from './BudgetPlanner';
 import PricingCalculator from './PricingCalculator';
-// import TodoList from './TodoList'; // COMMENTED OUT
-// import PricingSheet from './PricingSheet'; // COMMENTED OUT
-// import HourlyRateCalculator from './HourlyRateCalculator'; // COMMENTED OUT
+import TodoList from './TodoList'; // UN-COMMENTED
+import PricingSheet from './PricingSheet'; // UN-COMMENTED
+import HourlyRateCalculator from './HourlyRateCalculator'; // UN-COMMENTED
+import RunwayPredictor from './RunwayPredictor'; // New import
 
 interface BusinessToolsProps {
   onRecordToAR: (tx: Transaction) => void;
@@ -49,6 +50,8 @@ interface BusinessToolsProps {
   onUpdateTargets: (targets: BudgetTargets) => void;
   pricingSheet: PricingItem[];
   onUpdatePricing: (items: PricingItem[]) => void;
+  monthlyBurn: number; // New prop for RunwayPredictor
+  bne: number; // New prop for RunwayPredictor
 }
 
 const INITIAL_PROFILE: BusinessProfile = {
@@ -72,9 +75,11 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
   actuals,
   onUpdateTargets,
   pricingSheet,
-  onUpdatePricing
+  onUpdatePricing,
+  monthlyBurn,
+  bne
 }) => {
-  const [activeView, setActiveView] = useState<'PORTAL' | 'EDITOR' | 'PROFILE' | 'TARGETS' | 'PRICING'>('PORTAL'); // MODIFIED
+  const [activeView, setActiveView] = useState<'PORTAL' | 'EDITOR' | 'PROFILE' | 'TARGETS' | 'PRICING' | 'TODO' | 'OLD_PRICING_SHEET' | 'HOURLY_RATE' | 'RUNWAY'>('PORTAL'); // Updated activeView
   const [savedDocs, setSavedDocs] = useState<BusinessDocument[]>([]);
   const [doc, setDoc] = useState<BusinessDocument | null>(null);
   const [profile, setProfile] = useState<BusinessProfile>(INITIAL_PROFILE);
@@ -245,8 +250,7 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
 
   if (isLoading) return <div className="h-48 flex items-center justify-center font-mono animate-pulse">BOOTING TOOLS...</div>;
 
-  // Render cases for new tools - COMMENTED OUT
-  /*
+  // Render cases for tools
   if (activeView === 'TODO') {
     return (
       <TodoList 
@@ -276,7 +280,18 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
       />
     );
   }
-  */
+
+  if (activeView === 'RUNWAY') {
+    return (
+      <RunwayPredictor 
+        bne={bne}
+        monthlyBurn={monthlyBurn}
+        pendingAr={actuals.ar}
+        isPro={isPro}
+        onShowPaywall={onShowPaywall}
+      />
+    );
+  }
 
   if (activeView === 'PROFILE') {
     return (
@@ -386,13 +401,19 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
             <p className="text-[10px] text-gray-400">Set company info</p>
           </button>
 
-          {/* New Buttons for old tools - COMMENTED OUT */}
-          {/*
+          {/* Integrated Tools */}
           <button onClick={() => setActiveView('TODO')} className="bg-white border-2 border-black p-6 shadow-swiss hover:bg-gray-50 text-left transition-all relative">
             {!isPro && <div className="absolute top-4 right-4"><ProBadge /></div>}
             <ListTodo size={24} className="text-brand-blue mb-4" />
             <h4 className="font-bold uppercase">Todo List</h4>
             <p className="text-[10px] text-gray-400">Organize your tasks</p>
+          </button>
+
+          <button onClick={() => setActiveView('RUNWAY')} className="bg-white border-2 border-black p-6 shadow-swiss hover:bg-gray-50 text-left transition-all relative">
+            {!isPro && <div className="absolute top-4 right-4"><ProBadge /></div>}
+            <TrendingUp size={24} className="text-brand-blue mb-4" />
+            <h4 className="font-bold uppercase">Runway Predictor</h4>
+            <p className="text-[10px] text-gray-400">AI Stress Test</p>
           </button>
 
           <button onClick={() => setActiveView('OLD_PRICING_SHEET')} className="bg-white border-2 border-black p-6 shadow-swiss hover:bg-gray-50 text-left transition-all relative">
@@ -408,7 +429,6 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
             <h4 className="font-bold uppercase">Hourly Rate Calc.</h4>
             <p className="text-[10px] text-gray-400">Determine your rate</p>
           </button>
-          */}
         </div>
 
         <div className="bg-white border-2 border-black shadow-swiss">

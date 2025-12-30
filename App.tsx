@@ -37,6 +37,7 @@ import BankInput from './components/BankInput';
 import RecurringTransactions from './components/RecurringTransactions';
 import CashFlowForecast from './components/CashFlowForecast';
 import BusinessTools from './components/BusinessTools';
+import CommandPalette from './components/CommandPalette'; // New import
 import { generateFinancialInsight } from './services/geminiService';
 import { APP_CONFIG } from './config';
 import { initiateCheckout, getFormattedPrice } from './services/paymentService';
@@ -407,6 +408,7 @@ function App() {
   const [useStrictFormula, setUseStrictFormula] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false); // New state
   const [isLogging, setIsLogging] = useState(false);
   const [showRecurring, setShowRecurring] = useState(false);
   const [showTodo, setShowTodo] = useState(false);
@@ -419,6 +421,55 @@ function App() {
   // Collapse States
   const [isApExpanded, setIsApExpanded] = useState(true);
   const [isOverheadsExpanded, setIsOverheadsExpanded] = useState(true);
+
+  // Command Palette Listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        triggerHaptic(ImpactStyle.Medium);
+        setShowCommandPalette(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleCommandExecute = (action: string, params: any) => {
+    console.log('[Command Engine] Executing:', action, params);
+    triggerHaptic(ImpactStyle.Light);
+
+    switch (action) {
+      case 'NAVIGATION':
+      case 'COMMAND':
+        if (params.id === 'go_pricing') {
+          setIsToolsExpanded(true);
+          // Small delay to allow expansion animation
+          setTimeout(() => {
+            const el = document.getElementById('tools-section');
+            el?.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        } else if (params.id === 'go_history') {
+          setShowHistory(true);
+        } else if (params.id === 'go_profile') {
+          setIsToolsExpanded(true);
+          // Logic to set BusinessTools view would go here if we expose it
+        }
+        break;
+      case 'ADD_EXPENSE':
+        handleUpdateTransactions('EXPENSE', [
+          ...accountsPayable,
+          { id: crypto.randomUUID(), name: params.desc || 'Quick Expense', amount: params.amount }
+        ]);
+        break;
+      case 'ADD_INCOME':
+        handleUpdateTransactions('INCOME', [
+          ...accountsReceivable,
+          { id: crypto.randomUUID(), name: params.desc || 'Quick Income', amount: params.amount }
+        ]);
+        break;
+    }
+  };
 
   // Persistence: Auto-save when data changes
   useEffect(() => {
@@ -663,6 +714,12 @@ function App() {
         paddingBottom: 'env(safe-area-inset-bottom)'
       }}
     >
+      <CommandPalette 
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        onExecute={handleCommandExecute}
+      />
+
       {showPaywall && (
         <PaywallModal 
             onClose={() => setShowPaywall(false)} 
@@ -940,7 +997,7 @@ function App() {
         </div>
 
 
-        <div className="space-y-6">
+        <div className="space-y-6" id="tools-section">
            <button 
              onClick={toggleTools}
              className="w-full flex items-center justify-between group py-2 border-b-2 border-black/10 hover:border-black transition-all"
@@ -971,6 +1028,8 @@ function App() {
                   onUpdateTargets={handleUpdateTargets}
                   pricingSheet={data.pricingSheet}
                   onUpdatePricing={handleUpdatePricing}
+                  monthlyBurn={totalOverhead}
+                  bne={calculations.bne}
                 />
              </div>
            )}
