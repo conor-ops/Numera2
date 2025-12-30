@@ -8,6 +8,22 @@
     ],
     "rewrites": [
       {
+        "source": "/api/generateFinancialInsight",
+        "function": "generateFinancialInsight"
+      },
+      {
+        "source": "/api/generateRunwayInsight",
+        "function": "generateRunwayInsight"
+      },
+      {
+        "source": "/api/createStripeCheckoutSession",
+        "function": "createStripeCheckoutSession"
+      },
+      {
+        "source": "/api/stripeWebhook",
+        "function": "stripeWebhook"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
@@ -69,25 +85,9 @@
       "codebase": "default",
       "disallowLegacyRuntimeConfig": true,
       "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint",
         "npm --prefix \"$RESOURCE_DIR\" run build"
       ],
       "source": "functions"
-    },
-    {
-      "source": "numerai",
-      "codebase": "numerai",
-      "disallowLegacyRuntimeConfig": true,
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint"
-      ]
     }
   ],
   "apphosting": {

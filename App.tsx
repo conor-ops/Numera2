@@ -132,16 +132,19 @@ const LegalModal = ({ type, onClose }: { type: 'privacy' | 'terms', onClose: () 
 // --- PAYWALL COMPONENT ---
 const PaywallModal = ({ onClose, onSuccess }: { onClose: () => void, onSuccess: () => void }) => {
   const [loading, setLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'pro' | 'business'>('pro');
 
   const handleSubscribe = async () => {
     try {
         setLoading(true);
         await triggerHaptic(ImpactStyle.Heavy);
         
-        // Simulating the checkout flow here. 
-        // If Stripe is configured, this will redirect away from the page.
-        // If Mock is configured, it will return success immediately.
-        const result = await initiateCheckout(APP_CONFIG.pricing.annualPrice, APP_CONFIG.pricing.currency);
+        // Passing planType to initiateCheckout
+        const result = await initiateCheckout(
+          selectedPlan === 'pro' ? APP_CONFIG.pricing.annualPrice : 25, 
+          APP_CONFIG.pricing.currency,
+          selectedPlan
+        );
         
         if (result.success) {
             onSuccess();
@@ -170,18 +173,31 @@ const PaywallModal = ({ onClose, onSuccess }: { onClose: () => void, onSuccess: 
         <div className="p-8">
           <div className="flex items-center gap-2 mb-6 text-brand-blue">
             <Lock size={32} strokeWidth={2.5} />
-            <h2 className="text-2xl font-extrabold uppercase tracking-tight text-black">Unlock Pro</h2>
+            <h2 className="text-2xl font-extrabold uppercase tracking-tight text-black">Choose Your Plan</h2>
           </div>
           
-          <h3 className="text-lg font-bold mb-2">Sustainable Economics</h3>
-          <p className="text-gray-600 mb-6 text-sm">
-            To preserve our precision infrastructure and unit economics, Numera offers a single optimized annual plan for web users.
-          </p>
+          {/* Plan Switcher */}
+          <div className="flex border-2 border-black mb-6">
+            <button 
+              onClick={() => setSelectedPlan('pro')}
+              className={`flex-1 py-3 text-sm font-bold uppercase transition-all ${selectedPlan === 'pro' ? 'bg-black text-white' : 'bg-white text-black hover:bg-gray-100'}`}
+            >
+              Pro
+            </button>
+            <button 
+              onClick={() => setSelectedPlan('business')}
+              className={`flex-1 py-3 text-sm font-bold uppercase transition-all ${selectedPlan === 'business' ? 'bg-brand-blue text-white' : 'bg-white text-black hover:bg-gray-100'}`}
+            >
+              Business
+            </button>
+          </div>
 
           <div className="bg-gray-50 border-2 border-black p-4 mb-6">
             <div className="flex justify-between items-end mb-2">
-              <span className="font-bold uppercase text-sm">Annual Access</span>
-              <span className="font-mono text-2xl font-bold text-brand-blue">{getFormattedPrice()}</span>
+              <span className="font-bold uppercase text-sm">{selectedPlan === 'pro' ? 'Pro Access' : 'Business Tier'}</span>
+              <span className="font-mono text-2xl font-bold text-brand-blue">
+                {selectedPlan === 'pro' ? getFormattedPrice() : '$25.00'}
+              </span>
             </div>
             <p className="text-xs text-gray-500 font-mono">Billed yearly. Best value.</p>
           </div>
@@ -193,16 +209,18 @@ const PaywallModal = ({ onClose, onSuccess }: { onClose: () => void, onSuccess: 
             </li>
             <li className="flex items-center gap-3 text-sm font-medium">
               <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
-              Unlimited Bank Accounts
+              {selectedPlan === 'pro' ? 'Unlimited Bank Accounts' : 'Unlimited Businesses & Teams'}
             </li>
             <li className="flex items-center gap-3 text-sm font-medium">
               <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
               Full History & Trends
             </li>
-            <li className="flex items-center gap-3 text-sm font-medium">
-              <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
-              PDF Export (Coming Soon)
-            </li>
+            {selectedPlan === 'business' && (
+              <li className="flex items-center gap-3 text-sm font-medium">
+                <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
+                Advanced Multi-Step Forecasting
+              </li>
+            )}
             <li className="flex items-center gap-3 text-sm font-medium">
               <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
               Priority Support
@@ -214,7 +232,7 @@ const PaywallModal = ({ onClose, onSuccess }: { onClose: () => void, onSuccess: 
             disabled={loading}
             className="w-full py-3 bg-black text-white font-bold uppercase tracking-widest hover:bg-brand-blue transition-colors shadow-none hover:shadow-swiss border-2 border-transparent disabled:opacity-50"
           >
-            {loading ? "Processing..." : "Subscribe Now"}
+            {loading ? "Processing..." : `Get ${selectedPlan === 'pro' ? 'Pro' : 'Business'} Now`}
           </button>
           
           <div className="mt-4 text-center">
@@ -486,11 +504,26 @@ function App() {
   const bankAccounts = data.accounts.filter(a => a.type !== AccountType.CREDIT);
   const creditCards = data.accounts.filter(a => a.type === AccountType.CREDIT);
 
-  const totalOverhead = useMemo(() => {
+  const totalFixedOverhead = useMemo(() => {
     const m = monthlyOverhead.reduce((acc, i) => acc.plus(new Decimal(i.amount || 0)), new Decimal(0));
-    const a = annualOverhead.reduce((acc, i) => acc.plus(new Decimal(i.amount || 0)), new Decimal(0));
+    const a = annualOverhead.reduce((acc, i) => acc.plus(new Decimal(i.amount || 0)), new Decimal(0)).div(12);
     return m.plus(a).toNumber();
   }, [monthlyOverhead, annualOverhead]);
+
+  // Dynamic Burn: Fixed Overheads + Average of last 3 months of one-off expenses
+  const dynamicBurn = useMemo(() => {
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    
+    const recentExpenses = accountsPayable.filter(tx => 
+      new Date(tx.date_occurred) >= threeMonthsAgo
+    );
+    
+    const totalRecent = recentExpenses.reduce((acc, tx) => acc.plus(new Decimal(tx.amount || 0)), new Decimal(0));
+    const monthlyAverageOneOff = totalRecent.div(3).toNumber();
+    
+    return totalFixedOverhead + monthlyAverageOneOff;
+  }, [accountsPayable, totalFixedOverhead]);
 
   // Calculations
   const calculations: CalculationResult = useMemo(() => {
@@ -788,7 +821,7 @@ function App() {
               className={`flex items-center justify-center gap-2 px-6 py-3 font-bold uppercase text-sm border-2 transition-all w-full md:w-auto ${isPro ? 'bg-brand-blue text-white border-black hover:bg-blue-600' : 'bg-black text-white border-transparent hover:bg-gray-800'}`}
             >
               {isPro ? <Download size={18} /> : <Lock size={18} />}
-              {isPro ? "Export Report" : "Unlock Export"}
+              {isPro ? "Export Report" : "Unlock Expert"}
             </button>
             
             <div className="flex flex-col items-start md:items-end gap-1 w-full md:w-auto">
@@ -860,10 +893,10 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-8 items-start">
           <div className="space-y-8">
             <BankInput accounts={bankAccounts} onUpdate={handleUpdateBanks} defaultExpanded={true} />
-            <FinancialInput title="Credit Cards" items={creditCards} onUpdate={handleUpdateCredit} icon={<CreditCard className="text-black" size={24} />} defaultExpanded={true} />
+            <FinancialInput title="Credit Cards" items={creditCards} onUpdate={handleUpdateCredit} icon={<CreditCard className="text-black" size={24} />} defaultExpanded={true} type="OTHER" />
           </div>
           <div className="space-y-8">
-            <FinancialInput title="Accounts Receivable" items={accountsReceivable} onUpdate={(items) => handleUpdateTransactions('INCOME', items)} icon={<ArrowRightLeft className="text-black" size={24} />} defaultExpanded={true} />
+            <FinancialInput title="Accounts Receivable" items={accountsReceivable} onUpdate={(items) => handleUpdateTransactions('INCOME', items)} icon={<ArrowRightLeft className="text-black" size={24} />} defaultExpanded={true} type="INCOME" />
             
             {/* UNIFIED ACCOUNTS PAYABLE SECTION */}
             <div className="p-4 md:p-6 bg-white border-2 border-black shadow-swiss flex flex-col">
@@ -910,6 +943,7 @@ function App() {
                             icon={<CalendarDays className="text-brand-blue" size={18} />} 
                             variant="nested"
                             defaultExpanded={false}
+                            type="OTHER"
                             />
 
                             <FinancialInput 
@@ -919,6 +953,7 @@ function App() {
                             icon={<CalendarDays className="text-black" size={18} />} 
                             variant="nested"
                             defaultExpanded={false}
+                            type="OTHER"
                             />
                         </div>
                       )}
@@ -931,6 +966,7 @@ function App() {
                     icon={<Receipt className="text-black" size={20} />}
                     variant="nested"
                     defaultExpanded={true}
+                    type="EXPENSE"
                   />
                 </div>
               )}
@@ -1028,7 +1064,7 @@ function App() {
                   onUpdateTargets={handleUpdateTargets}
                   pricingSheet={data.pricingSheet}
                   onUpdatePricing={handleUpdatePricing}
-                  monthlyBurn={totalOverhead}
+                  monthlyBurn={dynamicBurn}
                   bne={calculations.bne}
                 />
              </div>
@@ -1064,6 +1100,18 @@ function App() {
               >
                  <Eraser size={16} />
                  RESET DATA
+              </button>
+              <button 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  localStorage.removeItem('numera_pro_status');
+                  setIsPro(false);
+                  window.location.reload();
+                }}
+                className="text-gray-400 hover:text-black px-4 py-2 border-2 border-transparent hover:border-black transition-all flex items-center gap-2 w-full md:w-auto justify-center md:justify-start"
+              >
+                 <Lock size={16} />
+                 RESET PRO STATUS
               </button>
            </div>
            

@@ -10,19 +10,47 @@ export interface PaymentResult {
 }
 
 /**
- * Initiates the checkout process via Stripe Payment Link.
- * Opens in new tab to keep current app state.
+ * Initiates the checkout process via Cloud Function.
  */
-export const initiateCheckout = async (amount: number, currency: string = 'USD'): Promise<PaymentResult> => {
-  console.log(`[PaymentService] Opening Stripe payment link in new tab`);
+export const initiateCheckout = async (
+  amount: number, 
+  currency: string = 'USD',
+  planType: 'pro' | 'business' = 'pro',
+  invoiceId?: string
+): Promise<PaymentResult> => {
+  console.log(`[PaymentService] Initiating ${planType} checkout session`);
 
   try {
-    // Open Stripe in new tab instead of redirecting
-    window.open(STRIPE_PAYMENT_LINK, '_blank');
-    return { success: true };
-  } catch (error) {
+    const response = await fetch('/api/createStripeCheckoutSession', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount,
+        currency,
+        planType,
+        invoiceId,
+        returnUrl: window.location.origin
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+
+    const { url } = await response.json();
+    
+    // Redirect to the Stripe Checkout page
+    if (url) {
+      window.location.href = url;
+      return { success: true };
+    } else {
+      throw new Error("No checkout URL returned from server");
+    }
+  } catch (error: any) {
     console.error('Payment Error:', error);
-    return { success: false, error: 'Failed to open payment window.' };
+    return { success: false, error: error.message || 'Failed to initiate payment.' };
   }
 };
 

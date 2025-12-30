@@ -2,10 +2,12 @@
 import React, { useState, useMemo } from 'react';
 import { Zap, Clock, AlertTriangle, TrendingDown, Crown, RefreshCcw, Lock } from 'lucide-react';
 import { Decimal } from 'decimal.js';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, AreaChart, Area } from 'recharts';
 import { triggerHaptic } from '../services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
 import { generateRunwayInsight } from '../services/geminiService';
+import { saveRunwaySnapshot, getRunwaySnapshots } from '../services/databaseService';
+import { RunwaySnapshot } from '../types';
 
 interface RunwayPredictorProps {
   bne: number;
@@ -18,11 +20,31 @@ interface RunwayPredictorProps {
 const RunwayPredictor: React.FC<RunwayPredictorProps> = ({ bne, monthlyBurn, pendingAr, isPro, onShowPaywall }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [history, setHistory] = useState<RunwaySnapshot[]>([]);
 
   const dailyBurn = new Decimal(monthlyBurn).div(30);
   const daysRemaining = monthlyBurn > 0 ? new Decimal(bne).div(dailyBurn).toNumber() : 999;
-  const survivalMonths = Math.min(Math.floor(daysRemaining / 30), 12);
   
+  // Record Snapshot & Load History
+  useEffect(() => {
+    const initRunwayData = async () => {
+      // 1. Record today's health
+      const today = new Date().toISOString();
+      await saveRunwaySnapshot({
+        date: today,
+        daysRemaining: Math.floor(Math.min(daysRemaining, 365)), // Cap for chart logic
+        bne,
+        monthlyBurn
+      });
+
+      // 2. Load History
+      const runwayHistory = await getRunwaySnapshots(30);
+      setHistory(runwayHistory.reverse()); // Chronological for chart
+    };
+
+    initRunwayData();
+  }, [bne, monthlyBurn, daysRemaining]);
+
   const handleAnalyze = async () => {
     if (!isPro) {
       onShowPaywall();
@@ -69,12 +91,39 @@ const RunwayPredictor: React.FC<RunwayPredictorProps> = ({ bne, monthlyBurn, pen
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        {/* Left: Speedometer/Gauge */}
-        <div className="space-y-4">
+        {/* Left: Speedometer/Gauge & Trend */}
+        <div className="space-y-6">
            <div className="flex justify-between items-end mb-1">
-             <span className="text-xs font-bold uppercase text-gray-500">Days of Survival</span>
-             <span className="text-2xl font-mono font-black">{daysRemaining === 999 ? '∞' : Math.floor(daysRemaining)}</span>
+             <div>
+                <span className="text-xs font-bold uppercase text-gray-500">Days of Survival</span>
+                <p className="text-[9px] font-black text-brand-blue uppercase tracking-tighter">30-Day Health Trend</p>
+             </div>
+             <span className="text-3xl font-mono font-black">{daysRemaining === 999 ? '∞' : Math.floor(daysRemaining)}</span>
            </div>
+
+           {/* Trend Sparkline */}
+           <div className="h-16 w-full border-b border-black/10">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={history}>
+                  <defs>
+                    <linearGradient id="colorDays" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#2563EB" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <Area 
+                    type="monotone" 
+                    dataKey="daysRemaining" 
+                    stroke="#2563EB" 
+                    strokeWidth={2} 
+                    fillOpacity={1} 
+                    fill="url(#colorDays)" 
+                    isAnimationActive={true}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+           </div>
+
            <div className="h-6 bg-gray-100 border-2 border-black relative">
               <div 
                 className={`h-full transition-all duration-700 ${statusColor}`}

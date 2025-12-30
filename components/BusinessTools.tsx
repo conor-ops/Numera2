@@ -21,9 +21,9 @@ import {
   Calculator,
   Tag,
   RefreshCw,
-  // ListTodo, // COMMENTED OUT
-  // DollarSign, // COMMENTED OUT
-  // TrendingUp // COMMENTED OUT
+  ListTodo,
+  DollarSign,
+  TrendingUp
 } from 'lucide-react';
 import { Decimal } from 'decimal.js';
 import { LineItem, BusinessDocument, Transaction, BusinessProfile, BudgetTargets, PricingItem } from '../types';

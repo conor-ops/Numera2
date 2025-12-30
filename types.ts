@@ -15,9 +15,13 @@ export interface BankAccount extends FinancialItem {
   type: AccountType;
 }
 
+export type TransactionStatus = 'PENDING' | 'PAID' | 'OVERDUE' | 'VOID';
+
 export interface Transaction extends FinancialItem {
   type: 'INCOME' | 'EXPENSE';
   date_occurred: string;
+  date_due?: string;
+  status?: TransactionStatus;
   linkedDocId?: string; // Link to a generated invoice
 }
 
@@ -103,3 +107,17 @@ export interface Category {
     budget_limit?: number;
     is_system_default: boolean;
   }
+
+export interface RunwaySnapshot {
+  date: string;
+  daysRemaining: number;
+  bne: number;
+  monthlyBurn: number;
+}
+
+export interface TodoItem {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: string;
+}

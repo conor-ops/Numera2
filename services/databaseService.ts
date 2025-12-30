@@ -1,6 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
-import { BusinessData, Transaction, BankAccount, AccountType, HistoryRecord, BudgetTargets, BusinessDocument, FinancialItem, PricingItem } from '../types';
+import { BusinessData, Transaction, BankAccount, AccountType, HistoryRecord, BudgetTargets, BusinessDocument, FinancialItem, PricingItem, RunwaySnapshot } from '../types';
 
 let sqlite: SQLiteConnection;
 let db: SQLiteDBConnection;
@@ -30,6 +30,8 @@ export const setupDatabase = async (): Promise<boolean> => {
         type TEXT CHECK(type IN ('INCOME', 'EXPENSE')) NOT NULL,
         name TEXT,
         date_occurred TEXT,
+        date_due TEXT,
+        status TEXT DEFAULT 'PENDING',
         linked_doc_id TEXT
       );
 
@@ -64,6 +66,13 @@ export const setupDatabase = async (): Promise<boolean> => {
       CREATE TABLE IF NOT EXISTS documents (
         id TEXT PRIMARY KEY NOT NULL,
         data_json TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS runway_snapshots (
+        date_iso TEXT PRIMARY KEY NOT NULL,
+        days_remaining REAL NOT NULL,
+        bne_cents INTEGER NOT NULL,
+        monthly_burn_cents INTEGER NOT NULL
       );
     `;
 
@@ -101,8 +110,8 @@ export const saveSnapshot = async (data: BusinessData): Promise<void> => {
     for (const tx of data.transactions) {
       const cents = Math.round(tx.amount * 100);
       await db.run(
-        'INSERT INTO transactions (id, amount_cents, type, name, date_occurred, linked_doc_id) VALUES (?, ?, ?, ?, ?, ?)',
-        [tx.id, cents, tx.type, tx.name, tx.date_occurred, tx.linkedDocId || null]
+        'INSERT INTO transactions (id, amount_cents, type, name, date_occurred, date_due, status, linked_doc_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [tx.id, cents, tx.type, tx.name, tx.date_occurred, tx.date_due || null, tx.status || 'PENDING', tx.linkedDocId || null]
       );
     }
 
@@ -177,6 +186,8 @@ export const loadSnapshot = async (): Promise<BusinessData | null> => {
       type: row.type as any,
       name: row.name,
       date_occurred: row.date_occurred,
+      date_due: row.date_due,
+      status: row.status as any,
       linkedDocId: row.linked_doc_id
     }));
 
@@ -310,5 +321,47 @@ export const getHistoryRecords = async (): Promise<HistoryRecord[]> => {
     bne: row.bne_cents / 100,
     assets: row.assets_cents / 100,
     liabilities: row.liabilities_cents / 100
+  }));
+};
+
+/**
+ * Runway Trend Snapshots
+ */
+export const saveRunwaySnapshot = async (snapshot: RunwaySnapshot): Promise<void> => {
+  // Use YYYY-MM-DD as the key to ensure one per day
+  const dateKey = new Date(snapshot.date).toISOString().split('T')[0];
+
+  if (Capacitor.getPlatform() === 'web') {
+    const raw = localStorage.getItem('numera_runway_history') || '{}';
+    const history = JSON.parse(raw);
+    history[dateKey] = snapshot;
+    localStorage.setItem('numera_runway_history', JSON.stringify(history));
+    return;
+  }
+
+  if (!db) return;
+  await db.run(
+    'INSERT OR REPLACE INTO runway_snapshots (date_iso, days_remaining, bne_cents, monthly_burn_cents) VALUES (?, ?, ?, ?)',
+    [dateKey, snapshot.daysRemaining, Math.round(snapshot.bne * 100), Math.round(snapshot.monthlyBurn * 100)]
+  );
+};
+
+export const getRunwaySnapshots = async (limit: number = 30): Promise<RunwaySnapshot[]> => {
+  if (Capacitor.getPlatform() === 'web') {
+    const raw = localStorage.getItem('numera_runway_history') || '{}';
+    const history = JSON.parse(raw);
+    return Object.values(history)
+      .map((s: any) => ({ ...s }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, limit);
+  }
+
+  if (!db) return [];
+  const result = await db.query('SELECT * FROM runway_snapshots ORDER BY date_iso DESC LIMIT ?', [limit]);
+  return (result.values || []).map(row => ({
+    date: row.date_iso,
+    daysRemaining: row.days_remaining,
+    bne: row.bne_cents / 100,
+    monthlyBurn: row.monthly_burn_cents / 100
   }));
 };
