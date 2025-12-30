@@ -44,6 +44,7 @@ export default function PricingSheet({ onClose, isPro, onUpgradeClick }: Pricing
   const tax = subtotal * taxRate;
   const total = subtotal + tax;
 
+  /*
   const exportToPDF = () => {
     const content = `
 PRICING SHEET
@@ -68,6 +69,7 @@ TOTAL: $${total.toFixed(2)}
     a.download = `pricing-${projectName || 'sheet'}.txt`;
     a.click();
   };
+  */
 
   return (
     <div className="flex flex-col h-full">

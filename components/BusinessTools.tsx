@@ -21,9 +21,9 @@ import {
   Calculator,
   Tag,
   RefreshCw,
-  ListTodo, // New import
-  DollarSign, // New import
-  TrendingUp // New import
+  // ListTodo, // COMMENTED OUT
+  // DollarSign, // COMMENTED OUT
+  // TrendingUp // COMMENTED OUT
 } from 'lucide-react';
 import { Decimal } from 'decimal.js';
 import { LineItem, BusinessDocument, Transaction, BusinessProfile, BudgetTargets, PricingItem } from '../types';
@@ -32,9 +32,9 @@ import { ImpactStyle } from '@capacitor/haptics';
 import { saveDocument, getDocuments, deleteDocument, getSetting, setSetting } from '../services/databaseService';
 import BudgetPlanner from './BudgetPlanner';
 import PricingCalculator from './PricingCalculator';
-import TodoList from './TodoList'; // New import
-import PricingSheet from './PricingSheet'; // New import (the old pricing sheet)
-import HourlyRateCalculator from './HourlyRateCalculator'; // New import
+// import TodoList from './TodoList'; // COMMENTED OUT
+// import PricingSheet from './PricingSheet'; // COMMENTED OUT
+// import HourlyRateCalculator from './HourlyRateCalculator'; // COMMENTED OUT
 
 interface BusinessToolsProps {
   onRecordToAR: (tx: Transaction) => void;
@@ -74,7 +74,7 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
   pricingSheet,
   onUpdatePricing
 }) => {
-  const [activeView, setActiveView] = useState<'PORTAL' | 'EDITOR' | 'PROFILE' | 'TARGETS' | 'PRICING' | 'TODO' | 'OLD_PRICING_SHEET' | 'HOURLY_RATE'>('PORTAL'); // Updated activeView
+  const [activeView, setActiveView] = useState<'PORTAL' | 'EDITOR' | 'PROFILE' | 'TARGETS' | 'PRICING'>('PORTAL'); // MODIFIED
   const [savedDocs, setSavedDocs] = useState<BusinessDocument[]>([]);
   const [doc, setDoc] = useState<BusinessDocument | null>(null);
   const [profile, setProfile] = useState<BusinessProfile>(INITIAL_PROFILE);
@@ -245,90 +245,38 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
 
   if (isLoading) return <div className="h-48 flex items-center justify-center font-mono animate-pulse">BOOTING TOOLS...</div>;
 
-  // Render cases for new tools
+  // Render cases for new tools - COMMENTED OUT
+  /*
   if (activeView === 'TODO') {
     return (
-      <div className="relative">
-        <button 
-          onClick={() => setActiveView('PORTAL')}
-          className="absolute top-4 right-4 z-10 p-2 bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all"
-        >
-          <X size={20} />
-        </button>
-        <div className="bg-white border-2 border-black shadow-swiss max-w-2xl w-full max-h-[90vh] flex flex-col">
-          <div className="p-6 border-b-2 border-black flex justify-between items-center">
-            <div>
-              <h2 className="text-xl font-extrabold uppercase tracking-tight flex items-center gap-2">
-                <ListTodo size={24} />
-                Todo List
-              </h2>
-            </div>
-          </div>
-          <TodoList 
-            isPro={isPro} 
-            onUpgradeClick={onShowPaywall} 
-            onClose={() => setActiveView('PORTAL')} 
-          />
-        </div>
-      </div>
+      <TodoList 
+        isPro={isPro} 
+        onUpgradeClick={onShowPaywall} 
+        onClose={() => setActiveView('PORTAL')} 
+      />
     );
   }
 
   if (activeView === 'OLD_PRICING_SHEET') {
     return (
-      <div className="relative">
-        <button 
-          onClick={() => setActiveView('PORTAL')}
-          className="absolute top-4 right-4 z-10 p-2 bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all"
-        >
-          <X size={20} />
-        </button>
-        <div className="bg-white border-2 border-black shadow-swiss max-w-4xl w-full max-h-[90vh] flex flex-col">
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6 border-b-4 border-black">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <DollarSign className="text-white" size={32} />
-                <h2 className="text-2xl font-black text-white uppercase tracking-tight">Pricing Sheet</h2>
-              </div>
-            </div>
-          </div>
-          <PricingSheet 
-            isPro={isPro} 
-            onUpgradeClick={onShowPaywall} 
-            onClose={() => setActiveView('PORTAL')} 
-          />
-        </div>
-      </div>
+      <PricingSheet 
+        isPro={isPro} 
+        onUpgradeClick={onShowPaywall} 
+        onClose={() => setActiveView('PORTAL')} 
+      />
     );
   }
 
   if (activeView === 'HOURLY_RATE') {
     return (
-      <div className="relative">
-        <button 
-          onClick={() => setActiveView('PORTAL')}
-          className="absolute top-4 right-4 z-10 p-2 bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all"
-        >
-          <X size={20} />
-        </button>
-        <div className="bg-white border-2 border-black shadow-swiss max-w-3xl w-full max-h-[90vh] flex flex-col">
-          <div className="bg-gradient-to-r from-green-600 to-teal-600 p-6 border-b-4 border-black">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <TrendingUp className="text-white" size={32} />
-                <h2 className="text-2xl font-black text-white uppercase tracking-tight">Hourly Rate Calculator</h2>
-              </div>
-            </div>
-          </div>
-          <HourlyRateCalculator 
-            isPro={isPro} 
-            onUpgradeClick={onShowPaywall} 
-            onClose={() => setActiveView('PORTAL')} 
-          />
-        </div>
-      </div>
+      <HourlyRateCalculator 
+        isPro={isPro} 
+        onUpgradeClick={onShowPaywall} 
+        onClose={() => setActiveView('PORTAL')} 
+      />
     );
   }
+  */
 
   if (activeView === 'PROFILE') {
     return (
@@ -438,7 +386,8 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
             <p className="text-[10px] text-gray-400">Set company info</p>
           </button>
 
-          {/* New Buttons for old tools */}
+          {/* New Buttons for old tools - COMMENTED OUT */}
+          {/*
           <button onClick={() => setActiveView('TODO')} className="bg-white border-2 border-black p-6 shadow-swiss hover:bg-gray-50 text-left transition-all relative">
             {!isPro && <div className="absolute top-4 right-4"><ProBadge /></div>}
             <ListTodo size={24} className="text-brand-blue mb-4" />
@@ -459,6 +408,7 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
             <h4 className="font-bold uppercase">Hourly Rate Calc.</h4>
             <p className="text-[10px] text-gray-400">Determine your rate</p>
           </button>
+          */}
         </div>
 
         <div className="bg-white border-2 border-black shadow-swiss">

@@ -1,3 +1,10 @@
+import React, { useState, useEffect } from 'react';
+import { Plus, Trash2, CheckCircle2, Circle, ListTodo } from 'lucide-react';
+import { TodoItem } from '../types';
+import { loadTodos, addTodo, toggleTodo, deleteTodo, saveTodos } from '../services/todoService'; // <<<--- THIS LINE IS THE TARGET
+import { triggerHaptic } from '../services/hapticService';
+import { ImpactStyle } from '@capacitor/haptics';
+
 interface TodoListProps {
   isPro: boolean;
   onUpgradeClick: () => void;
@@ -167,3 +174,7 @@ const TodoList: React.FC<TodoListProps> = ({ isPro, onUpgradeClick, onClose }) =
         </div>
       )}
     </div>
+  );
+};
+
+export default TodoList;

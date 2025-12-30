@@ -18,14 +18,17 @@
     "@google/genai": "^1.33.0",
     "decimal.js": "10.4.3",
     "lucide-react": "^0.560.0",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-is": "^19.2.3",
     "recharts": "^3.5.1"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.4.23",
+    "tailwindcss": "^4.1.18",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }
