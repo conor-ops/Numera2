@@ -28,20 +28,17 @@ export const StripePaymentModal: React.FC<StripePaymentModalProps> = ({
 
     try {
       await triggerHaptic();
-      const amount = (product as any).amount ?? (product as any).price ?? 0;
-      const result = await initiateCheckout(amount);
+      const result = await initiateCheckout(product, () => {
+        setLoading(false);
+        onSuccess?.();
+        onClose();
+      });
 
       if (!result.success) {
         setError(result.error || 'Payment failed');
         setLoading(false);
-        return;
       }
-
-      // Successful checkout: reset loading and run success handlers
-      setLoading(false);
-      onSuccess?.();
-      onClose();
-      // If successful, Stripe redirects to checkout, so we don't need to handle anything else here
+      // If successful, Stripe redirects to checkout, so we don't need to handle here
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setLoading(false);

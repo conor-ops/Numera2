@@ -15,45 +15,15 @@
             "value": "max-age=31536000"
           }
         ]
-      },
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "X-Content-Type-Options",
-            "value": "nosniff"
-          },
-          {
-            "key": "X-Frame-Options",
-            "value": "DENY"
-          },
-          {
-            "key": "X-XSS-Protection",
-            "value": "1; mode=block"
-          },
-          {
-            "key": "Referrer-Policy",
-            "value": "strict-origin-when-cross-origin"
-          },
-          {
-            "key": "Permissions-Policy",
-            "value": "geolocation=(), microphone=(), camera=()"
-          },
-          {
-            "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.stripe.com https://*.revenuecat.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
-          }
-        ]
       }
     ],
     "rewrites": [
       {
-        "source": "/api/generateFinancialInsight",
-        "function": "generateFinancialInsight"
-      },
-      {
-        "source": "/api/createStripeCheckoutSession",
-        "function": "createStripeCheckoutSession"
+        "source": "/api/**",
+        "run": {
+          "serviceId": "numera-backend",
+          "region": "us-central1"
+        }
       },
       {
         "source": "**",

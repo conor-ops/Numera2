@@ -18,15 +18,6 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
-      },
-      build: {
-        minify: 'terser',
-        terserOptions: {
-          compress: {
-            drop_console: mode === 'production',
-            drop_debugger: true
-          }
-        }
       }
     };
 });
