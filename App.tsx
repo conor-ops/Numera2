@@ -19,34 +19,58 @@ import {
   History,
   Save,
   Shield,
-  FileText
+  FileText,
+  Wrench,
+  CalendarDays,
+  ChevronDown,
+  ChevronUp,
+  Receipt,
+  Layers
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Capacitor } from '@capacitor/core';
 import { Keyboard } from '@capacitor/keyboard';
 
-import { FinancialItem, BusinessData, CalculationResult, BankAccount, AccountType, Transaction, HistoryRecord } from './types';
+import { FinancialItem, BusinessData, CalculationResult, BankAccount, AccountType, Transaction, HistoryRecord, BudgetTargets, PricingItem } from './types';
 import FinancialInput from './components/FinancialInput';
 import BankInput from './components/BankInput';
+import RecurringTransactions from './components/RecurringTransactions';
+import CashFlowForecast from './components/CashFlowForecast';
+import BusinessTools from './components/BusinessTools';
 import { generateFinancialInsight } from './services/geminiService';
 import { APP_CONFIG } from './config';
 import { initiateCheckout, getFormattedPrice } from './services/paymentService';
 import { triggerHaptic } from './services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
 import { setupDatabase, loadSnapshot, saveSnapshot, saveHistoryRecord, getHistoryRecords } from './services/databaseService';
+import { processPendingRecurring } from './services/recurringService';
 
 const INITIAL_DATA: BusinessData = {
   transactions: [
     { id: 'ar1', name: 'Pending Invoice #1024', amount: 8500, type: 'INCOME', date_occurred: new Date().toISOString() },
     { id: 'ar2', name: 'Consulting Retainer', amount: 3200, type: 'INCOME', date_occurred: new Date().toISOString() },
-    { id: 'ap1', name: 'Office Rent', amount: 2200, type: 'EXPENSE', date_occurred: new Date().toISOString() },
-    { id: 'ap2', name: 'SaaS Subscriptions', amount: 450, type: 'EXPENSE', date_occurred: new Date().toISOString() },
+    { id: 'ap1', name: 'Raw Material Supplier', amount: 1200, type: 'EXPENSE', date_occurred: new Date().toISOString() },
+  ],
+  monthlyOverhead: [
+    { id: 're1', name: 'Office Rent', amount: 2200 },
+    { id: 're2', name: 'Cloud Server Overhead', amount: 450 },
+    { id: 're3', name: 'Professional Insurance', amount: 200 },
+  ],
+  annualOverhead: [
+    { id: 'ao1', name: 'Federal Tax Estimate', amount: 12000 },
+    { id: 'ao2', name: 'Legal Retainer (Yearly)', amount: 2400 },
   ],
   accounts: [
     { id: 'cc1', name: 'Business Amex', bankName: 'Amex', type: AccountType.CREDIT, amount: 1850 },
     { id: '1', name: 'Operating', bankName: 'Chase', type: AccountType.CHECKING, amount: 28000 },
     { id: '2', name: 'Tax Savings', bankName: 'Chase', type: AccountType.SAVINGS, amount: 12000 },
-  ]
+  ],
+  targets: {
+    arTarget: 15000,
+    apTarget: 5000,
+    creditTarget: 2500
+  },
+  pricingSheet: []
 };
 
 // --- LEGAL MODAL COMPONENT ---
@@ -164,11 +188,19 @@ const PaywallModal = ({ onClose, onSuccess }: { onClose: () => void, onSuccess: 
           <ul className="space-y-3 mb-8">
             <li className="flex items-center gap-3 text-sm font-medium">
               <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
-              Unlimited PDF Reports
+              Unlimited AI Insights
             </li>
             <li className="flex items-center gap-3 text-sm font-medium">
               <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
-              Cross-Device Sync (Mobile/Web)
+              Unlimited Bank Accounts
+            </li>
+            <li className="flex items-center gap-3 text-sm font-medium">
+              <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
+              Full History & Trends
+            </li>
+            <li className="flex items-center gap-3 text-sm font-medium">
+              <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
+              PDF Export (Coming Soon)
             </li>
             <li className="flex items-center gap-3 text-sm font-medium">
               <div className="bg-brand-blue text-white p-0.5 rounded-full"><Check size={12} /></div>
@@ -261,6 +293,11 @@ function App() {
   const [data, setData] = useState<BusinessData>(INITIAL_DATA);
   const [isPro, setIsPro] = useState(false);
   const [history, setHistory] = useState<HistoryRecord[]>([]);
+  
+  // Freemium limits for FREE users
+  const [aiInsightsUsed, setAiInsightsUsed] = useState(0);
+  const FREE_AI_INSIGHTS_LIMIT = 1; // 1 free AI insight per month
+  const FREE_ACCOUNTS_LIMIT = 3; // Max 3 bank accounts
 
   const handleProUpgrade = () => {
     setIsPro(true);
@@ -271,6 +308,26 @@ function App() {
         window.history.pushState({path:newurl},'',newurl);
     }
   };
+
+  // Reset AI insights counter monthly
+  useEffect(() => {
+    const checkAndResetCounter = () => {
+      const lastReset = localStorage.getItem('numera_ai_reset_date');
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${now.getMonth()}`;
+      
+      if (lastReset !== currentMonth) {
+        localStorage.setItem('numera_ai_reset_date', currentMonth);
+        localStorage.setItem('numera_ai_used', '0');
+        setAiInsightsUsed(0);
+      } else {
+        const used = parseInt(localStorage.getItem('numera_ai_used') || '0');
+        setAiInsightsUsed(used);
+      }
+    };
+    
+    checkAndResetCounter();
+  }, []);
 
   // Initialization Logic
   useEffect(() => {
@@ -316,6 +373,24 @@ function App() {
           // 5. Load History
           const savedHistory = await getHistoryRecords();
           setHistory(savedHistory);
+          
+          // 6. Process recurring transactions
+          console.log('[Recurring] Checking for pending recurring transactions...');
+          const { toAdd, toNotify } = processPendingRecurring();
+          console.log('[Recurring] Found:', { toAdd: toAdd.length, toNotify: toNotify.length });
+          
+          if (toAdd.length > 0) {
+            console.log('[Recurring] Auto-adding transactions:', toAdd);
+            setData(prev => ({
+              ...prev,
+              transactions: [...prev.transactions, ...toAdd]
+            }));
+          }
+          
+          if (toNotify.length > 0) {
+            console.log('[Recurring] Items waiting for confirmation:', toNotify);
+            // TODO: Show notification modal
+          }
         }
       } catch (error) {
         console.error("Initialization failed:", error);
@@ -332,7 +407,17 @@ function App() {
   const [useStrictFormula, setUseStrictFormula] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showRecurring, setShowRecurring] = useState(false);
+  const [showTodo, setShowTodo] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
+  const [showHourlyRate, setShowHourlyRate] = useState(false);
+  const [showCashForecast, setShowCashForecast] = useState(false);
   const [legalView, setLegalView] = useState<'privacy' | 'terms' | null>(null);
+  const [isToolsExpanded, setIsToolsExpanded] = useState(false);
+  
+  // Collapse States
+  const [isApExpanded, setIsApExpanded] = useState(true);
+  const [isOverheadsExpanded, setIsOverheadsExpanded] = useState(true);
 
   // Persistence: Auto-save when data changes
   useEffect(() => {
@@ -344,8 +429,16 @@ function App() {
   // Derived State
   const accountsReceivable = data.transactions.filter(t => t.type === 'INCOME');
   const accountsPayable = data.transactions.filter(t => t.type === 'EXPENSE');
+  const monthlyOverhead = data.monthlyOverhead || [];
+  const annualOverhead = data.annualOverhead || [];
   const bankAccounts = data.accounts.filter(a => a.type !== AccountType.CREDIT);
   const creditCards = data.accounts.filter(a => a.type === AccountType.CREDIT);
+
+  const totalOverhead = useMemo(() => {
+    const m = monthlyOverhead.reduce((acc, i) => acc.plus(new Decimal(i.amount || 0)), new Decimal(0));
+    const a = annualOverhead.reduce((acc, i) => acc.plus(new Decimal(i.amount || 0)), new Decimal(0));
+    return m.plus(a).toNumber();
+  }, [monthlyOverhead, annualOverhead]);
 
   // Calculations
   const calculations: CalculationResult = useMemo(() => {
@@ -353,7 +446,10 @@ function App() {
       items.reduce((acc, i) => acc.plus(new Decimal(i.amount || 0)), new Decimal(0));
 
     const totalAR = sumItems(accountsReceivable);
-    const totalAP = sumItems(accountsPayable);
+    const totalOneOffAP = sumItems(accountsPayable);
+    const totalMonthlyAP = sumItems(monthlyOverhead);
+    const totalAnnualAP = sumItems(annualOverhead);
+    const totalAP = totalOneOffAP.plus(totalMonthlyAP).plus(totalAnnualAP);
     const totalCredit = sumItems(creditCards);
     const totalBank = sumItems(bankAccounts);
 
@@ -385,7 +481,7 @@ function App() {
       bne: bne.toNumber(),
       bneFormulaStr
     };
-  }, [accountsReceivable, accountsPayable, creditCards, bankAccounts, useStrictFormula]);
+  }, [accountsReceivable, accountsPayable, monthlyOverhead, annualOverhead, creditCards, bankAccounts, useStrictFormula]);
 
   // Handlers
   const handleUpdateTransactions = (type: 'INCOME' | 'EXPENSE', items: FinancialItem[]) => {
@@ -398,6 +494,31 @@ function App() {
     
     setData(prev => ({ ...prev, transactions: [...others, ...updated] }));
   };
+  
+  const handleUpdateMonthly = (items: FinancialItem[]) => {
+    setData(prev => ({ ...prev, monthlyOverhead: items }));
+  };
+
+  const handleUpdateAnnual = (items: FinancialItem[]) => {
+    setData(prev => ({ ...prev, annualOverhead: items }));
+  };
+
+  const handleUpdatePricing = (items: PricingItem[]) => {
+    setData(prev => ({ ...prev, pricingSheet: items }));
+  };
+
+  const handleRecordTransaction = (tx: Transaction) => {
+    setData(prev => ({
+      ...prev,
+      transactions: [...prev.transactions, tx]
+    }));
+  };
+  
+  const toggleTools = () => {
+    triggerHaptic(ImpactStyle.Medium);
+    setIsToolsExpanded(!isToolsExpanded);
+  };
+
 
   const handleUpdateBanks = (items: BankAccount[]) => {
     const others = data.accounts.filter(a => a.type === AccountType.CREDIT);
@@ -452,6 +573,13 @@ function App() {
 
   const handleAiGenerate = async () => {
     await triggerHaptic(ImpactStyle.Medium);
+    
+    // Check if free user has exceeded limit
+    if (!isPro && aiInsightsUsed >= FREE_AI_INSIGHTS_LIMIT) {
+      setShowPaywall(true);
+      return;
+    }
+    
     try {
         setIsGeneratingAi(true);
         const bankDetails = Object.entries(calculations.bankBreakdown)
@@ -460,6 +588,13 @@ function App() {
             
         const result = await generateFinancialInsight(calculations, bankDetails);
         setAiInsight(result);
+        
+        // Increment usage counter for free users
+        if (!isPro) {
+          const newCount = aiInsightsUsed + 1;
+          setAiInsightsUsed(newCount);
+          localStorage.setItem('numera_ai_used', newCount.toString());
+        }
     } catch (e) {
         setAiInsight("Unable to generate insight at this time.");
     } finally {
@@ -649,40 +784,91 @@ function App() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-8 items-start">
           <div className="space-y-8">
-            <BankInput 
-              accounts={bankAccounts} 
-              onUpdate={handleUpdateBanks} 
-            />
-            <FinancialInput
-              title="Credit Cards"
-              items={creditCards}
-              onUpdate={handleUpdateCredit}
-              icon={<CreditCard className="text-black" size={24} />}
-            />
+            <BankInput accounts={bankAccounts} onUpdate={handleUpdateBanks} defaultExpanded={true} />
+            <FinancialInput title="Credit Cards" items={creditCards} onUpdate={handleUpdateCredit} icon={<CreditCard className="text-black" size={24} />} defaultExpanded={true} />
           </div>
-
           <div className="space-y-8">
-            <FinancialInput
-              title="Accounts Receivable"
-              items={accountsReceivable}
-              onUpdate={(items) => handleUpdateTransactions('INCOME', items)}
-              icon={<ArrowRightLeft className="text-black" size={24} />}
-            />
-             <FinancialInput
-              title="Accounts Payable"
-              items={accountsPayable}
-              onUpdate={(items) => handleUpdateTransactions('EXPENSE', items)}
-              icon={<Wallet className="text-black" size={24} />}
-            />
+            <FinancialInput title="Accounts Receivable" items={accountsReceivable} onUpdate={(items) => handleUpdateTransactions('INCOME', items)} icon={<ArrowRightLeft className="text-black" size={24} />} defaultExpanded={true} />
+            
+            {/* UNIFIED ACCOUNTS PAYABLE SECTION */}
+            <div className="p-4 md:p-6 bg-white border-2 border-black shadow-swiss flex flex-col">
+              <div 
+                className="flex justify-between items-center mb-8 border-b-2 border-black pb-4 shrink-0 cursor-pointer group select-none"
+                onClick={() => { triggerHaptic(ImpactStyle.Light); setIsApExpanded(!isApExpanded); }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="text-gray-400 group-hover:text-black transition-colors">
+                    {isApExpanded ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
+                  </div>
+                  <Wallet className="text-black" size={24} />
+                  <h3 className="text-lg font-bold uppercase tracking-tight group-hover:text-brand-blue transition-colors">Accounts Payable</h3>
+                </div>
+                <span className="text-xl font-mono font-bold">
+                  ${calculations.totalAP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+
+              {isApExpanded && (
+                <div className="space-y-12 animate-in fade-in slide-in-from-top-2 duration-200">
+                  {/* Overheads Category Group */}
+                  <div className="border-2 border-black p-4 bg-gray-50/40 relative">
+                      <div 
+                        className="flex items-center gap-2 mb-6 border-b border-black pb-2 cursor-pointer group select-none"
+                        onClick={() => { triggerHaptic(ImpactStyle.Light); setIsOverheadsExpanded(!isOverheadsExpanded); }}
+                      >
+                          <div className="text-gray-400 group-hover:text-black transition-colors">
+                            {isOverheadsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          </div>
+                          <Layers size={18} className="text-brand-blue" />
+                          <h4 className="font-extrabold uppercase text-sm tracking-tight group-hover:text-black transition-colors">Overheads</h4>
+                          <div className="ml-auto font-mono text-xs font-bold bg-black text-white px-2 py-0.5">
+                              ${totalOverhead.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </div>
+                      </div>
+                      
+                      {isOverheadsExpanded && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <FinancialInput 
+                            title="Monthly" 
+                            items={monthlyOverhead} 
+                            onUpdate={handleUpdateMonthly} 
+                            icon={<CalendarDays className="text-brand-blue" size={18} />} 
+                            variant="nested"
+                            defaultExpanded={false}
+                            />
+
+                            <FinancialInput 
+                            title="Annual" 
+                            items={annualOverhead} 
+                            onUpdate={handleUpdateAnnual} 
+                            icon={<CalendarDays className="text-black" size={18} />} 
+                            variant="nested"
+                            defaultExpanded={false}
+                            />
+                        </div>
+                      )}
+                  </div>
+
+                  <FinancialInput
+                    title="One-Off Expenses"
+                    items={accountsPayable}
+                    onUpdate={(items) => handleUpdateTransactions('EXPENSE', items)}
+                    icon={<Receipt className="text-black" size={20} />}
+                    variant="nested"
+                    defaultExpanded={true}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-8 lg:col-span-2 2xl:col-span-1">
-              <div className="bg-white p-4 md:p-6 border-2 border-black shadow-swiss flex flex-col min-w-0">
+              <div className="bg-white p-4 md:p-6 border-2 border-black shadow-swiss flex flex-col">
                  <h3 className="text-black font-bold uppercase mb-4 flex items-center gap-2 shrink-0">
                     <TrendingUp size={20} />
                     Distribution
                  </h3>
-                 <div className="h-48 md:h-56 w-full relative">
+                 <div className="h-48 md:h-56 w-full">
                    <ResponsiveContainer width="100%" height="100%">
                        <BarChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontFamily: 'Inter', fontWeight: 600 }} />
@@ -734,6 +920,60 @@ function App() {
               </div>
           </div>
         </div>
+
+
+        <div className="space-y-6">
+           <button 
+             onClick={toggleTools}
+             className="w-full flex items-center justify-between group py-2 border-b-2 border-black/10 hover:border-black transition-all"
+           >
+              <div className="flex items-center gap-2">
+                 <Wrench size={20} className={`${isToolsExpanded ? 'text-brand-blue' : 'text-gray-400'} group-hover:text-brand-blue transition-colors`} />
+                 <h2 className={`text-xl font-extrabold uppercase tracking-tight ${isToolsExpanded ? 'text-black' : 'text-gray-400'} group-hover:text-black transition-colors`}>
+                   Sales & Billing Tools
+                 </h2>
+              </div>
+              <div className="p-1 border-2 border-transparent group-hover:border-black transition-all">
+                {isToolsExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+              </div>
+           </button>
+           
+           {isToolsExpanded && (
+             <div className="animate-in fade-in slide-in-from-top-4 duration-300">
+                <BusinessTools 
+                  isPro={isPro} 
+                  onShowPaywall={() => setShowPaywall(true)} 
+                  onRecordToAR={handleRecordTransaction} 
+                  targets={data.targets}
+                  actuals={{
+                    ar: calculations.totalAR,
+                    ap: calculations.totalAP,
+                    credit: calculations.totalCredit
+                  }}
+                  onUpdateTargets={handleUpdateTargets}
+                  pricingSheet={data.pricingSheet}
+                  onUpdatePricing={handleUpdatePricing}
+                />
+             </div>
+           )}
+        </div>
+
+        {showRecurring && (
+          <RecurringTransactions
+            isPro={isPro}
+            onUpgradeClick={() => { setShowRecurring(false); setShowPaywall(true); }}
+            onClose={() => setShowRecurring(false)}
+          />
+        )}
+
+        {showCashForecast && (
+          <CashFlowForecast
+            currentBNE={calculations.bne}
+            isPro={isPro}
+            onUpgradeClick={() => { setShowCashForecast(false); setShowPaywall(true); }}
+            onClose={() => setShowCashForecast(false)}
+          />
+        )}
 
         <footer className="border-t-4 border-black mt-16 pt-12 pb-8">
            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-sm font-bold">

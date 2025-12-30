@@ -1,7 +1,7 @@
 import { APP_CONFIG } from '../config';
 
-// Use relative path to leverage Firebase Hosting rewrites
-const STRIPE_ENDPOINT = '/api/createStripeCheckoutSession';
+// Direct Stripe Payment Link
+const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/3cI28saXW5BS6SoaOT1RC02';
 
 export interface PaymentResult {
   success: boolean;
@@ -10,40 +10,19 @@ export interface PaymentResult {
 }
 
 /**
- * Initiates the checkout process via Stripe (Backend managed).
+ * Initiates the checkout process via Stripe Payment Link.
+ * Opens in new tab to keep current app state.
  */
 export const initiateCheckout = async (amount: number, currency: string = 'USD'): Promise<PaymentResult> => {
-  console.log(`[PaymentService] Initiating Stripe checkout for ${currency} ${amount.toFixed(2)}`);
+  console.log(`[PaymentService] Opening Stripe payment link in new tab`);
 
   try {
-    const response = await fetch(STRIPE_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        returnUrl: window.location.href.split('?')[0] // Current URL without query params
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to initiate checkout session');
-    }
-
-    const data = await response.json();
-
-    if (data.url) {
-      // Redirect to Stripe hosted checkout
-      window.location.href = data.url;
-      // We return a pending promise that never resolves here because the page unloads
-      return new Promise(() => {});
-    } else {
-      throw new Error('No checkout URL returned');
-    }
-
+    // Open Stripe in new tab instead of redirecting
+    window.open(STRIPE_PAYMENT_LINK, '_blank');
+    return { success: true };
   } catch (error) {
     console.error('Payment Error:', error);
-    return { success: false, error: 'Failed to connect to payment provider.' };
+    return { success: false, error: 'Failed to open payment window.' };
   }
 };
 

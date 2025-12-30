@@ -1,5 +1,5 @@
 {
-  "name": "numera2",
+  "name": "numera-test-enviorment",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,22 +9,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^19.2.3",
-    "recharts": "^3.5.1",
-    "lucide-react": "^0.560.0",
-    "react-dom": "^19.2.3",
-    "@google/genai": "^1.33.0",
-    "decimal.js": "10.4.3",
+    "@capacitor-community/sqlite": "^7.0.2",
+    "@capacitor/cli": "6.0.0",
     "@capacitor/core": "6.0.0",
     "@capacitor/haptics": "6.0.0",
     "@capacitor/keyboard": "6.0.0",
     "@capacitor/status-bar": "6.0.0",
-    "@capacitor/cli": "6.0.0",
-    "@capacitor-community/sqlite": "^7.0.2",
-    "@google/generative-ai": "^0.24.1",
-    "firebase-functions": "^7.0.1",
-    "cors": "^2.8.5",
-    "stripe": "^20.0.0"
+    "@google/genai": "^1.33.0",
+    "decimal.js": "10.4.3",
+    "lucide-react": "^0.560.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-is": "^19.2.3",
+    "recharts": "^3.5.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
