@@ -37,13 +37,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.stripeWebhook = exports.createStripeCheckoutSession = exports.generateRunwayInsight = exports.generateFinancialInsight = void 0;
+/**
+ * Numera Precision Finance OS - Backend Services
+ * Last Optimized: 2025-12-30
+ */
 const https_1 = require("firebase-functions/v2/https");
 const logger = __importStar(require("firebase-functions/logger"));
-const genai_1 = require("@google/genai");
+const generative_ai_1 = require("@google/generative-ai");
 const cors_1 = __importDefault(require("cors"));
 const stripe_1 = __importDefault(require("stripe"));
 const v2_1 = require("firebase-functions/v2");
-(0, v2_1.setGlobalOptions)({ maxInstances: 10 });
+(0, v2_1.setGlobalOptions)({
+    maxInstances: 10,
+    region: "us-central1"
+});
 const allowedOrigins = [
     "http://localhost:3000",
     "http://localhost:5173",
@@ -62,8 +69,14 @@ const corsHandler = (0, cors_1.default)({
     },
 });
 // --- GEN AI: FINANCIAL INSIGHT ---
-exports.generateFinancialInsight = (0, https_1.onRequest)({ secrets: ["API_KEY"] }, (request, response) => {
+exports.generateFinancialInsight = (0, https_1.onRequest)({
+    secrets: ["API_KEY"],
+    memory: "512MiB",
+    cpu: 1,
+    timeoutSeconds: 120
+}, (request, response) => {
     corsHandler(request, response, async () => {
+        logger.info("[Insight] Request received", { body: request.body });
         if (request.method !== "POST") {
             response.status(405).send("Method Not Allowed");
             return;
@@ -80,7 +93,9 @@ exports.generateFinancialInsight = (0, https_1.onRequest)({ secrets: ["API_KEY"]
                 response.status(400).json({ error: "Missing calculation data" });
                 return;
             }
-            const ai = new genai_1.GoogleGenAI({ apiKey });
+            // Correct constructor for @google/generative-ai
+            const genAI = new generative_ai_1.GoogleGenerativeAI(apiKey);
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
             const prompt = `
           As a senior financial analyst, provide a brief, actionable executive summary (max 100 words) for a business with the following current snapshot:
           
@@ -99,11 +114,9 @@ exports.generateFinancialInsight = (0, https_1.onRequest)({ secrets: ["API_KEY"]
           
           Focus on liquidity and solvency. Provide one key recommendation. Use a professional but direct tone.
         `;
-            const result = await ai.models.generateContent({
-                model: "gemini-1.5-flash",
-                contents: [{ role: "user", parts: [{ text: prompt }] }]
-            });
-            response.json({ insight: result.text });
+            const result = await model.generateContent(prompt);
+            const text = result.response.text();
+            response.json({ insight: text });
         }
         catch (error) {
             logger.error("Gemini Error", error);
@@ -112,8 +125,14 @@ exports.generateFinancialInsight = (0, https_1.onRequest)({ secrets: ["API_KEY"]
     });
 });
 // --- GEN AI: RUNWAY INSIGHT ---
-exports.generateRunwayInsight = (0, https_1.onRequest)({ secrets: ["API_KEY"] }, (request, response) => {
+exports.generateRunwayInsight = (0, https_1.onRequest)({
+    secrets: ["API_KEY"],
+    memory: "512MiB",
+    cpu: 1,
+    timeoutSeconds: 120
+}, (request, response) => {
     corsHandler(request, response, async () => {
+        logger.info("[Runway] Request received", { body: request.body });
         if (request.method !== "POST") {
             response.status(405).send("Method Not Allowed");
             return;
@@ -126,13 +145,14 @@ exports.generateRunwayInsight = (0, https_1.onRequest)({ secrets: ["API_KEY"] },
         }
         try {
             const { currentBne, monthlyBurn, pendingAr } = request.body;
-            const ai = new genai_1.GoogleGenAI({ apiKey });
+            const genAI = new generative_ai_1.GoogleGenerativeAI(apiKey);
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
             const days = monthlyBurn > 0 ? (currentBne / (monthlyBurn / 30)).toFixed(0) : "Infinite";
             const prompt = `
           Perform a stress test on a freelancer's cash runway.
-          Current Net Assets (BNE): $${currentBne.toFixed(2)}
-          Monthly Burn Rate (Fixed Costs): $${monthlyBurn.toFixed(2)}
-          Pending Invoices (AR): $${pendingAr.toFixed(2)}
+          Current Net Assets (BNE): $${(currentBne || 0).toFixed(2)}
+          Monthly Burn Rate (Fixed Costs): $${(monthlyBurn || 0).toFixed(2)}
+          Pending Invoices (AR): $${(pendingAr || 0).toFixed(2)}
           Estimated Survival: ${days} days.
 
           Provide a 3-sentence "Reality Check". 
@@ -141,11 +161,9 @@ exports.generateRunwayInsight = (0, https_1.onRequest)({ secrets: ["API_KEY"] },
           3. One actionable advice to extend the runway.
           Be blunt and precise.
         `;
-            const result = await ai.models.generateContent({
-                model: "gemini-1.5-flash",
-                contents: [{ role: "user", parts: [{ text: prompt }] }]
-            });
-            response.json({ insight: result.text });
+            const result = await model.generateContent(prompt);
+            const text = result.response.text();
+            response.json({ insight: text });
         }
         catch (error) {
             logger.error("Gemini Runway Error", error);
@@ -154,8 +172,14 @@ exports.generateRunwayInsight = (0, https_1.onRequest)({ secrets: ["API_KEY"] },
     });
 });
 // --- STRIPE: CHECKOUT SESSION ---
-exports.createStripeCheckoutSession = (0, https_1.onRequest)({ secrets: ["STRIPE_SECRET_KEY"] }, (request, response) => {
+exports.createStripeCheckoutSession = (0, https_1.onRequest)({
+    secrets: ["STRIPE_SECRET_KEY"],
+    memory: "512MiB",
+    cpu: 1,
+    timeoutSeconds: 120
+}, (request, response) => {
     corsHandler(request, response, async () => {
+        logger.info("[Checkout] Request received", { body: request.body });
         if (request.method !== "POST") {
             response.status(405).send("Method Not Allowed");
             return;
@@ -167,8 +191,8 @@ exports.createStripeCheckoutSession = (0, https_1.onRequest)({ secrets: ["STRIPE
             return;
         }
         try {
-            const stripe = new stripe_1.default(stripeKey, { apiVersion: "2023-10-16" });
-            const { returnUrl, planType, invoiceId } = request.body;
+            const stripe = new stripe_1.default(stripeKey, { apiVersion: "2025-01-27.acacia" });
+            const { returnUrl, planType, invoiceId, amount: requestedAmount } = request.body;
             if (!returnUrl || typeof returnUrl !== "string") {
                 response.status(400).json({ error: "Missing or invalid returnUrl" });
                 return;
@@ -192,7 +216,8 @@ exports.createStripeCheckoutSession = (0, https_1.onRequest)({ secrets: ["STRIPE
                     amount: 2500, // $25.00
                 }
             };
-            const selectedPlan = (planType === 'business' ? plans.business : plans.pro);
+            const selectedPlan = plans[planType] || plans.pro;
+            const finalCents = selectedPlan.amount || Math.round((requestedAmount || 10) * 100);
             const session = await stripe.checkout.sessions.create({
                 payment_method_types: ["card"],
                 line_items: [
@@ -203,7 +228,7 @@ exports.createStripeCheckoutSession = (0, https_1.onRequest)({ secrets: ["STRIPE
                                 name: selectedPlan.name,
                                 description: selectedPlan.description,
                             },
-                            unit_amount: selectedPlan.amount,
+                            unit_amount: finalCents,
                         },
                         quantity: 1,
                     },
@@ -213,7 +238,7 @@ exports.createStripeCheckoutSession = (0, https_1.onRequest)({ secrets: ["STRIPE
                     planType: planType || 'pro',
                     invoiceId: invoiceId || '',
                 },
-                success_url: `${returnUrl}?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
+                success_url: `${returnUrl}?payment_success=true&plan=${planType || 'pro'}&session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `${returnUrl}?payment_canceled=true`,
             });
             response.json({ url: session.url });
@@ -225,7 +250,16 @@ exports.createStripeCheckoutSession = (0, https_1.onRequest)({ secrets: ["STRIPE
     });
 });
 // --- STRIPE: WEBHOOK HANDLER ---
-exports.stripeWebhook = (0, https_1.onRequest)({ secrets: ["STRIPE_WEBHOOK_SECRET", "STRIPE_SECRET_KEY"] }, async (request, response) => {
+exports.stripeWebhook = (0, https_1.onRequest)({
+    secrets: ["STRIPE_WEBHOOK_SECRET", "STRIPE_SECRET_KEY"],
+    memory: "512MiB",
+    cpu: 1,
+    timeoutSeconds: 120
+}, async (request, response) => {
+    if (request.method === "GET") {
+        response.send("Webhook endpoint active");
+        return;
+    }
     const sig = request.headers["stripe-signature"];
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!sig || !webhookSecret) {
@@ -237,25 +271,23 @@ exports.stripeWebhook = (0, https_1.onRequest)({ secrets: ["STRIPE_WEBHOOK_SECRE
         response.status(500).send("Server Error: Stripe key not configured");
         return;
     }
-    const stripe = new stripe_1.default(stripeKey, { apiVersion: "2023-10-16" });
-    let event;
     try {
-        event = stripe.webhooks.constructEvent(request.rawBody, sig, webhookSecret);
+        const stripe = new stripe_1.default(stripeKey, { apiVersion: "2025-01-27.acacia" });
+        const event = stripe.webhooks.constructEvent(request.rawBody, sig, webhookSecret);
+        switch (event.type) {
+            case "checkout.session.completed": {
+                const session = event.data.object;
+                logger.info(`[Payment] Success! Session: ${session.id}`);
+                break;
+            }
+            default:
+                logger.info(`Unhandled event type ${event.type}`);
+        }
+        response.json({ received: true });
     }
     catch (err) {
-        logger.error("Webhook Signature Verification Failed", err.message);
+        logger.error("Webhook Error", err.message);
         response.status(400).send(`Webhook Error: ${err.message}`);
-        return;
     }
-    // Handle the event
-    switch (event.type) {
-        case "checkout.session.completed":
-            const session = event.data.object;
-            logger.info("Payment Successful for Session:", session.id);
-            break;
-        default:
-            logger.info(`Unhandled event type ${event.type}`);
-    }
-    response.json({ received: true });
 });
 //# sourceMappingURL=index.js.map

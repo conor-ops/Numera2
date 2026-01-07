@@ -46,7 +46,22 @@ export interface PricingItem {
   markupPercent: number;
 }
 
+export interface TodoItem {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: string;
+}
+
+export interface Business {
+  id: string;
+  name: string;
+  createdAt: string;
+  isDefault: boolean;
+}
+
 export interface BusinessData {
+  businessId: string;
   transactions: Transaction[];
   accounts: BankAccount[];
   targets: BudgetTargets;

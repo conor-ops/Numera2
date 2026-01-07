@@ -13,6 +13,7 @@ import {
   Download,
   Lock,
   X,
+  Plus,
   Check,
   Database,
   Crown,
@@ -25,8 +26,53 @@ import {
   ChevronDown,
   ChevronUp,
   Receipt,
-  Layers
+  Layers,
+  AlertCircle,
+  Building,
+  HelpCircle,
+  ArrowRight,
+  Zap
 } from 'lucide-react';
+
+// --- TOUR CONFIGURATION ---
+const TOUR_STEPS = [
+  {
+    id: 'step-switcher',
+    title: 'Workspace Switcher',
+    content: 'Manage multiple businesses. Switch between different entities like Freelance and Agency here.',
+    position: 'bottom'
+  },
+  {
+    id: 'step-bne',
+    title: 'Business Net Exact',
+    content: 'Your true solvency metric. It calculates (AR - AP) + (Liquid - Credit) to show what you really own.',
+    position: 'bottom'
+  },
+  {
+    id: 'step-ai',
+    title: 'AI Executive Summary',
+    content: 'Click the calculator to get a direct stress-test and recommendation from Gemini AI.',
+    position: 'left'
+  },
+  {
+    id: 'step-ledger',
+    title: 'Precision Ledger',
+    content: 'The source of truth. Log bank balances, pending invoices, and upcoming bills here.',
+    position: 'top'
+  },
+  {
+    id: 'step-tools',
+    title: 'Business Tools',
+    content: 'Access professional invoicing, COGS calculators, and the 30-day Runway Trend predictor.',
+    position: 'top'
+  },
+  {
+    id: 'step-palette',
+    title: 'Command Palette',
+    content: 'Pro tip: Press CTRL+K (or CMD+K) anywhere to quickly log expenses using natural language.',
+    position: 'center'
+  }
+];
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Capacitor } from '@capacitor/core';
 import { Keyboard } from '@capacitor/keyboard';
@@ -43,10 +89,11 @@ import { APP_CONFIG } from './config';
 import { initiateCheckout, getFormattedPrice } from './services/paymentService';
 import { triggerHaptic } from './services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
-import { setupDatabase, loadSnapshot, saveSnapshot, saveHistoryRecord, getHistoryRecords } from './services/databaseService';
+import { setupDatabase, loadSnapshot, saveSnapshot, saveHistoryRecord, getHistoryRecords, getBusinesses, createBusiness, ensureDefaultBusiness } from './services/databaseService';
 import { processPendingRecurring } from './services/recurringService';
 
 const INITIAL_DATA: BusinessData = {
+  businessId: '',
   transactions: [
     { id: 'ar1', name: 'Pending Invoice #1024', amount: 8500, type: 'INCOME', date_occurred: new Date().toISOString() },
     { id: 'ar2', name: 'Consulting Retainer', amount: 3200, type: 'INCOME', date_occurred: new Date().toISOString() },
@@ -72,6 +119,177 @@ const INITIAL_DATA: BusinessData = {
     creditTarget: 2500
   },
   pricingSheet: []
+};
+
+// --- FEATURE TOUR COMPONENT ---
+const FeatureTour = ({ 
+  step, 
+  onNext, 
+  onClose 
+}: { 
+  step: typeof TOUR_STEPS[0], 
+  onNext: () => void, 
+  onClose: () => void 
+}) => {
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0, height: 0 });
+
+  useEffect(() => {
+    console.log(`[Tour] Navigating to step: ${step.id}`);
+    const el = document.getElementById(step.id);
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      setCoords({
+        top: rect.top + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+        height: rect.height
+      });
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      console.warn(`[Tour] Target element NOT FOUND: ${step.id}`);
+      // Default to center if element is missing to prevent crash
+      setCoords({
+        top: window.innerHeight / 2,
+        left: window.innerWidth / 2,
+        width: 0,
+        height: 0
+      });
+    }
+  }, [step]);
+
+  return (
+    <div className="fixed inset-0 z-[200] pointer-events-none">
+      {/* Backdrop with hole */}
+      <div 
+        className="absolute inset-0 bg-black/60 transition-all duration-500"
+        style={{
+          clipPath: coords.width > 0 
+            ? `polygon(0% 0%, 0% 100%, ${coords.left}px 100%, ${coords.left}px ${coords.top}px, ${coords.left + coords.width}px ${coords.top}px, ${coords.left + coords.width}px ${coords.top + coords.height}px, ${coords.left}px ${coords.top + coords.height}px, ${coords.left}px 100%, 100% 100%, 100% 0%)`
+            : 'none'
+        }}
+      />
+
+      {/* Tip Card */}
+      <div 
+        className="absolute p-6 bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] w-72 pointer-events-auto animate-in fade-in zoom-in duration-300"
+        style={{
+          top: step.position === 'bottom' ? coords.top + coords.height + 20 : Math.max(20, coords.top - 200),
+          left: Math.max(20, Math.min(window.innerWidth - 300, coords.left + (coords.width / 2) - 144))
+        }}
+      >
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-brand-blue">Feature Tip</span>
+          <button onClick={onClose}><X size={16}/></button>
+        </div>
+        <h3 className="text-lg font-black uppercase mb-2 leading-none">{step.title}</h3>
+        <p className="text-xs font-medium text-gray-600 leading-relaxed mb-6">{step.content}</p>
+        
+        <div className="flex justify-between items-center">
+          <div className="flex gap-1">
+            {TOUR_STEPS.map((_, i) => (
+              <div key={i} className={`w-1.5 h-1.5 rounded-full ${TOUR_STEPS.indexOf(step) === i ? 'bg-black' : 'bg-gray-200'}`} />
+            ))}
+          </div>
+          <button 
+            onClick={() => {
+              console.log('[Tour] Next clicked');
+              onNext();
+            }}
+            className="px-4 py-2 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-brand-blue transition-colors flex items-center gap-2"
+          >
+            {TOUR_STEPS.indexOf(step) === TOUR_STEPS.length - 1 ? 'Finish' : 'Next Step'}
+            <ArrowRight size={12} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- WORKSPACE SWITCHER COMPONENT ---
+const WorkspaceSwitcher = ({ 
+  businesses, 
+  activeBusiness, 
+  onSwitch, 
+  onCreate, 
+  isPro,
+  planType 
+}: { 
+  businesses: Business[], 
+  activeBusiness: Business, 
+  onSwitch: (id: string) => void, 
+  onCreate: () => void,
+  isPro: boolean,
+  planType: string
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const isBusinessTier = isPro && planType === 'business';
+
+  if (!activeBusiness) return null;
+
+  return (
+    <div className="relative">
+      <button 
+        id="step-switcher"
+        onClick={() => {
+          console.log('[Switcher] Toggle clicked');
+          setIsOpen(!isOpen);
+        }}
+        className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 border-2 border-black hover:bg-gray-200 transition-all text-xs font-black uppercase tracking-tight shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none translate-y-0 active:translate-y-0.5"
+      >
+        <Building size={14} />
+        {activeBusiness.name}
+        <ChevronDown size={14} />
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)} />
+          <div className="absolute top-full left-0 mt-2 w-64 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-40 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="p-3 bg-black text-white text-[10px] font-black uppercase tracking-widest flex justify-between items-center">
+              Workspaces
+              {isBusinessTier && <span className="bg-brand-blue px-1.5 py-0.5 rounded-sm">Business</span>}
+            </div>
+            <div className="max-h-64 overflow-y-auto divide-y-2 divide-black/5">
+              {businesses.map((b) => (
+                <button
+                  key={b.id}
+                  onClick={() => { 
+                    console.log(`[Switcher] Switching to: ${b.name}`);
+                    onSwitch(b.id); 
+                    setIsOpen(false); 
+                  }}
+                  className={`w-full text-left p-4 hover:bg-brand-blue/5 transition-colors flex items-center justify-between group ${activeBusiness.id === b.id ? 'bg-brand-blue/10' : ''}`}
+                >
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold uppercase">{b.name}</span>
+                    <span className="text-[9px] text-gray-400 font-mono">Created {new Date(b.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  {activeBusiness.id === b.id && <Check size={14} className="text-brand-blue" />}
+                </button>
+              ))}
+            </div>
+            <div className="p-2 border-t-2 border-black bg-gray-50">
+              <button
+                onClick={() => { 
+                  console.log('[Switcher] Create new clicked');
+                  onCreate(); 
+                  setIsOpen(false); 
+                }}
+                className="w-full py-2 flex items-center justify-center gap-2 bg-white border-2 border-dashed border-gray-300 text-[10px] font-black uppercase text-gray-500 hover:text-brand-blue hover:border-brand-blue transition-all"
+              >
+                <Plus size={14} />
+                New Workspace
+              </button>
+              {!isBusinessTier && (
+                <p className="mt-2 text-[8px] text-center text-gray-400 font-bold uppercase">Upgrade to Business for Unlimited Workspaces</p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
 };
 
 // --- LEGAL MODAL COMPONENT ---
@@ -152,9 +370,9 @@ const PaywallModal = ({ onClose, onSuccess }: { onClose: () => void, onSuccess: 
         } else {
             throw new Error(result.error || "Payment initiation failed");
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Payment cancelled or failed", error);
-        alert("Payment could not be initiated. Please try again.");
+        alert(`Payment Error: ${error.message || 'Please try again.'}`);
     } finally {
         setLoading(false);
     }
@@ -306,12 +524,90 @@ const HistoryModal = ({ onClose, history }: { onClose: () => void, history: Hist
   );
 };
 
+// --- ERROR BOUNDARY COMPONENT ---
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null, errorInfo: any}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    this.setState({ errorInfo });
+    console.error("[Fatal Render Error]", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-white flex items-center justify-center p-8">
+          <div className="max-w-2xl w-full border-4 border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] space-y-6 overflow-hidden">
+            <div className="flex items-center gap-3 text-red-600">
+              <AlertCircle size={40} strokeWidth={3} />
+              <h1 className="text-2xl font-black uppercase tracking-tight">Render Crash Detected</h1>
+            </div>
+            
+            <div className="bg-red-50 border-2 border-red-200 p-4 space-y-2">
+              <p className="font-bold text-red-800 text-sm uppercase">Error Message:</p>
+              <p className="font-mono text-xs font-bold text-red-600 break-words bg-white p-2 border border-red-100">
+                {this.state.error?.toString()}
+              </p>
+            </div>
+
+            {this.state.errorInfo && (
+              <div className="space-y-2">
+                <p className="font-bold text-gray-500 text-[10px] uppercase tracking-widest">Component Stack Trace:</p>
+                <pre className="text-[9px] font-mono p-4 bg-gray-900 text-green-400 border-2 border-black overflow-x-auto max-h-[200px] leading-relaxed">
+                  {this.state.errorInfo.componentStack}
+                </pre>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.reload();
+                }}
+                className="w-full py-4 bg-black text-white font-black uppercase tracking-widest hover:bg-red-600 transition-colors border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none translate-y-0 active:translate-y-1"
+              >
+                Nuke All Local Data & Restart
+              </button>
+              <button 
+                onClick={() => window.location.reload()}
+                className="w-full py-3 bg-white text-black font-bold uppercase tracking-tight hover:bg-gray-100 transition-colors border-2 border-black"
+              >
+                Simple Refresh
+              </button>
+            </div>
+            
+            <p className="text-[10px] font-medium text-gray-400 leading-tight">
+              A "Nuke" will delete all locally stored ledger entries and documents. 
+              Only use this if a Simple Refresh does not resolve the crash.
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // --- MAIN APP COMPONENT ---
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [activeBusiness, setActiveBusiness] = useState<Business | null>(null);
   const [data, setData] = useState<BusinessData>(INITIAL_DATA);
   const [isPro, setIsPro] = useState(false);
+  const [planType, setPlanType] = useState<'pro' | 'business'>('pro');
   const [history, setHistory] = useState<HistoryRecord[]>([]);
+  const [showTour, setShowTour] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
   
   // Freemium limits for FREE users
   const [aiInsightsUsed, setAiInsightsUsed] = useState(0);
@@ -351,32 +647,52 @@ function App() {
   // Initialization Logic
   useEffect(() => {
     const init = async () => {
+      console.log('[App] Starting initialization...');
       try {
         // 1. Setup Database
+        console.log('[App] Setting up database...');
         const isDbReady = await setupDatabase();
         
         if (isDbReady) {
-          // 2. Load Persisted Snapshot
-          const savedData = await loadSnapshot();
+          // 2. Ensure Business Exists & Load All
+          console.log('[App] Loading businesses...');
+          await ensureDefaultBusiness();
+          const businessList = await getBusinesses();
+          setBusinesses(businessList);
+
+          // 3. Determine Active Business
+          const lastActiveId = localStorage.getItem('numera_active_business_id');
+          const found = businessList.find(b => b.id === lastActiveId) || businessList[0];
+          setActiveBusiness(found);
+
+          // 4. Load Persisted Snapshot for THIS business
+          console.log(`[App] Loading snapshot for ${found.name}...`);
+          const savedData = await loadSnapshot(found.id);
           if (savedData) {
             setData(savedData);
+          } else {
+            setData({ ...INITIAL_DATA, businessId: found.id });
           }
           
-          // 3. Load Pro Status (Local)
-          const savedProStatus = localStorage.getItem('numera_pro_status');
-          if (savedProStatus === 'true') {
-            setIsPro(true);
-          }
+          // 5. Force Pro/Business Status for Testing
+          setIsPro(true);
+          setPlanType('business');
+          console.log('[App] Paywalls removed for testing (Business Tier Active)');
 
-          // 4. Check for Stripe Redirects (Success or Cancel)
+          // 6. Check for Stripe Redirects (Success or Cancel)
           const params = new URLSearchParams(window.location.search);
           const paymentSuccess = params.get('payment_success');
           const paymentCanceled = params.get('payment_canceled');
+          const purchasedPlan = (params.get('plan') || 'pro') as 'pro' | 'business';
 
           if (paymentSuccess === 'true') {
              setIsPro(true);
+             setPlanType(purchasedPlan);
              localStorage.setItem('numera_pro_status', 'true');
-             alert("Thank you! Pro features have been unlocked successfully.");
+             localStorage.setItem('numera_plan_type', purchasedPlan);
+             
+             const planLabel = purchasedPlan.toUpperCase();
+             alert(`Thank you! Your ${planLabel} features have been unlocked successfully.`);
           } else if (paymentCanceled === 'true') {
              alert("Payment was canceled. No charges were made.");
           }
@@ -389,30 +705,29 @@ function App() {
              }
           }
 
-          // 5. Load History
-          const savedHistory = await getHistoryRecords();
+          // 7. Load History
+          console.log('[App] Loading history records...');
+          const savedHistory = await getHistoryRecords(found.id);
           setHistory(savedHistory);
           
-          // 6. Process recurring transactions
+          // 8. Process recurring transactions
           console.log('[Recurring] Checking for pending recurring transactions...');
           const { toAdd, toNotify } = processPendingRecurring();
-          console.log('[Recurring] Found:', { toAdd: toAdd.length, toNotify: toNotify.length });
           
           if (toAdd.length > 0) {
-            console.log('[Recurring] Auto-adding transactions:', toAdd);
             setData(prev => ({
               ...prev,
               transactions: [...prev.transactions, ...toAdd]
             }));
           }
           
-          if (toNotify.length > 0) {
-            console.log('[Recurring] Items waiting for confirmation:', toNotify);
-            // TODO: Show notification modal
-          }
+          console.log('[App] Initialization complete.');
+        } else {
+          throw new Error("Database setup failed");
         }
-      } catch (error) {
-        console.error("Initialization failed:", error);
+      } catch (error: any) {
+        console.error("[App] Initialization failed:", error);
+        setInitError(error.message || "Unknown boot error");
       } finally {
         setIsInitialized(true);
       }
@@ -489,12 +804,50 @@ function App() {
     }
   };
 
+  const handleSwitchBusiness = async (id: string) => {
+    if (!activeBusiness || id === activeBusiness.id) return;
+    triggerHaptic(ImpactStyle.Medium);
+    
+    // 1. Save current
+    await saveSnapshot(data);
+
+    // 2. Load new
+    const next = businesses.find(b => b.id === id);
+    if (!next) return;
+
+    setActiveBusiness(next);
+    localStorage.setItem('numera_active_business_id', next.id);
+    
+    const nextData = await loadSnapshot(next.id);
+    if (nextData) setData(nextData);
+    else setData({ ...INITIAL_DATA, businessId: next.id });
+
+    const nextHistory = await getHistoryRecords(next.id);
+    setHistory(nextHistory);
+  };
+
+  const handleCreateBusiness = async () => {
+    const isBusinessTier = isPro && planType === 'business';
+    if (!isBusinessTier && businesses.length >= 1) {
+      setShowPaywall(true);
+      return;
+    }
+
+    const name = window.prompt("Enter workspace name (e.g., 'Freelance', 'Agency'):");
+    if (!name) return;
+
+    triggerHaptic(ImpactStyle.Heavy);
+    const nb = await createBusiness(name);
+    setBusinesses(prev => [...prev, nb]);
+    await handleSwitchBusiness(nb.id);
+  };
+
   // Persistence: Auto-save when data changes
   useEffect(() => {
-    if (isInitialized) {
+    if (isInitialized && !initError && activeBusiness) {
       saveSnapshot(data).catch(err => console.error("Auto-save failed", err));
     }
-  }, [data, isInitialized]);
+  }, [data, isInitialized, initError, activeBusiness]);
 
   // Derived State
   const accountsReceivable = data.transactions.filter(t => t.type === 'INCOME');
@@ -512,60 +865,113 @@ function App() {
 
   // Dynamic Burn: Fixed Overheads + Average of last 3 months of one-off expenses
   const dynamicBurn = useMemo(() => {
-    const threeMonthsAgo = new Date();
-    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-    
-    const recentExpenses = accountsPayable.filter(tx => 
-      new Date(tx.date_occurred) >= threeMonthsAgo
-    );
-    
-    const totalRecent = recentExpenses.reduce((acc, tx) => acc.plus(new Decimal(tx.amount || 0)), new Decimal(0));
-    const monthlyAverageOneOff = totalRecent.div(3).toNumber();
-    
-    return totalFixedOverhead + monthlyAverageOneOff;
+    try {
+      const threeMonthsAgo = new Date();
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+      
+      const recentExpenses = accountsPayable.filter(tx => {
+        if (!tx.date_occurred) return false;
+        const d = new Date(tx.date_occurred);
+        return !isNaN(d.getTime()) && d >= threeMonthsAgo;
+      });
+      
+      const totalRecent = recentExpenses.reduce((acc, tx) => acc.plus(new Decimal(tx.amount || 0)), new Decimal(0));
+      const monthlyAverageOneOff = totalRecent.div(3).toNumber();
+      
+      const result = totalFixedOverhead + (isNaN(monthlyAverageOneOff) ? 0 : monthlyAverageOneOff);
+      return isNaN(result) ? totalFixedOverhead : result;
+    } catch (e) {
+      console.error("Burn calculation failed", e);
+      return totalFixedOverhead;
+    }
   }, [accountsPayable, totalFixedOverhead]);
+
+  const solvencyScore = useMemo(() => {
+    try {
+      if (calculations.totalBank === 0 && calculations.totalAR === 0) return 100;
+
+      // 1. Cash to Debt Ratio (Goal: 2x cash vs credit)
+      const cashRatio = calculations.totalCredit > 0 
+        ? Math.min(1, calculations.totalBank / (calculations.totalCredit * 2))
+        : 1;
+      
+      // 2. Burn Coverage (Goal: 3 months of dynamic burn)
+      const burnCoverage = dynamicBurn > 0
+        ? Math.min(1, calculations.totalBank / (dynamicBurn * 3))
+        : 1;
+
+      // 3. AR Health (Penalty for overdue)
+      const overdueAr = accountsReceivable.filter((tx: any) => {
+        if (!tx.date_due) return false;
+        return new Date(tx.date_due) < new Date() && tx.status !== 'PAID';
+      }).reduce((acc, tx) => acc + (tx.amount || 0), 0);
+      
+      const arPenalty = calculations.totalAR > 0 
+        ? (overdueAr / calculations.totalAR) * 30 
+        : 0;
+
+      const baseScore = (cashRatio * 40) + (burnCoverage * 60);
+      return Math.max(0, Math.round(baseScore - arPenalty));
+    } catch (e) {
+      return 0;
+    }
+  }, [calculations, dynamicBurn, accountsReceivable]);
 
   // Calculations
   const calculations: CalculationResult = useMemo(() => {
-    const sumItems = (items: {amount: number}[]) => 
-      items.reduce((acc, i) => acc.plus(new Decimal(i.amount || 0)), new Decimal(0));
+    try {
+      const sumItems = (items: {amount: number}[]) => 
+        (items || []).reduce((acc, i) => acc.plus(new Decimal(i.amount || 0)), new Decimal(0));
 
-    const totalAR = sumItems(accountsReceivable);
-    const totalOneOffAP = sumItems(accountsPayable);
-    const totalMonthlyAP = sumItems(monthlyOverhead);
-    const totalAnnualAP = sumItems(annualOverhead);
-    const totalAP = totalOneOffAP.plus(totalMonthlyAP).plus(totalAnnualAP);
-    const totalCredit = sumItems(creditCards);
-    const totalBank = sumItems(bankAccounts);
+      const totalAR = sumItems(accountsReceivable);
+      const totalOneOffAP = sumItems(accountsPayable);
+      const totalMonthlyAP = sumItems(monthlyOverhead);
+      const totalAnnualAP = sumItems(annualOverhead);
+      const totalAP = totalOneOffAP.plus(totalMonthlyAP).plus(totalAnnualAP);
+      const totalCredit = sumItems(creditCards);
+      const totalBank = sumItems(bankAccounts);
 
-    const bankBreakdown: Record<string, number> = {};
-    bankAccounts.forEach(acc => {
-      const name = acc.bankName || 'Other';
-      const current = new Decimal(bankBreakdown[name] || 0);
-      bankBreakdown[name] = current.plus(acc.amount || 0).toNumber();
-    });
+      const bankBreakdown: Record<string, number> = {};
+      (bankAccounts || []).forEach(acc => {
+        const name = acc.bankName || 'Other';
+        const current = new Decimal(bankBreakdown[name] || 0);
+        bankBreakdown[name] = current.plus(acc.amount || 0).toNumber();
+      });
 
-    const netReceivables = totalAR.minus(totalAP);
-    const netBank = totalBank.minus(totalCredit);
-    
-    const bneStrict = netReceivables.minus(netBank);
-    const bneEquity = netReceivables.plus(netBank);
+      const netReceivables = totalAR.minus(totalAP);
+      const netBank = totalBank.minus(totalCredit);
+      
+      const bneStrict = netReceivables.minus(netBank);
+      const bneEquity = netReceivables.plus(netBank);
 
-    const bne = useStrictFormula ? bneStrict : bneEquity;
-    const operator = useStrictFormula ? '-' : '+';
-    const bneFormulaStr = `(AR - AP) ${operator} (B - C)`;
+      const bne = useStrictFormula ? bneStrict : bneEquity;
+      const operator = useStrictFormula ? '-' : '+';
+      const bneFormulaStr = `(AR - AP) ${operator} (B - C)`;
 
-    return {
-      totalAR: totalAR.toNumber(),
-      totalAP: totalAP.toNumber(),
-      totalCredit: totalCredit.toNumber(),
-      totalBank: totalBank.toNumber(),
-      bankBreakdown,
-      netReceivables: netReceivables.toNumber(),
-      netBank: netBank.toNumber(),
-      bne: bne.toNumber(),
-      bneFormulaStr
-    };
+      const finalizeNum = (d: Decimal) => {
+        const n = d.toNumber();
+        return isNaN(n) ? 0 : n;
+      };
+
+      return {
+        totalAR: finalizeNum(totalAR),
+        totalAP: finalizeNum(totalAP),
+        totalCredit: finalizeNum(totalCredit),
+        totalBank: finalizeNum(totalBank),
+        bankBreakdown,
+        netReceivables: finalizeNum(netReceivables),
+        netBank: finalizeNum(netBank),
+        bne: finalizeNum(bne),
+        bneFormulaStr
+      };
+    } catch (e) {
+      console.error("Calculations crash", e);
+      return {
+        totalAR: 0, totalAP: 0, totalCredit: 0, totalBank: 0,
+        bankBreakdown: {}, netReceivables: 0, netBank: 0, bne: 0,
+        bneFormulaStr: 'ERROR'
+      };
+    }
   }, [accountsReceivable, accountsPayable, monthlyOverhead, annualOverhead, creditCards, bankAccounts, useStrictFormula]);
 
   // Handlers
@@ -636,7 +1042,7 @@ function App() {
   };
 
   const handleLogBalance = async () => {
-    if (isLogging) return;
+    if (isLogging || !activeBusiness) return;
     await triggerHaptic(ImpactStyle.Heavy);
     setIsLogging(true);
     
@@ -652,7 +1058,7 @@ function App() {
     };
 
     try {
-      await saveHistoryRecord(record);
+      await saveHistoryRecord(record, activeBusiness.id);
       setHistory(prev => [record, ...prev]);
       // alert("Balance Logged Successfully"); // Consider replacing alerts with a less intrusive toast notification system in the future
     } catch (err) {
@@ -664,6 +1070,7 @@ function App() {
   };
 
   const handleAiGenerate = async () => {
+    if (!activeBusiness) return;
     await triggerHaptic(ImpactStyle.Medium);
     
     // Check if free user has exceeded limit
@@ -696,11 +1103,25 @@ function App() {
 
   const handleClearData = async () => {
     await triggerHaptic(ImpactStyle.Heavy);
-    if (window.confirm("Are you sure you want to clear all data? This cannot be undone.")) {
-      setData({ transactions: [], accounts: [] });
+    if (window.confirm("Are you sure you want to clear ALL data? This will wipe your ledger, documents, and settings. This cannot be undone.")) {
+      setData({ transactions: [], accounts: [], targets: { arTarget: 0, apTarget: 0, creditTarget: 0 }, monthlyOverhead: [], annualOverhead: [], pricingSheet: [] });
       if (Capacitor.getPlatform() === 'web') {
-        localStorage.removeItem('numera_web_db');
+        const keysToRemove = [
+          'numera_mock_db', 
+          'numera_docs', 
+          'numera_mock_history', 
+          'numera_runway_history',
+          'numera_pro_status',
+          'numera_ai_used',
+          'numera_ai_reset_date'
+        ];
+        // Remove individual keys + any keys starting with numera_setting_
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith('numera_setting_')) localStorage.removeItem(k);
+        });
       }
+      window.location.reload();
     }
   };
 
@@ -723,6 +1144,32 @@ function App() {
     { name: 'Liabilities', value: calculations.totalAP + calculations.totalCredit, fill: '#000000' }, 
     { name: 'Net', value: calculations.bne, fill: '#2563EB' }, 
   ];
+
+  if (initError) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-8">
+        <div className="max-w-md w-full border-4 border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] space-y-6">
+           <div className="flex items-center gap-3 text-red-600">
+             <AlertCircle size={40} strokeWidth={3} />
+             <h1 className="text-2xl font-black uppercase">Recovery Mode</h1>
+           </div>
+           <p className="font-mono text-sm font-bold bg-gray-100 p-4 border-2 border-black">
+             ERROR: {initError}
+           </p>
+           <p className="text-xs font-medium leading-relaxed">
+             The local database failed to initialize. This can happen if local storage is corrupted or a recent update changed the data format.
+           </p>
+           <button 
+             onClick={handleClearData}
+             className="w-full py-4 bg-black text-white font-black uppercase tracking-widest hover:bg-red-600 transition-colors border-2 border-black"
+           >
+             Hard Reset (Wipe Data)
+           </button>
+           <p className="text-[10px] text-center text-gray-400 font-bold uppercase">WARNING: This will delete all your locally stored entries.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isInitialized) {
     return (
@@ -776,15 +1223,43 @@ function App() {
       
       <div className="max-w-7xl mx-auto space-y-8 md:space-y-12">
         <header className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 border-b-4 border-black pb-6">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
               <SquareActivity className="text-brand-blue w-8 h-8 md:w-10 md:h-10" strokeWidth={2.5} />
               <h1 className="text-4xl md:text-5xl font-extrabold tracking-tighter text-black">
                 {APP_CONFIG.branding.name}
               </h1>
               {isPro && <div className="bg-black text-white px-2 py-0.5 text-xs font-bold uppercase rounded-sm flex items-center gap-1"><Crown size={12}/> PRO</div>}
             </div>
-            <p className="text-sm md:text-lg font-medium text-black">{APP_CONFIG.branding.description}</p>
+            <div className="flex flex-wrap items-center gap-4">
+              <p className="text-sm md:text-lg font-medium text-black">{APP_CONFIG.branding.description}</p>
+              {activeBusiness && (
+                <WorkspaceSwitcher 
+                  businesses={businesses} 
+                  activeBusiness={activeBusiness} 
+                  onSwitch={handleSwitchBusiness} 
+                  onCreate={handleCreateBusiness}
+                  isPro={isPro}
+                  planType={planType}
+                />
+              )}
+              <button 
+                onClick={() => { 
+                  console.log('[App] Feature Tips clicked');
+                  if (!activeBusiness) {
+                    console.error('[App] Cannot start tour: activeBusiness is null');
+                    return;
+                  }
+                  triggerHaptic(ImpactStyle.Light); 
+                  setShowTour(true); 
+                  setTourStep(0); 
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 bg-brand-blue text-white border-2 border-black hover:bg-blue-700 transition-all text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none translate-y-0 active:translate-y-0.5"
+              >
+                <HelpCircle size={14} />
+                Feature Tips
+              </button>
+            </div>
           </div>
           
           <div className="flex flex-col sm:flex-row sm:flex-wrap items-start md:items-end gap-4 w-full md:w-auto">
@@ -846,7 +1321,7 @@ function App() {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
-          <div className="lg:col-span-8 bg-white border-2 border-black p-4 md:p-8 shadow-swiss relative">
+          <div id="step-bne" className="lg:col-span-8 bg-white border-2 border-black p-4 md:p-8 shadow-swiss relative">
               <div className="flex flex-col sm:flex-row justify-between items-start mb-6 gap-2">
                 <h2 className="text-lg md:text-xl font-bold uppercase tracking-tight">Business Net Exact</h2>
                 <span className="font-mono text-xs bg-black text-white px-2 py-1">
@@ -890,13 +1365,37 @@ function App() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-8 items-start">
+        <div id="step-ledger" className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-8 items-start">
           <div className="space-y-8">
-            <BankInput accounts={bankAccounts} onUpdate={handleUpdateBanks} defaultExpanded={true} />
-            <FinancialInput title="Credit Cards" items={creditCards} onUpdate={handleUpdateCredit} icon={<CreditCard className="text-black" size={24} />} defaultExpanded={true} type="OTHER" />
+            <BankInput 
+              accounts={bankAccounts} 
+              onUpdate={handleUpdateBanks} 
+              defaultExpanded={true} 
+              isPro={isPro}
+              onUpgradeClick={() => setShowPaywall(true)}
+            />
+            <FinancialInput 
+              title="Credit Cards" 
+              items={creditCards} 
+              onUpdate={handleUpdateCredit} 
+              icon={<CreditCard className="text-black" size={24} />} 
+              defaultExpanded={true} 
+              type="OTHER" 
+              isPro={isPro}
+              onUpgradeClick={() => setShowPaywall(true)}
+            />
           </div>
           <div className="space-y-8">
-            <FinancialInput title="Accounts Receivable" items={accountsReceivable} onUpdate={(items) => handleUpdateTransactions('INCOME', items)} icon={<ArrowRightLeft className="text-black" size={24} />} defaultExpanded={true} type="INCOME" />
+            <FinancialInput 
+              title="Accounts Receivable" 
+              items={accountsReceivable} 
+              onUpdate={(items) => handleUpdateTransactions('INCOME', items)} 
+              icon={<ArrowRightLeft className="text-black" size={24} />} 
+              defaultExpanded={true} 
+              type="INCOME" 
+              isPro={isPro}
+              onUpgradeClick={() => setShowPaywall(true)}
+            />
             
             {/* UNIFIED ACCOUNTS PAYABLE SECTION */}
             <div className="p-4 md:p-6 bg-white border-2 border-black shadow-swiss flex flex-col">
@@ -930,7 +1429,7 @@ function App() {
                           <Layers size={18} className="text-brand-blue" />
                           <h4 className="font-extrabold uppercase text-sm tracking-tight group-hover:text-black transition-colors">Overheads</h4>
                           <div className="ml-auto font-mono text-xs font-bold bg-black text-white px-2 py-0.5">
-                              ${totalOverhead.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${totalFixedOverhead.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </div>
                       </div>
                       
@@ -944,6 +1443,8 @@ function App() {
                             variant="nested"
                             defaultExpanded={false}
                             type="OTHER"
+                            isPro={isPro}
+                            onUpgradeClick={() => setShowPaywall(true)}
                             />
 
                             <FinancialInput 
@@ -954,6 +1455,8 @@ function App() {
                             variant="nested"
                             defaultExpanded={false}
                             type="OTHER"
+                            isPro={isPro}
+                            onUpgradeClick={() => setShowPaywall(true)}
                             />
                         </div>
                       )}
@@ -967,6 +1470,8 @@ function App() {
                     variant="nested"
                     defaultExpanded={true}
                     type="EXPENSE"
+                    isPro={isPro}
+                    onUpgradeClick={() => setShowPaywall(true)}
                   />
                 </div>
               )}
@@ -998,7 +1503,7 @@ function App() {
                  </div>
               </div>
 
-              <div className="bg-brand-gray p-4 md:p-6 border-2 border-black">
+              <div id="step-ai" className="bg-brand-gray p-4 md:p-6 border-2 border-black">
                  <div className="flex justify-between items-center mb-4">
                     <h3 className="text-black font-bold uppercase flex items-center gap-2">
                         <BrainCircuit size={20} />
@@ -1033,7 +1538,7 @@ function App() {
         </div>
 
 
-        <div className="space-y-6" id="tools-section">
+        <div id="step-tools" className="space-y-6">
            <button 
              onClick={toggleTools}
              className="w-full flex items-center justify-between group py-2 border-b-2 border-black/10 hover:border-black transition-all"
@@ -1052,6 +1557,7 @@ function App() {
            {isToolsExpanded && (
              <div className="animate-in fade-in slide-in-from-top-4 duration-300">
                 <BusinessTools 
+                  businessId={activeBusiness?.id || ''}
                   isPro={isPro} 
                   onShowPaywall={() => setShowPaywall(true)} 
                   onRecordToAR={handleRecordTransaction} 
@@ -1105,6 +1611,7 @@ function App() {
                 onClick={(e) => { 
                   e.stopPropagation(); 
                   localStorage.removeItem('numera_pro_status');
+                  localStorage.removeItem('numera_plan_type');
                   setIsPro(false);
                   window.location.reload();
                 }}
@@ -1126,8 +1633,26 @@ function App() {
            </div>
         </footer>
       </div>
+
+      {showTour && (
+        <FeatureTour 
+          step={TOUR_STEPS[tourStep]} 
+          onNext={() => {
+            triggerHaptic(ImpactStyle.Medium);
+            if (tourStep < TOUR_STEPS.length - 1) setTourStep(tourStep + 1);
+            else setShowTour(false);
+          }}
+          onClose={() => setShowTour(false)}
+        />
+      )}
     </div>
   );
 }
 
-export default App;
+export default function WrappedApp() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+}

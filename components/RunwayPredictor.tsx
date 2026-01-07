@@ -2,6 +2,8 @@
 import React, { useState, useMemo } from 'react';
 import { Zap, Clock, AlertTriangle, TrendingDown, Crown, RefreshCcw, Lock } from 'lucide-react';
 import { Decimal } from 'decimal.js';
+import React, { useState, useEffect } from 'react';
+import { Decimal } from 'decimal.js';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, AreaChart, Area } from 'recharts';
 import { triggerHaptic } from '../services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
@@ -23,7 +25,8 @@ const RunwayPredictor: React.FC<RunwayPredictorProps> = ({ bne, monthlyBurn, pen
   const [history, setHistory] = useState<RunwaySnapshot[]>([]);
 
   const dailyBurn = new Decimal(monthlyBurn).div(30);
-  const daysRemaining = monthlyBurn > 0 ? new Decimal(bne).div(dailyBurn).toNumber() : 999;
+  let daysRemaining = monthlyBurn > 0 ? new Decimal(bne).div(dailyBurn).toNumber() : 999;
+  if (isNaN(daysRemaining) || !isFinite(daysRemaining)) daysRemaining = 999;
   
   // Record Snapshot & Load History
   useEffect(() => {

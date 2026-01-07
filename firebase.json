@@ -9,19 +9,19 @@
     "rewrites": [
       {
         "source": "/api/generateFinancialInsight",
-        "function": "generateFinancialInsight"
+        "run": { "serviceId": "generatefinancialinsight", "region": "us-central1" }
       },
       {
         "source": "/api/generateRunwayInsight",
-        "function": "generateRunwayInsight"
+        "run": { "serviceId": "generaterunwayinsight", "region": "us-central1" }
       },
       {
         "source": "/api/createStripeCheckoutSession",
-        "function": "createStripeCheckoutSession"
+        "run": { "serviceId": "createstripecheckoutsession", "region": "us-central1" }
       },
       {
         "source": "/api/stripeWebhook",
-        "function": "stripeWebhook"
+        "run": { "serviceId": "stripewebhook", "region": "us-central1" }
       },
       {
         "source": "**",

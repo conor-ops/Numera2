@@ -1,7 +1,6 @@
 import { CalculationResult } from "../types";
 
 // We use relative paths here. Firebase Hosting handles the rewrite to the Cloud Function.
-// This prevents CORS issues and manages environment URLs automatically.
 const INSIGHT_ENDPOINT = '/api/generateFinancialInsight';
 const RUNWAY_ENDPOINT = '/api/generateRunwayInsight';
 

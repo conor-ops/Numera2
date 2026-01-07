@@ -14,6 +14,8 @@ interface FinancialInputProps {
   variant?: 'card' | 'nested';
   defaultExpanded?: boolean;
   type?: 'INCOME' | 'EXPENSE' | 'OTHER';
+  isPro: boolean;
+  onUpgradeClick: () => void;
 }
 
 const FinancialInput: React.FC<FinancialInputProps> = ({
@@ -23,12 +25,29 @@ const FinancialInput: React.FC<FinancialInputProps> = ({
   icon,
   variant = 'card',
   defaultExpanded = true,
-  type = 'OTHER'
+  type = 'OTHER',
+  isPro,
+  onUpgradeClick
 }) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
+  const getLimit = () => {
+    if (isPro) return Infinity;
+    if (title === 'Credit Cards') return 1;
+    if (title === 'Accounts Receivable') return 5;
+    if (title === 'One-Off Expenses') return 7; // This is AP
+    return Infinity;
+  };
+
   const addItem = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    if (items.length >= getLimit()) {
+      triggerHaptic(ImpactStyle.Medium);
+      onUpgradeClick();
+      return;
+    }
+
     triggerHaptic(ImpactStyle.Medium);
     const newItem: any = { id: crypto.randomUUID(), name: '', amount: 0 };
     if (type !== 'OTHER') {

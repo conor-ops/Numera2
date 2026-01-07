@@ -1,9 +1,3 @@
-npm run dev                      # Runs on http://localhost:3000
-data.transactions[0].amount = 100;  // React won't detect change
-npx capacitor-assets generate
-npm run build
-npx cap sync
-
 # Numera2 AI Coding Agent Instructions
 
 ## Project Overview

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Plus, Trash2, Tag, Calculator, TrendingUp, Package, X } from 'lucide-react';
+import { Plus, Trash2, Tag, Calculator, TrendingUp, Package, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { PricingItem } from '../types';
 import { triggerHaptic } from '../services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
@@ -33,7 +33,7 @@ const PricingCalculator: React.FC<PricingCalculatorProps> = ({
   };
 
   const updateItem = (id: string, field: keyof PricingItem, value: any) => {
-    triggerHaptic(ImpactStyle.Light);
+    if (field === 'markupPercent') triggerHaptic(ImpactStyle.Light);
     onUpdate(items.map(item => item.id === id ? { ...item, [field]: value } : item));
   };
 
@@ -60,13 +60,13 @@ const PricingCalculator: React.FC<PricingCalculatorProps> = ({
   };
 
   return (
-    <div className="bg-white border-2 border-black shadow-swiss flex flex-col min-h-[600px] animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <div className="bg-black text-white p-4 flex justify-between items-center sticky top-0 z-20">
+    <div className="bg-white border-3 border-black shadow-swiss flex flex-col min-h-[600px] animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <div className="bg-brand-blue text-white p-4 flex justify-between items-center sticky top-0 z-20 border-b-2 border-black">
         <div className="flex items-center gap-3">
-          <Calculator size={20} className="text-brand-blue" />
-          <h3 className="font-bold uppercase text-xs tracking-widest">COGS & Pricing Strategy</h3>
+          <Calculator size={20} className="text-white" />
+          <h3 className="font-black uppercase text-xs tracking-widest">Profitability Intel Engine</h3>
         </div>
-        <button onClick={onClose} className="hover:text-red-500 transition-colors">
+        <button onClick={onClose} className="hover:rotate-90 transition-transform duration-200">
           <X size={20} />
         </button>
       </div>
@@ -74,66 +74,72 @@ const PricingCalculator: React.FC<PricingCalculatorProps> = ({
       <div className="p-4 md:p-8 space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
           <div className="p-4 bg-gray-50 border-2 border-black flex items-center gap-4">
-            <Package className="text-brand-blue" />
+            <Package className="text-brand-blue" size={32} />
             <div>
-              <p className="text-[10px] font-bold uppercase text-gray-400">Inventory Items</p>
-              <p className="text-xl font-mono font-bold">{items.length}</p>
+              <p className="text-[10px] font-black uppercase text-gray-400 tracking-tighter">Strategic SKUs</p>
+              <p className="text-2xl font-mono font-black">{items.length}</p>
             </div>
           </div>
           <div className="p-4 bg-black text-white border-2 border-black flex items-center gap-4">
-            <TrendingUp className="text-brand-blue" />
+            <TrendingUp className="text-brand-blue" size={32} />
             <div>
-              <p className="text-[10px] font-bold uppercase text-gray-500">Average Markup</p>
-              <p className="text-xl font-mono font-bold">
+              <p className="text-[10px] font-black uppercase text-gray-500 tracking-tighter">Fleet Margin Avg</p>
+              <p className="text-2xl font-mono font-black text-brand-blue">
                 {items.length > 0 
-                  ? (items.reduce((acc, i) => acc + (i.markupPercent || 0), 0) / items.length).toFixed(1)
+                  ? (items.reduce((acc, i) => {
+                      const m = calculateMetrics(i);
+                      return acc + m.margin;
+                    }, 0) / items.length).toFixed(1)
                   : "0.0"}%
               </p>
             </div>
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           {items.map((item) => {
             const metrics = calculateMetrics(item);
+            const isDangerZone = metrics.margin < 30;
+            const isOptimalZone = metrics.margin >= 50;
+
             return (
-              <div key={item.id} className="border-2 border-black p-4 md:p-6 bg-white hover:bg-gray-50 transition-colors group">
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+              <div key={item.id} className={`border-3 border-black p-4 md:p-6 bg-white transition-all ${isDangerZone ? 'shadow-[4px_4px_0px_0px_rgba(220,38,38,1)]' : 'shadow-swiss'}`}>
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
                   
                   {/* Basic Info */}
                   <div className="xl:col-span-4 space-y-4">
                     <div>
-                      <label className="text-[10px] font-bold uppercase text-gray-400 block mb-1">Item / SKU Description</label>
+                      <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Entity / Service Name</label>
                       <input 
                         type="text" 
                         value={item.name}
                         onChange={e => updateItem(item.id, 'name', e.target.value)}
-                        placeholder="e.g. Premium Leather Widget"
-                        className="w-full p-2 border-b border-black text-sm font-bold bg-transparent outline-none focus:text-brand-blue transition-colors"
+                        placeholder="e.g. Agency Retainer / Hardware Kit"
+                        className="w-full p-2 border-b-2 border-black text-sm font-black bg-transparent outline-none focus:text-brand-blue transition-colors"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-[10px] font-bold uppercase text-gray-400 block mb-1">Supplier Cost</label>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1 underline">Unit COGS</label>
                         <div className="relative">
-                          <span className="absolute left-2 top-2 text-[10px] font-mono">$</span>
+                          <span className="absolute left-2 top-2 text-[10px] font-mono font-bold">$</span>
                           <input 
                             type="number"
                             value={item.supplierCost || ''}
                             onChange={e => updateItem(item.id, 'supplierCost', parseFloat(e.target.value) || 0)}
-                            className="w-full p-2 pl-5 text-xs font-mono font-bold border border-gray-200 outline-none focus:border-black"
+                            className="w-full p-2 pl-5 text-xs font-mono font-black border-2 border-black outline-none focus:bg-gray-50"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold uppercase text-gray-400 block mb-1">Freight/Ops</label>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1 underline">Ops/Freight</label>
                         <div className="relative">
-                          <span className="absolute left-2 top-2 text-[10px] font-mono">$</span>
+                          <span className="absolute left-2 top-2 text-[10px] font-mono font-bold">$</span>
                           <input 
                             type="number"
                             value={item.freightCost || ''}
                             onChange={e => updateItem(item.id, 'freightCost', parseFloat(e.target.value) || 0)}
-                            className="w-full p-2 pl-5 text-xs font-mono font-bold border border-gray-200 outline-none focus:border-black"
+                            className="w-full p-2 pl-5 text-xs font-mono font-black border-2 border-black outline-none focus:bg-gray-50"
                           />
                         </div>
                       </div>
@@ -142,48 +148,65 @@ const PricingCalculator: React.FC<PricingCalculatorProps> = ({
 
                   {/* Markup Control */}
                   <div className="xl:col-span-3">
-                    <label className="text-[10px] font-bold uppercase text-gray-400 block mb-1">Markup Strategy (%)</label>
+                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Target Markup (%)</label>
                     <div className="flex items-center gap-4">
                       <input 
                         type="range"
                         min="0"
-                        max="200"
+                        max="300"
                         value={item.markupPercent}
                         onChange={e => updateItem(item.id, 'markupPercent', parseInt(e.target.value))}
-                        className="flex-grow accent-brand-blue"
+                        className="flex-grow accent-black"
                       />
-                      <div className="w-16">
+                      <div className="w-20">
                         <input 
                           type="number"
                           value={item.markupPercent}
                           onChange={e => updateItem(item.id, 'markupPercent', parseInt(e.target.value) || 0)}
-                          className="w-full p-2 border-2 border-black text-center text-xs font-mono font-bold"
+                          className="w-full p-2 border-2 border-black text-center text-sm font-mono font-black"
                         />
                       </div>
                     </div>
-                    <div className="mt-4 p-3 bg-gray-100 border border-gray-200 flex justify-between items-center">
-                      <span className="text-[10px] font-bold uppercase text-gray-500">Total Unit COGS</span>
-                      <span className="text-sm font-mono font-bold">${metrics.unitCOGS.toFixed(2)}</span>
+                    
+                    <div className="mt-6">
+                       {isDangerZone ? (
+                         <div className="p-3 bg-red-600 text-white border-2 border-black flex items-center gap-2 animate-pulse">
+                            <AlertCircle size={16} strokeWidth={3} />
+                            <span className="text-[10px] font-black uppercase tracking-tighter text-red-100">Caution: Critical Margin</span>
+                         </div>
+                       ) : isOptimalZone ? (
+                         <div className="p-3 bg-green-600 text-white border-2 border-black flex items-center gap-2">
+                            <CheckCircle2 size={16} strokeWidth={3} />
+                            <span className="text-[10px] font-black uppercase tracking-tighter text-green-100">Safe: Optimal Growth</span>
+                         </div>
+                       ) : (
+                         <div className="p-3 bg-gray-100 border-2 border-black flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase text-gray-400">Total Unit COGS</span>
+                            <span className="text-sm font-mono font-black">${metrics.unitCOGS.toFixed(2)}</span>
+                         </div>
+                       )}
                     </div>
                   </div>
 
                   {/* Results Panel */}
-                  <div className="xl:col-span-5 grid grid-cols-2 gap-4 border-l-0 xl:border-l-2 border-black xl:pl-6">
+                  <div className="xl:col-span-5 grid grid-cols-2 gap-4 border-l-0 xl:border-l-2 border-black xl:pl-8">
                     <div className="space-y-2">
-                      <p className="text-[10px] font-bold uppercase text-gray-400">Unit Profit</p>
-                      <p className="text-xl font-mono font-bold text-green-600">+${metrics.grossProfit.toFixed(2)}</p>
-                      <div className="text-[10px] font-bold uppercase bg-green-50 text-green-700 px-2 py-0.5 inline-block">
+                      <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Unit Profit</p>
+                      <p className={`text-2xl font-mono font-black ${isDangerZone ? 'text-red-600' : 'text-green-600'}`}>
+                        +${metrics.grossProfit.toFixed(2)}
+                      </p>
+                      <div className={`text-[10px] font-black uppercase px-2 py-1 inline-block border ${isDangerZone ? 'bg-red-50 border-red-600 text-red-600' : 'bg-green-50 border-green-600 text-green-600'}`}>
                         {metrics.margin.toFixed(1)}% Margin
                       </div>
                     </div>
                     <div className="space-y-2 text-right">
-                      <p className="text-[10px] font-bold uppercase text-gray-400">Suggested Retail (SRP)</p>
-                      <p className="text-3xl font-mono font-bold text-brand-blue">${metrics.srp.toFixed(2)}</p>
+                      <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Recommended SRP</p>
+                      <p className="text-4xl font-mono font-black text-black tracking-tighter">${metrics.srp.toFixed(2)}</p>
                       <button 
                         onClick={() => removeItem(item.id)}
-                        className="text-gray-300 hover:text-red-600 transition-colors p-1"
+                        className="text-gray-300 hover:text-red-600 transition-colors mt-4"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={20} />
                       </button>
                     </div>
                   </div>
@@ -194,14 +217,14 @@ const PricingCalculator: React.FC<PricingCalculatorProps> = ({
           })}
 
           {items.length === 0 && (
-            <div className="py-20 text-center border-2 border-dashed border-gray-200">
-              <Tag size={48} className="mx-auto text-gray-200 mb-4" />
-              <p className="text-sm font-bold uppercase text-gray-400 tracking-widest">No pricing strategies recorded</p>
+            <div className="py-24 text-center border-4 border-dashed border-gray-100 grayscale hover:grayscale-0 transition-all">
+              <Tag size={64} className="mx-auto text-gray-200 mb-4" />
+              <p className="text-sm font-black uppercase text-gray-400 tracking-widest">Pricing Strategy Required</p>
               <button 
                 onClick={addItem}
-                className="mt-4 px-6 py-2 bg-black text-white text-xs font-bold uppercase hover:bg-brand-blue transition-all"
+                className="mt-6 px-10 py-4 bg-black text-white text-xs font-black uppercase hover:bg-brand-blue transition-all border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none translate-y-0 hover:translate-y-1"
               >
-                Add My First Item
+                Launch Strategizer
               </button>
             </div>
           )}
@@ -210,25 +233,26 @@ const PricingCalculator: React.FC<PricingCalculatorProps> = ({
         {items.length > 0 && (
           <button 
             onClick={addItem}
-            className="w-full py-4 border-2 border-dashed border-black hover:border-brand-blue hover:bg-blue-50 text-gray-400 hover:text-brand-blue font-bold uppercase text-xs transition-all flex items-center justify-center gap-2"
+            className="w-full py-6 border-2 border-dashed border-black hover:border-brand-blue hover:bg-blue-50 text-gray-400 hover:text-brand-blue font-black uppercase text-xs transition-all flex items-center justify-center gap-3"
           >
-            <Plus size={16} /> Add Pricing Strategy
+            <Plus size={20} /> Add Next Strategic Item
           </button>
         )}
       </div>
 
-      <div className="p-6 border-t-2 border-black bg-gray-50 mt-auto flex flex-col sm:flex-row gap-4">
+      <div className="p-6 border-t-3 border-black bg-gray-50 mt-auto flex flex-col sm:flex-row gap-6">
         <div className="flex-grow">
-          <p className="text-[10px] font-bold uppercase text-gray-400 leading-tight">
-            PRICING LOGIC: SRP = (Supplier Cost + Freight) × (1 + Markup %). 
-            Gross Margin reflects the percentage of SRP that is profit after COGS.
+          <p className="text-[9px] font-black uppercase text-gray-400 leading-tight max-w-xl">
+            PRECISION LOGIC: Suggested Retail Price (SRP) leverages Unit COGS × (1 + Markup Strategy). 
+            Gross Margin represents the percentage of total revenue remaining after direct costs. 
+            Maintain fleet margins above 30% for sustainable operations.
           </p>
         </div>
         <button 
           onClick={onClose}
-          className="px-8 py-3 bg-black text-white font-bold uppercase text-xs hover:bg-brand-blue transition-all shadow-swiss hover:shadow-none"
+          className="px-12 py-4 bg-black text-white font-black uppercase text-xs hover:bg-green-600 transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-1 border-2 border-black"
         >
-          Confirm Strategies
+          Deploy Pricing Strategies
         </button>
       </div>
     </div>

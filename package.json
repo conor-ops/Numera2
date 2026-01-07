@@ -18,6 +18,8 @@
     "@google/genai": "^1.33.0",
     "decimal.js": "10.4.3",
     "firebase": "^12.7.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.4",
     "lucide-react": "^0.560.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

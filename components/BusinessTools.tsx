@@ -30,6 +30,7 @@ import { LineItem, BusinessDocument, Transaction, BusinessProfile, BudgetTargets
 import { triggerHaptic } from '../services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
 import { saveDocument, getDocuments, deleteDocument, getSetting, setSetting } from '../services/databaseService';
+import { generatePdf } from '../services/pdfService';
 import BudgetPlanner from './BudgetPlanner';
 import PricingCalculator from './PricingCalculator';
 import TodoList from './TodoList'; // UN-COMMENTED
@@ -38,6 +39,7 @@ import HourlyRateCalculator from './HourlyRateCalculator'; // UN-COMMENTED
 import RunwayPredictor from './RunwayPredictor'; // New import
 
 interface BusinessToolsProps {
+  businessId: string;
   onRecordToAR: (tx: Transaction) => void;
   isPro: boolean;
   onShowPaywall: () => void;
@@ -68,6 +70,7 @@ const ProBadge = () => (
 );
 
 const BusinessTools: React.FC<BusinessToolsProps> = ({ 
+  businessId,
   onRecordToAR, 
   isPro, 
   onShowPaywall,
@@ -84,17 +87,20 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
   const [doc, setDoc] = useState<BusinessDocument | null>(null);
   const [profile, setProfile] = useState<BusinessProfile>(INITIAL_PROFILE);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const loadToolsData = async () => {
-      const docs = await getDocuments();
-      const savedProfile = await getSetting('business_profile');
+      setIsLoading(true);
+      const docs = await getDocuments(businessId);
+      const savedProfile = await getSetting('business_profile', businessId);
       if (savedProfile) setProfile(JSON.parse(savedProfile));
+      else setProfile(INITIAL_PROFILE); // Reset to default if new business
       setSavedDocs(docs);
       setIsLoading(false);
     };
     loadToolsData();
-  }, []);
+  }, [businessId]);
 
   const handleSaveProfile = async (newProfile: BusinessProfile) => {
     if (!isPro) {
@@ -102,7 +108,7 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
       return;
     }
     setProfile(newProfile);
-    await setSetting('business_profile', JSON.stringify(newProfile));
+    await setSetting('business_profile', businessId, JSON.stringify(newProfile));
     triggerHaptic(ImpactStyle.Heavy);
     setActiveView('PORTAL');
   };
@@ -140,8 +146,8 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
       return;
     }
     if (!doc) return;
-    await saveDocument(doc);
-    const docs = await getDocuments();
+    await saveDocument(doc, businessId);
+    const docs = await getDocuments(businessId);
     setSavedDocs(docs);
     triggerHaptic(ImpactStyle.Medium);
     setActiveView('PORTAL');
@@ -154,7 +160,7 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
       return;
     }
     if (!window.confirm("Delete this document?")) return;
-    await deleteDocument(id);
+    await deleteDocument(id, businessId);
     setSavedDocs(prev => prev.filter(d => d.id !== id));
     triggerHaptic(ImpactStyle.Medium);
   };
@@ -233,7 +239,7 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
     };
     onRecordToAR(tx);
     const updatedDoc: BusinessDocument = { ...doc, status: 'RECORDED' };
-    await saveDocument(updatedDoc);
+    await saveDocument(updatedDoc, businessId);
     setSavedDocs(prev => prev.map(d => d.id === doc.id ? updatedDoc : d));
     setActiveView('PORTAL');
     alert("Transaction posted to Ledger.");
@@ -246,6 +252,29 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
     }
     triggerHaptic(ImpactStyle.Medium);
     setDoc({ ...doc!, type: 'INVOICE' });
+  };
+
+  const handleExportPDF = async () => {
+    if (!doc) return;
+    triggerHaptic(ImpactStyle.Medium);
+    
+    if (!isPro) {
+      onShowPaywall();
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+      const fileName = `${doc.type}_${doc.number}_${doc.clientName || 'Client'}`.replace(/\s+/g, '_');
+      const success = await generatePdf('invoice-paper', fileName);
+      if (success) {
+        // Optional: Could add a toast notification here
+      } else {
+        alert("Failed to generate PDF. Please try again.");
+      }
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   if (isLoading) return <div className="h-48 flex items-center justify-center font-mono animate-pulse">BOOTING TOOLS...</div>;
@@ -497,7 +526,7 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
         </div>
       )}
 
-      <div className="p-4 md:p-10 space-y-10 flex-grow">
+      <div id="invoice-paper" className="p-4 md:p-10 space-y-10 flex-grow bg-white">
         {/* Paper Header */}
         <div className="flex flex-col md:flex-row justify-between gap-8 border-b-2 border-black pb-8">
            <div className="space-y-2 max-w-sm">
@@ -676,14 +705,16 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
           </button>
         )}
         <button 
-          onClick={() => {
-            triggerHaptic(ImpactStyle.Light);
-            if (!isPro) onShowPaywall();
-            else alert("PDF Engine Initialized...");
-          }}
-          className="flex-1 py-4 bg-black text-white font-bold uppercase text-sm border-2 border-black shadow-swiss hover:shadow-none transition-all flex items-center justify-center gap-2"
+          onClick={handleExportPDF}
+          disabled={isExporting}
+          className="flex-1 py-4 bg-black text-white font-bold uppercase text-sm border-2 border-black shadow-swiss hover:shadow-none transition-all flex items-center justify-center gap-2 disabled:opacity-50"
         >
-          {!isPro && <Lock size={16}/>} <Download size={18}/> Export PDF
+          {isExporting ? (
+            <RefreshCw size={18} className="animate-spin" />
+          ) : (
+            !isPro ? <Lock size={16}/> : <Download size={18}/>
+          )}
+          {isExporting ? 'Generating...' : 'Export PDF'}
         </button>
       </div>
     </div>

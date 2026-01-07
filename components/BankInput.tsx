@@ -10,13 +10,30 @@ interface BankInputProps {
   accounts: BankAccount[];
   onUpdate: (accounts: BankAccount[]) => void;
   defaultExpanded?: boolean;
+  isPro: boolean;
+  onUpgradeClick: () => void;
 }
 
-const BankInput: React.FC<BankInputProps> = ({ accounts, onUpdate, defaultExpanded = true }) => {
+const BankInput: React.FC<BankInputProps> = ({ 
+  accounts, 
+  onUpdate, 
+  defaultExpanded = true,
+  isPro,
+  onUpgradeClick
+}) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  const FREE_ACCOUNT_LIMIT = 2;
 
   const addAccount = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    if (!isPro && accounts.length >= FREE_ACCOUNT_LIMIT) {
+      triggerHaptic(ImpactStyle.Medium);
+      onUpgradeClick();
+      return;
+    }
+
     triggerHaptic(ImpactStyle.Medium);
     onUpdate([
       ...accounts, 
