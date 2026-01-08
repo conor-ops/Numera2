@@ -11,16 +11,27 @@ const LogViewer: React.FC = () => {
     return (
       <button 
         onClick={() => setIsOpen(true)}
+<<<<<<< HEAD
         className="fixed bottom-4 left-4 z-[99999] bg-black text-white p-3 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)] border-2 border-green-400 hover:scale-110 transition-transform"
         title="Open Debug Logs"
       >
         <Terminal size={20} />
+=======
+        className="fixed bottom-4 left-4 z-[9999] bg-black text-white p-2 rounded-full shadow-lg border-2 border-white hover:scale-110 transition-transform opacity-50 hover:opacity-100"
+        title="Open Debug Logs"
+      >
+        <Terminal size={16} />
+>>>>>>> 11fcdb074e89b70c916af4394f632b6cb415f2ec
       </button>
     );
   }
 
   return (
+<<<<<<< HEAD
     <div className="fixed bottom-4 left-4 z-[99999] w-[90vw] md:w-[400px] bg-black border-2 border-white shadow-2xl flex flex-col font-mono text-xs max-h-[300px] animate-in slide-in-from-bottom-2">
+=======
+    <div className="fixed bottom-4 left-4 z-[9999] w-[90vw] md:w-[400px] bg-black border-2 border-white shadow-2xl flex flex-col font-mono text-xs max-h-[300px] animate-in slide-in-from-bottom-2">
+>>>>>>> 11fcdb074e89b70c916af4394f632b6cb415f2ec
       <div className="flex justify-between items-center p-2 border-b border-gray-800 bg-gray-900 text-white">
         <div className="flex items-center gap-2">
           <Terminal size={14} className="text-green-400" />

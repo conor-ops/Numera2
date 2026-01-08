@@ -491,10 +491,10 @@ function App() {
       <LogViewer />
       <button 
         onClick={handleResetPro} 
-        className="fixed bottom-4 left-16 z-[50] bg-red-600 text-white p-2 rounded-full shadow-lg border-2 border-white hover:scale-110 transition-transform opacity-50 hover:opacity-100 font-bold text-[10px] uppercase"
+        className="fixed bottom-4 left-20 z-[99999] bg-red-600 text-white px-4 py-3 rounded-full shadow-[0_0_15px_rgba(255,0,0,0.5)] border-2 border-white hover:scale-110 transition-transform font-black text-xs uppercase tracking-widest"
         title="Reset Pro Status"
       >
-        Reset
+        Reset Pro
       </button>
     </div>
   );
