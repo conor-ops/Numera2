@@ -339,7 +339,20 @@ function App() {
   if (!isInitialized) return <div className="h-screen bg-brand-white flex items-center justify-center font-mono">BOOTING CORE...</div>;
 
   return (
-    <div className="min-h-screen bg-brand-white p-4 md:p-8 pb-32">
+    <div className="min-h-screen bg-brand-white p-4 md:p-8 pb-32 relative">
+      <div 
+        style={{ position: 'fixed', top: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 999999, display: 'flex', gap: '10px' }}
+        className="no-print"
+      >
+        <LogViewer />
+        <button 
+          onClick={handleResetPro} 
+          className="bg-red-600 text-white px-4 py-2 rounded-none border-4 border-white shadow-lg font-black text-xs uppercase tracking-widest flex items-center gap-2"
+        >
+          <Eraser size={14} /> Reset Pro
+        </button>
+      </div>
+
       <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} onExecute={() => {}} />
       <ChatBot isPro={isPro} onShowPaywall={() => setShowPaywall(true)} onPostTransaction={(tx) => updateField('transactions', [...currentData.transactions, tx])} currentDataSummary={`BNE: $${calculations.bne.toFixed(2)}`} />
       {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} onSuccess={handleProSuccess} />}
@@ -488,14 +501,6 @@ function App() {
            )}
         </div>
       </div>
-      <LogViewer />
-      <button 
-        onClick={handleResetPro} 
-        className="fixed bottom-4 left-20 z-[99999] bg-red-600 text-white px-4 py-3 rounded-full shadow-[0_0_15px_rgba(255,0,0,0.5)] border-2 border-white hover:scale-110 transition-transform font-black text-xs uppercase tracking-widest"
-        title="Reset Pro Status"
-      >
-        Reset Pro
-      </button>
     </div>
   );
 }
