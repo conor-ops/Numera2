@@ -54,6 +54,9 @@ import { triggerHaptic } from './services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
 import { setupDatabase, loadSnapshot, saveSnapshot, saveHistoryRecord, getHistoryRecords, getSetting, setSetting } from './services/databaseService';
 
+import LogViewer from '@/components/common/LogViewer';
+import { logInfo, logError, logSuccess } from '@/services/loggerService';
+
 const INITIAL_DATA: BusinessData = {
   transactions: [
     { id: 'ar1', name: 'Pending Invoice #1024', amount: 8500, type: 'INCOME', date_occurred: new Date().toISOString() },
@@ -205,16 +208,22 @@ function App() {
 
   useEffect(() => {
     const init = async () => {
+      logInfo('App booting...');
       const isDbReady = await setupDatabase();
       if (isDbReady) {
         const savedData = await loadSnapshot();
         if (savedData) setData(savedData);
+        
+        // Ensure pro status is loaded correctly
         const savedProStatus = await getSetting('pro_status');
-        if (savedProStatus === 'true') setIsPro(true);
+        logInfo('Loaded Pro Status', { status: savedProStatus });
+        setIsPro(savedProStatus === 'true');
+        
         const savedHistory = await getHistoryRecords();
         setHistory(savedHistory);
       }
       setIsInitialized(true);
+      logSuccess('App initialized');
     };
     init();
   }, []);
@@ -222,6 +231,20 @@ function App() {
   useEffect(() => {
     if (isInitialized && !isSandbox) saveSnapshot(data);
   }, [data, isInitialized, isSandbox]);
+
+  const handleProSuccess = async () => {
+    logSuccess('Upgrade Successful', { timestamp: new Date() });
+    setIsPro(true);
+    await setSetting('pro_status', 'true');
+  };
+
+  const handleResetPro = async () => {
+    logInfo('Resetting Pro Status');
+    setIsPro(false);
+    await setSetting('pro_status', 'false');
+    triggerHaptic(ImpactStyle.Heavy);
+    window.location.reload(); // Force reload to clear any cached states
+  };
 
   const accountsReceivable = currentData.transactions.filter(t => t.type === 'INCOME');
   const accountsPayable = currentData.transactions.filter(t => t.type === 'EXPENSE');
@@ -319,7 +342,7 @@ function App() {
     <div className="min-h-screen bg-brand-white p-4 md:p-8 pb-32">
       <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} onExecute={() => {}} />
       <ChatBot isPro={isPro} onShowPaywall={() => setShowPaywall(true)} onPostTransaction={(tx) => updateField('transactions', [...currentData.transactions, tx])} currentDataSummary={`BNE: $${calculations.bne.toFixed(2)}`} />
-      {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} onSuccess={() => setIsPro(true)} />}
+      {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} onSuccess={handleProSuccess} />}
       {showHistory && <HistoryModal onClose={() => setShowHistory(false)} history={history} />}
 
       <div className="max-w-7xl mx-auto space-y-8">
@@ -329,6 +352,7 @@ function App() {
               <SquareActivity className="text-brand-blue w-10 h-10" />
               <h1 className="text-4xl font-extrabold tracking-tighter text-black uppercase">Solventless</h1>
               {isSandbox && <span className="bg-amber-500 text-white px-2 py-0.5 text-xs font-bold rounded-sm uppercase">Sandbox</span>}
+              {isPro && <span className="bg-brand-blue text-white px-2 py-0.5 text-xs font-bold rounded-sm uppercase flex items-center gap-1"><Crown size={12}/> Pro</span>}
             </div>
             <p className="font-medium text-black">Precision Strategic Liquidity Control.</p>
           </div>
@@ -464,6 +488,14 @@ function App() {
            )}
         </div>
       </div>
+      <LogViewer />
+      <button 
+        onClick={handleResetPro} 
+        className="fixed bottom-4 left-16 z-[50] bg-red-600 text-white p-2 rounded-full shadow-lg border-2 border-white hover:scale-110 transition-transform opacity-50 hover:opacity-100 font-bold text-[10px] uppercase"
+        title="Reset Pro Status"
+      >
+        Reset
+      </button>
     </div>
   );
 }
