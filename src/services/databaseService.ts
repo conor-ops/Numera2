@@ -1,7 +1,7 @@
 
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
-import { BusinessData, Transaction, BankAccount, AccountType, HistoryRecord, BudgetTargets, BusinessDocument, FinancialItem, InventoryItem, Job } from '../types';
+import { BusinessData, Transaction, BankAccount, AccountType, HistoryRecord, BudgetTargets, BusinessDocument, FinancialItem, InventoryItem, Job } from '@/types';
 
 let sqlite: SQLiteConnection;
 let db: SQLiteDBConnection;

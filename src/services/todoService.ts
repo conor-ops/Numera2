@@ -1,4 +1,4 @@
-import { TodoItem } from '../types';
+import { TodoItem } from '@/types';
 
 const STORAGE_KEY = 'Solventless_todos';
 
@@ -36,11 +36,10 @@ export const addTodo = (text: string): TodoItem => {
 
 export const toggleTodo = (id: string): void => {
   const todos = loadTodos();
-  const todo = todos.find(t => t.id === id);
-  if (todo) {
-    todo.completed = !todo.completed;
-    saveTodos(todos);
-  }
+  const updatedTodos = todos.map(t =>
+    t.id === id ? { ...t, completed: !t.completed } : t
+  );
+  saveTodos(updatedTodos);
 };
 
 export const deleteTodo = (id: string): void => {

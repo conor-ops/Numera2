@@ -5,7 +5,7 @@ import { Decimal } from 'decimal.js';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { triggerHaptic } from '@/services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
-import { generateRunwayInsight } from '../services/geminiService';
+import { generateRunwayInsight } from '@/services/geminiService';
 
 interface RunwayPredictorProps {
   bne: number;

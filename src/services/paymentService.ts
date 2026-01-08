@@ -1,4 +1,4 @@
-import { APP_CONFIG } from '../config';
+import { APP_CONFIG } from '@/config';
 
 // Interface for payment intent results
 export interface PaymentResult {

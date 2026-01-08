@@ -1,4 +1,4 @@
-import { RecurringTransaction, RecurringFrequency, Transaction } from '../types';
+import { RecurringTransaction, RecurringFrequency, Transaction } from '@/types';
 
 const STORAGE_KEY = 'Solventless_recurring_transactions';
 
@@ -186,8 +186,10 @@ export const toggleRecurringActive = (id: string): void => {
   const index = recurring.findIndex(item => item.id === id);
   
   if (index !== -1) {
-    recurring[index].isActive = !recurring[index].isActive;
-    saveRecurringTransactions(recurring);
+    const updatedRecurring = recurring.map(item =>
+      item.id === id ? { ...item, isActive: !item.isActive } : item
+    );
+    saveRecurringTransactions(updatedRecurring);
   }
 };
 
