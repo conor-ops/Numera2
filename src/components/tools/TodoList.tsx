@@ -13,14 +13,14 @@ const TodoList: React.FC = () => {
   const [newTodo, setNewTodo] = useState('');
 
   useEffect(() => {
-    const saved = localStorage.getItem('numera_todos');
+    const saved = localStorage.getItem('Solventless_todos');
     if (saved) {
       setTodos(JSON.parse(saved));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('numera_todos', JSON.stringify(todos));
+    localStorage.setItem('Solventless_todos', JSON.stringify(todos));
   }, [todos]);
 
   const addTodo = () => {
@@ -138,3 +138,4 @@ const TodoList: React.FC = () => {
 };
 
 export default TodoList;
+

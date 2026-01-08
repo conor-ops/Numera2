@@ -1,5 +1,5 @@
 specVersion: "v1"
-serviceId: "numera2"
+serviceId: "Solventless2"
 location: "europe-west9"
 schema:
   source: "./schema"
@@ -7,7 +7,8 @@ schema:
     postgresql:
       database: "fdcdb"
       cloudSql:
-        instanceId: "numera2-fdc"
+        instanceId: "Solventless2-fdc"
         # schemaValidation: "STRICT"     # STRICT mode makes Postgres schema match Data Connect exactly.
         # schemaValidation: "COMPATIBLE" # COMPATIBLE mode makes Postgres schema compatible with Data Connect.
 connectorDirs: ["./example"]
+

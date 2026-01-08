@@ -9,7 +9,7 @@
 ## To Deploy Right Now:
 
 ```bash
-cd "C:\Users\conor\Documents\GitHub\Numera2\Numera2"
+cd "C:\Users\conor\Documents\GitHub\Solventless2\Solventless2"
 
 # Re-authenticate with Firebase
 firebase login --reauth
@@ -30,12 +30,12 @@ firebase deploy --only hosting
 
 3. **All tools have:**
    - Professional modal interfaces
-   - Numera's neo-brutalist design
+   - Solventless's neo-brutalist design
    - Mobile responsive layouts
    - Proper Pro/Free restrictions
 
 ## Live URL:
-https://numera-481417.web.app/
+https://Solventless-481417.web.app/
 
 ## Quick Test Checklist:
 - [ ] Click Tools button
@@ -70,3 +70,4 @@ https://numera-481417.web.app/
 - `components/CashFlowForecast.tsx` - NEW
 
 All changes are in the main branch and ready to deploy!
+

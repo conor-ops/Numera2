@@ -13,7 +13,7 @@ export const setupDatabase = async (): Promise<boolean> => {
 
   try {
     sqlite = new SQLiteConnection(CapacitorSQLite);
-    db = await sqlite.createConnection('numera_db', false, 'no-encryption', 1, false);
+    db = await sqlite.createConnection('Solventless_db', false, 'no-encryption', 1, false);
     await db.open();
 
     const schema = `
@@ -87,7 +87,7 @@ export const setupDatabase = async (): Promise<boolean> => {
 
 export const saveSnapshot = async (data: BusinessData): Promise<void> => {
   if (Capacitor.getPlatform() === 'web') {
-    localStorage.setItem('numera_mock_db', JSON.stringify(data));
+    localStorage.setItem('Solventless_mock_db', JSON.stringify(data));
     return;
   }
 
@@ -160,7 +160,7 @@ export const loadSnapshot = async (): Promise<BusinessData | null> => {
   const defaultTargets: BudgetTargets = { arTarget: 0, apTarget: 0, creditTarget: 0 };
   
   if (Capacitor.getPlatform() === 'web') {
-    const raw = localStorage.getItem('numera_mock_db');
+    const raw = localStorage.getItem('Solventless_mock_db');
     if (raw) {
         const data = JSON.parse(raw);
         if (!data.targets) data.targets = defaultTargets;
@@ -246,12 +246,12 @@ export const loadSnapshot = async (): Promise<BusinessData | null> => {
 
 export const saveDocument = async (doc: BusinessDocument): Promise<void> => {
   if (Capacitor.getPlatform() === 'web') {
-    const raw = localStorage.getItem('numera_docs') || '[]';
+    const raw = localStorage.getItem('Solventless_docs') || '[]';
     const docs = JSON.parse(raw);
     const index = docs.findIndex((d: any) => d.id === doc.id);
     if (index >= 0) docs[index] = doc;
     else docs.unshift(doc);
-    localStorage.setItem('numera_docs', JSON.stringify(docs));
+    localStorage.setItem('Solventless_docs', JSON.stringify(docs));
     return;
   }
   if (!db) return;
@@ -260,7 +260,7 @@ export const saveDocument = async (doc: BusinessDocument): Promise<void> => {
 
 export const getDocuments = async (): Promise<BusinessDocument[]> => {
   if (Capacitor.getPlatform() === 'web') {
-    const raw = localStorage.getItem('numera_docs') || '[]';
+    const raw = localStorage.getItem('Solventless_docs') || '[]';
     return JSON.parse(raw);
   }
   if (!db) return [];
@@ -270,9 +270,9 @@ export const getDocuments = async (): Promise<BusinessDocument[]> => {
 
 export const deleteDocument = async (id: string): Promise<void> => {
   if (Capacitor.getPlatform() === 'web') {
-    const raw = localStorage.getItem('numera_docs') || '[]';
+    const raw = localStorage.getItem('Solventless_docs') || '[]';
     const docs = JSON.parse(raw).filter((d: any) => d.id !== id);
-    localStorage.setItem('numera_docs', JSON.stringify(docs));
+    localStorage.setItem('Solventless_docs', JSON.stringify(docs));
     return;
   }
   if (!db) return;
@@ -281,7 +281,7 @@ export const deleteDocument = async (id: string): Promise<void> => {
 
 export const getSetting = async (key: string): Promise<string | null> => {
   if (Capacitor.getPlatform() === 'web') {
-    return localStorage.getItem(`numera_setting_${key}`);
+    return localStorage.getItem(`Solventless_setting_${key}`);
   }
   if (!db) return null;
   try {
@@ -294,7 +294,7 @@ export const getSetting = async (key: string): Promise<string | null> => {
 
 export const setSetting = async (key: string, value: string): Promise<void> => {
   if (Capacitor.getPlatform() === 'web') {
-    localStorage.setItem(`numera_setting_${key}`, value);
+    localStorage.setItem(`Solventless_setting_${key}`, value);
     return;
   }
   if (!db) return;
@@ -303,10 +303,10 @@ export const setSetting = async (key: string, value: string): Promise<void> => {
 
 export const saveHistoryRecord = async (record: HistoryRecord): Promise<void> => {
   if (Capacitor.getPlatform() === 'web') {
-    const raw = localStorage.getItem('numera_mock_history');
+    const raw = localStorage.getItem('Solventless_mock_history');
     const history = raw ? JSON.parse(raw) : [];
     history.unshift(record);
-    localStorage.setItem('numera_mock_history', JSON.stringify(history));
+    localStorage.setItem('Solventless_mock_history', JSON.stringify(history));
     return;
   }
   if (!db) return;
@@ -318,7 +318,7 @@ export const saveHistoryRecord = async (record: HistoryRecord): Promise<void> =>
 
 export const getHistoryRecords = async (): Promise<HistoryRecord[]> => {
   if (Capacitor.getPlatform() === 'web') {
-    const raw = localStorage.getItem('numera_mock_history');
+    const raw = localStorage.getItem('Solventless_mock_history');
     return raw ? JSON.parse(raw) : [];
   }
   if (!db) return [];
@@ -331,3 +331,4 @@ export const getHistoryRecords = async (): Promise<HistoryRecord[]> => {
     liabilities: row.liabilities_cents / 100
   }));
 };
+

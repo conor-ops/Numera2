@@ -1,5 +1,22 @@
 {
   "projects": {
-    "default": "numera-481417"
-  }
+    "default": "solventless-7d0ef"
+  },
+  "targets": {
+    "solventless-7d0ef": {
+      "hosting": {
+        "solventless-finance": [
+          "solventless-finance"
+        ]
+      }
+    },
+    "numera-481417": {
+      "hosting": {
+        "solventless-finance": [
+          "solventless-finance"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

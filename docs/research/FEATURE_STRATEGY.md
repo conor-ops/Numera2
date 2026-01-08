@@ -1,4 +1,4 @@
-# Feature Development Strategy for Numera
+# Feature Development Strategy for Solventless
 
 ## Current Situation
 - ✅ **Live App:** Working with freemium model
@@ -115,7 +115,7 @@
 ### Option A: Gemini Drafts Implementation
 **Prompt for Gemini:**
 ```
-I'm building a React + TypeScript financial app (Numera). 
+I'm building a React + TypeScript financial app (Solventless). 
 I need to add RECURRING TRANSACTIONS feature.
 
 Current tech stack:
@@ -223,3 +223,4 @@ Please provide architectural guidance and pseudo-code.
 It's the highest-impact, easiest feature. I can have it working in your app in the next hour.
 
 Want me to start building?
+

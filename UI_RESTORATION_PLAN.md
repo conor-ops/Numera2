@@ -7,7 +7,7 @@ Current deployed version has outdated, bland styling (black & white, square, ugl
 The Google AI version has modern, beautiful Swiss Design styling that needs to be restored.
 
 ## Solution
-Copy the complete styling approach from `C:\Users\conor\Downloads\numera(googleai)\App.tsx` to current project.
+Copy the complete styling approach from `C:\Users\conor\Downloads\Solventless(googleai)\App.tsx` to current project.
 
 ## Key Styling Elements to Restore
 
@@ -155,10 +155,11 @@ className="text-2xl font-bold"
 **2-3 hours** for complete restoration and testing
 
 ## Notes
-- The Google AI version is in: `C:\Users\conor\Downloads\numera(googleai)\App.tsx`
-- Current project is in: `C:\Users\conor\OneDrive\Desktop\Numera2\Numera2\src\App.tsx`
+- The Google AI version is in: `C:\Users\conor\Downloads\Solventless(googleai)\App.tsx`
+- Current project is in: `C:\Users\conor\OneDrive\Desktop\Solventless2\Solventless2\src\App.tsx`
 - Focus on visual parity first, functionality is already working
 - Don't add new features during restoration - just styling updates
 
 ---
 **Next Session:** Start with Step 1 backup, then systematic restoration of styling.
+

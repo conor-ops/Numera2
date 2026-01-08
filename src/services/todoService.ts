@@ -1,6 +1,6 @@
 import { TodoItem } from '../types';
 
-const STORAGE_KEY = 'numera_todos';
+const STORAGE_KEY = 'Solventless_todos';
 
 export const loadTodos = (): TodoItem[] => {
   try {
@@ -48,3 +48,4 @@ export const deleteTodo = (id: string): void => {
   const filtered = todos.filter(t => t.id !== id);
   saveTodos(filtered);
 };
+

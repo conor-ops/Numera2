@@ -1,5 +1,5 @@
 /**
- * Numera Precision Finance OS - Backend Services
+ * Solventless Precision Finance OS - Backend Services
  * Last Optimized: 2025-12-30
  */
 import { onRequest } from "firebase-functions/v2/https";
@@ -17,8 +17,8 @@ setGlobalOptions({
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
-  "https://numera-481417.web.app",
-  "https://numera-481417.firebaseapp.com",
+  "https://Solventless-481417.web.app",
+  "https://Solventless-481417.firebaseapp.com",
 ];
 const allowedOriginsSet = new Set(allowedOrigins);
 
@@ -196,12 +196,12 @@ export const createStripeCheckoutSession = onRequest(
         // Plan Configuration
         const plans: any = {
           pro: {
-            name: "Numera Pro Annual",
+            name: "Solventless Pro Annual",
             description: "Unlimited AI Insights, Full History & Trends",
             amount: 1000, // $10.00
           },
           business: {
-            name: "Numera Business Annual",
+            name: "Solventless Business Annual",
             description: "Everything in Pro + Multi-Business, Team Access & Advanced Forecasting",
             amount: 2500, // $25.00
           }

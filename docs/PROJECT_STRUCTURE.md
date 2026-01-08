@@ -1,4 +1,4 @@
-# Numera Project Structure & Organization Plan
+# Solventless Project Structure & Organization Plan
 **Date:** December 18, 2025  
 **Status:** Reorganization & Polish Required  
 
@@ -19,7 +19,7 @@
 ## ✅ Proposed Clean Structure
 
 ```
-Numera2/
+Solventless2/
 ├── 📁 .github/              # GitHub workflows (keep)
 ├── 📁 .vscode/              # VS Code settings (keep)
 ├── 📁 docs/                 # ⭐ NEW - All documentation
@@ -531,3 +531,4 @@ This reorganization will make your codebase:
 - **Easier to onboard** (clear conventions)
 
 Let me know which phase you want to tackle first! 🚀
+

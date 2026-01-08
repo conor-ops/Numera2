@@ -1,4 +1,4 @@
-# 🚀 Quick Start: Building Numera Features with AI
+# 🚀 Quick Start: Building Solventless Features with AI
 
 ## ✅ What You Now Have
 
@@ -248,7 +248,7 @@ Track these to know if features are working:
 Before each deployment:
 
 ```bash
-cd "C:\Users\conor\Downloads\numera(googleai)"
+cd "C:\Users\conor\Downloads\Solventless(googleai)"
 
 # 1. Build
 npm run build
@@ -260,7 +260,7 @@ npm run build
 firebase deploy --only hosting
 
 # 4. Test live
-# Visit https://numera-481417.web.app
+# Visit https://Solventless-481417.web.app
 
 # 5. Check logs
 firebase functions:log --lines 50
@@ -300,3 +300,4 @@ Ship Recurring Transactions feature live! 🚀
 ---
 
 Good luck! You've got everything you need. Start with Recurring Transactions - it's the highest impact, easiest to build, and will drive the most upgrades.
+

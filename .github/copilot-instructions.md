@@ -1,7 +1,7 @@
-# Numera2 AI Coding Agent Instructions
+# Solventless2 AI Coding Agent Instructions
 
 ## Project Overview
-Numera2 is a cross-platform cash flow management tool for small businesses. It tracks receivables (AR), payables (AP), and bank balances to compute **Business Net Equity (BNE)**, a proprietary metric. The app is a single-page React 19 + TypeScript app, built with Vite and Capacitor 5 for native/web, using Tailwind, SQLite, and Decimal.js for money math.
+Solventless2 is a cross-platform cash flow management tool for small businesses. It tracks receivables (AR), payables (AP), and bank balances to compute **Business Net Equity (BNE)**, a proprietary metric. The app is a single-page React 19 + TypeScript app, built with Vite and Capacitor 5 for native/web, using Tailwind, SQLite, and Decimal.js for money math.
 
 ## Architecture & Patterns
 - **Single Source of Truth:** All business logic and state live in [App.tsx](../../App.tsx). Components are presentational only and receive data/callbacks via props. No Redux/Context.
@@ -44,7 +44,7 @@ Numera2 is a cross-platform cash flow management tool for small businesses. It t
   2. `npx cap sync`
   3. `npx cap open ios` or `npx cap open android`
 - **Debugging:**
-  - Web: Inspect localStorage (`numera_mock_db`)
+  - Web: Inspect localStorage (`Solventless_mock_db`)
   - Native: Inspect SQLite via device tools
 - **Add New Field:**
   1. Update interface in [types.ts](../../types.ts)
@@ -64,3 +64,4 @@ Numera2 is a cross-platform cash flow management tool for small businesses. It t
 
 ---
 If any conventions or workflows are unclear, consult [App.tsx](../../App.tsx) and [services/databaseService.ts](../../services/databaseService.ts) for the authoritative patterns.
+

@@ -3,7 +3,7 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
     if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
+      desc = { eSolventlessble: true, get: function() { return m[k]; } };
     }
     Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
@@ -11,7 +11,7 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
+    Object.defineProperty(o, "default", { eSolventlessble: true, value: v });
 }) : function(o, v) {
     o["default"] = v;
 });
@@ -38,7 +38,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.stripeWebhook = exports.createStripeCheckoutSession = exports.generateRunwayInsight = exports.generateFinancialInsight = void 0;
 /**
- * Numera Precision Finance OS - Backend Services
+ * Solventless Precision Finance OS - Backend Services
  * Last Optimized: 2025-12-30
  */
 const https_1 = require("firebase-functions/v2/https");
@@ -54,8 +54,8 @@ const v2_1 = require("firebase-functions/v2");
 const allowedOrigins = [
     "http://localhost:3000",
     "http://localhost:5173",
-    "https://numera-481417.web.app",
-    "https://numera-481417.firebaseapp.com",
+    "https://Solventless-481417.web.app",
+    "https://Solventless-481417.firebaseapp.com",
 ];
 const allowedOriginsSet = new Set(allowedOrigins);
 const corsHandler = (0, cors_1.default)({
@@ -206,12 +206,12 @@ exports.createStripeCheckoutSession = (0, https_1.onRequest)({
             // Plan Configuration
             const plans = {
                 pro: {
-                    name: "Numera Pro Annual",
+                    name: "Solventless Pro Annual",
                     description: "Unlimited AI Insights, Full History & Trends",
                     amount: 1000, // $10.00
                 },
                 business: {
-                    name: "Numera Business Annual",
+                    name: "Solventless Business Annual",
                     description: "Everything in Pro + Multi-Business, Team Access & Advanced Forecasting",
                     amount: 2500, // $25.00
                 }

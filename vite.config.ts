@@ -18,6 +18,14 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      build: {
+        commonjsOptions: {
+            include: [/recharts/, /node_modules/]
+        }
+      },
+      optimizeDeps: {
+        include: ['recharts']
       }
     };
 });

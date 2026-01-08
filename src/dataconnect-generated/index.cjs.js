@@ -2,7 +2,7 @@ const { queryRef, executeQuery, mutationRef, executeMutation, validateArgs } = r
 
 const connectorConfig = {
   connector: 'example',
-  service: 'numera2',
+  service: 'Solventless2',
   location: 'europe-west9'
 };
 exports.connectorConfig = connectorConfig;
@@ -54,3 +54,4 @@ exports.listExpensesByCategoryRef = listExpensesByCategoryRef;
 exports.listExpensesByCategory = function listExpensesByCategory(dcOrVars, vars) {
   return executeQuery(listExpensesByCategoryRef(dcOrVars, vars));
 };
+

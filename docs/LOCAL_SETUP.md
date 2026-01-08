@@ -7,8 +7,8 @@ I've resolved the merge conflicts and updated `.gitignore` to properly exclude A
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/conor-ops/Numera2.git
-cd Numera2
+git clone https://github.com/conor-ops/Solventless2.git
+cd Solventless2
 ```
 
 ### 2. Install Dependencies
@@ -143,3 +143,4 @@ npx cap sync android
 ---
 
 **Need help?** Check `.github/copilot-instructions.md` for complete development guide!
+

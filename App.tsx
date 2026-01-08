@@ -326,7 +326,7 @@ function App() {
           <div className="flex-grow">
             <div className="flex items-center gap-3 mb-2">
               <SquareActivity className="text-brand-blue w-10 h-10" />
-              <h1 className="text-4xl font-extrabold tracking-tighter text-black uppercase">Numera</h1>
+              <h1 className="text-4xl font-extrabold tracking-tighter text-black uppercase">Solventless</h1>
               {isSandbox && <span className="bg-amber-500 text-white px-2 py-0.5 text-xs font-bold rounded-sm uppercase">Sandbox</span>}
             </div>
             <p className="font-medium text-black">Precision Strategic Liquidity Control.</p>
@@ -468,3 +468,4 @@ function App() {
 }
 
 export default App;
+

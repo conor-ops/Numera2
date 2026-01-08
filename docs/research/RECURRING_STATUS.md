@@ -83,7 +83,7 @@ if (toAdd.length > 0) {
 
 1. **Build:**
    ```bash
-   cd "C:\Users\conor\Downloads\numera(googleai)"
+   cd "C:\Users\conor\Downloads\Solventless(googleai)"
    npm run build
    ```
 
@@ -100,7 +100,7 @@ if (toAdd.length > 0) {
    ```
 
 4. **Test live:**
-   - Visit https://numera-481417.web.app
+   - Visit https://Solventless-481417.web.app
    - Click "Recurring" button
    - Create test items
    - Refresh page - items should persist
@@ -249,3 +249,4 @@ The hardest parts (date math, storage, CRUD, UI) are complete.
 **Conversion potential:** High  
 
 Ship it! 🚀
+

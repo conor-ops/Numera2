@@ -26,7 +26,7 @@ interface Message {
 const ChatBot: React.FC<ChatBotProps> = ({ isPro, onShowPaywall, onPostTransaction, currentDataSummary }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: "Hello! I'm your Numera Co-pilot. I can analyze your BNE, process receipts, or help with accounting questions. Try saying: 'I spent fifty dollars at Starbucks' or upload a receipt." }
+    { role: 'model', text: "Hello! I'm your Solventless Co-pilot. I can analyze your BNE, process receipts, or help with accounting questions. Try saying: 'I spent fifty dollars at Starbucks' or upload a receipt." }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -327,3 +327,4 @@ const ChatBot: React.FC<ChatBotProps> = ({ isPro, onShowPaywall, onPostTransacti
 };
 
 export default ChatBot;
+

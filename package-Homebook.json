@@ -1,5 +1,5 @@
 {
-  "name": "numera2",
+  "name": "Solventless2",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -41,3 +41,4 @@
     "vite": "^6.2.0"
   }
 }
+

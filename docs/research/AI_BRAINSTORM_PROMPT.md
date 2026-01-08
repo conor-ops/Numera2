@@ -1,8 +1,8 @@
-# AI Brainstorming Prompt: Numera Feature Expansion
+# AI Brainstorming Prompt: Solventless Feature Expansion
 
-## Context: About Numera
+## Context: About Solventless
 
-**Numera** is a financial clarity app for small business owners and freelancers. It helps them understand their true cash position through a simple "Business Net Exact" (BNE) calculation.
+**Solventless** is a financial clarity app for small business owners and freelancers. It helps them understand their true cash position through a simple "Business Net Exact" (BNE) calculation.
 
 ### Current Live Features (December 2025):
 1. **BNE Calculator** - Real-time calculation of true cash position
@@ -296,7 +296,7 @@ To get you thinking:
 
 1. **What's the KILLER feature** that would make every freelancer need this?
 2. **What's stopping Pro upgrades?** (What would make $10/year a no-brainer?)
-3. **What's missing vs competitors?** (Why would someone use Numera vs QuickBooks?)
+3. **What's missing vs competitors?** (Why would someone use Solventless vs QuickBooks?)
 4. **What could we charge MORE for?** (Is there a $50/year tier?)
 5. **What creates daily habit?** (How do we get users to open the app every day?)
 
@@ -323,7 +323,7 @@ Consider:
 - **Platform expansion:** Should we build iOS/Android apps?
 - **Partnership opportunities:** Should we integrate with other tools?
 - **Content/education:** Should we teach financial literacy?
-- **Community:** Should there be a Numera user community?
+- **Community:** Should there be a Solventless user community?
 
 **The goal:** Find 3-5 features we can ship in Q1 2026 that will 10x the value of this app.
 
@@ -339,12 +339,12 @@ User base is just starting. We need features that will:
 
 What should we build next?
 
-Here's the updated "AI Brainstorm Results: Numera Feature Expansion" document, incorporating the findings from our discussion on contractor-focused tools and emphasizing minimum liability.
-AI Brainstorm Results: Numera Feature Expansion
+Here's the updated "AI Brainstorm Results: Solventless Feature Expansion" document, incorporating the findings from our discussion on contractor-focused tools and emphasizing minimum liability.
+AI Brainstorm Results: Solventless Feature Expansion
 Date: December 18, 2025
 Source: AI Analysis via Perplexity
 🎯 Executive Summary
-Numera's killer next wave is: lightweight cash-flow forecasting, AI-powered categorization/insights, and tax-ready exports that stay fully local-first while creating strong reasons to upgrade to Pro. Additionally, a focused set of contractor-specific financial tools will significantly enhance value for a key user segment, all while maintaining minimum liability through client-side processing.
+Solventless's killer next wave is: lightweight cash-flow forecasting, AI-powered categorization/insights, and tax-ready exports that stay fully local-first while creating strong reasons to upgrade to Pro. Additionally, a focused set of contractor-specific financial tools will significantly enhance value for a key user segment, all while maintaining minimum liability through client-side processing.
 Top 3 Priorities (All scored 81/100):
 Cash Flow Glidepath (30/60/90) - Forward-looking forecast
 "What If?" Scenario Cards - Decision modeling
@@ -383,7 +383,7 @@ Categorization is tedious but essential for taxes. Freelancers hate bookkeeping 
 How it works:
 Enable "Smart Categories"
 Gemini suggests category based on vendor, description, amount
-User confirms/changes, Numera learns rules ("Always tag Figma as Software")
+User confirms/changes, Solventless learns rules ("Always tag Figma as Software")
 Freemium:
 Free: 30 AI categorizations/month, no rule saving
 Pro: Unlimited categorizations, persistent rules, bulk re-categorize
@@ -444,7 +444,7 @@ Time to ship: 1-2 weeks
 8. Goals & Milestones ⭐⭐⭐
 Score: 64/100 (User Value: 8, Complexity: 4, Freemium: 8, Strategic: 8)
 Problem it solves:
-Tying goals to BNE, revenue, or tax savings provides motivation and daily reasons to open Numera.
+Tying goals to BNE, revenue, or tax savings provides motivation and daily reasons to open Solventless.
 How it works:
 Define goals (target, date, metric: revenue/BNE/tax cushion)
 Shows progress bar and milestone markers
@@ -487,7 +487,7 @@ Score: 72/100 (User Value: 9, Complexity: 3, Freemium: 8, Strategic: 9)
 Problem it solves:
 Contractors often struggle with accurate bidding and understanding if a project is truly worth their time and resources. This tool provides immediate clarity on potential profit margins, helping them make better bidding decisions and avoid unprofitable work.
 How it works:
-Users input estimated project revenue, material costs, labor hours, hourly rates (for themselves and any team members), and other direct expenses. The tool then calculates the estimated gross profit and profit margin for that specific project. It can pull existing hourly rates or material costs if the user has them stored in Numera.
+Users input estimated project revenue, material costs, labor hours, hourly rates (for themselves and any team members), and other direct expenses. The tool then calculates the estimated gross profit and profit margin for that specific project. It can pull existing hourly rates or material costs if the user has them stored in Solventless.
 Freemium hook:
 Free: Basic calculation with limited input fields (e.g., total revenue, total costs).
 Pro: Detailed breakdown with multiple line items for materials, labor, and other expenses; ability to save and compare multiple project scenarios; integration with existing "Accounts Receivable" for actual project tracking.
@@ -536,7 +536,7 @@ Single calculation, no saving
 Why these: Mostly new calculations and UI on top of existing data, no new infrastructure needed. These are all client-side and carry minimum liability.
 🚀 Moonshots (High Effort, Transformative)
 1. Full Bank Sync (Plaid)
-Impact: Puts Numera closer to QuickBooks/Wave
+Impact: Puts Solventless closer to QuickBooks/Wave
 Challenge: Requires backend, security, ongoing costs
 Estimated: 2-3 months + $50-100/month costs
 2. True Multi-User Collaboration
@@ -633,7 +633,7 @@ Accountant-ready exports
 Contractor-specific calculators
 Our advantage: Simpler, local-first implementation with AI at a fraction of the cost.
 4. Could we charge MORE ($50/year)?
-"Numera Plus" tier targeting micro-agencies:
+"Solventless Plus" tier targeting micro-agencies:
 Bank sync (requires backend)
 Peer benchmarks
 Advanced analytics
@@ -754,7 +754,7 @@ Feature Adoption:
 % users exporting for taxes (target: 30%+)
 % contractors using Project Profitability (target: 50%+)
 Competitive:
-Why users choose Numera vs QuickBooks (survey)
+Why users choose Solventless vs QuickBooks (survey)
 Feature requests (what's missing?)
 NPS score (target: 50+)
 🎯 Strategic Positioning

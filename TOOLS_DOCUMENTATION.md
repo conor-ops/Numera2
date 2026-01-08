@@ -1,9 +1,9 @@
-# Numera Tools Section - Complete Documentation
+# Solventless Tools Section - Complete Documentation
 
 ## 🎉 Deployment Summary
 
 **Status**: ✅ Successfully Deployed  
-**Live URL**: https://numera-481417.web.app  
+**Live URL**: https://Solventless-481417.web.app  
 **Deployed**: December 18, 2024
 
 ---
@@ -27,7 +27,7 @@ A complete **Contractor Tools** section with 4 fully-functional utilities design
 
 **Technical Details**:
 - File: `/src/components/tools/TodoList.tsx`
-- Storage: `numera_todos` in LocalStorage
+- Storage: `Solventless_todos` in LocalStorage
 - No backend required
 
 ---
@@ -110,7 +110,7 @@ Hourly Rate = Target Revenue / Total Billable Hours
 
 ## 🎨 UI/UX Design
 
-All tools follow Numera's **Neo-Brutalist** design language:
+All tools follow Solventless's **Neo-Brutalist** design language:
 - Bold, black 2px borders
 - High contrast (black on white)
 - Clear typography (Inter + Roboto Mono)
@@ -143,7 +143,7 @@ Button style:
 
 | Tool | Persisted? | Storage Method |
 |------|------------|----------------|
-| Todo List | ✅ Yes | LocalStorage (`numera_todos`) |
+| Todo List | ✅ Yes | LocalStorage (`Solventless_todos`) |
 | Pricing Sheet | ❌ No | Generate on-demand, export to file |
 | Hourly Rate | ❌ No | Calculator only |
 | Cash Flow | ❌ No | Calculator only |
@@ -442,9 +442,9 @@ A: Check z-index conflicts. Tools modal uses `z-50`.
 **Git Commit**: `d88c3e3`  
 **Commit Message**: "Added complete Tools section with Todo List, Pricing Sheet, Hourly Rate Calculator, and Cash Flow Forecast"  
 **Branch**: main  
-**Remote**: https://github.com/conor-ops/Numera2.git  
-**Firebase Project**: numera-481417  
-**Hosting URL**: https://numera-481417.web.app
+**Remote**: https://github.com/conor-ops/Solventless2.git  
+**Firebase Project**: Solventless-481417  
+**Hosting URL**: https://Solventless-481417.web.app
 
 ---
 
@@ -479,7 +479,7 @@ A: Check z-index conflicts. Tools modal uses `z-50`.
 
 ## 🎉 Conclusion
 
-The **Contractor Tools** section is now live and fully functional! Users can access 4 powerful utilities directly from the Numera dashboard to manage their freelance business operations. All tools follow Numera's design principles, work offline, and require zero backend infrastructure.
+The **Contractor Tools** section is now live and fully functional! Users can access 4 powerful utilities directly from the Solventless dashboard to manage their freelance business operations. All tools follow Solventless's design principles, work offline, and require zero backend infrastructure.
 
 **Next Session Goals**:
 1. Gather user feedback on tools
@@ -491,3 +491,4 @@ The **Contractor Tools** section is now live and fully functional! Users can acc
 ---
 
 *End of Documentation*
+

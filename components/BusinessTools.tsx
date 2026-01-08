@@ -421,7 +421,7 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
         <button onClick={() => createNewDoc('INVOICE')} className="bg-brand-black text-white border-2 border-black p-4 shadow-swiss hover:bg-gray-900 text-left relative h-32">
           <Receipt size={20} className="text-brand-blue mb-4" /><h4 className="text-[10px] font-bold uppercase">Invoice</h4>
         </button>
-        <button onClick={() => fileInputRef.current?.click()} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32">
+        <button onClick={() => isPro ? fileInputRef.current?.click() : onShowPaywall()} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32">
           {!isPro && <div className="absolute top-2 right-2"><ProBadge/></div>}<FileSignature size={20} className="text-brand-blue mb-4" /><h4 className="text-[10px] font-bold uppercase">Contract</h4><input type="file" ref={fileInputRef} hidden onChange={handleContractUpload} accept="image/*,application/pdf" />
         </button>
         <button onClick={() => setActiveView('INVENTORY')} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left h-32">
@@ -430,10 +430,10 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
         <button onClick={() => setActiveView('PRICING')} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left h-32">
           <Calculator size={20} className="text-brand-blue mb-4" /><h4 className="text-[10px] font-bold uppercase">Pricing</h4>
         </button>
-        <button onClick={() => setActiveView('LAB')} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32">
+        <button onClick={() => isPro ? setActiveView('LAB') : onShowPaywall()} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32">
           {!isPro && <div className="absolute top-2 right-2"><ProBadge/></div>}<Microscope size={20} className="text-brand-blue mb-4" /><h4 className="text-[10px] font-bold uppercase">Lab</h4>
         </button>
-        <button onClick={() => setActiveView('SCORER')} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32">
+        <button onClick={() => isPro ? setActiveView('SCORER') : onShowPaywall()} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32">
           {!isPro && <div className="absolute top-2 right-2"><ProBadge/></div>}<Zap size={20} className="text-amber-500 mb-4" /><h4 className="text-[10px] font-bold uppercase">Scorer</h4>
         </button>
       </div>

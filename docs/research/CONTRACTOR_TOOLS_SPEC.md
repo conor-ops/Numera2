@@ -8,14 +8,14 @@
 ## 🎯 Strategic Overview
 
 ### Why Contractor Tools?
-- **Target Market:** 40-50% of Numera users are likely contractors/service providers
+- **Target Market:** 40-50% of Solventless users are likely contractors/service providers
 - **Daily Use:** These tools create daily habits vs. monthly financial reviews
 - **Competitive Gap:** QuickBooks/Wave focus on bookkeeping, not bidding/pricing
 - **Low Liability:** All client-side calculations, no financial advice
 - **Strong Freemium:** Clear free limits drive Pro upgrades
 
 ### Value Proposition
-*"Numera: The only financial app that helps you PRICE your work right, BID competitively, and TRACK profitability—all while maintaining perfect cash clarity."*
+*"Solventless: The only financial app that helps you PRICE your work right, BID competitively, and TRACK profitability—all while maintaining perfect cash clarity."*
 
 ---
 
@@ -720,3 +720,4 @@ estimates accurate.
 All 7 tools are fully specified and ready for development. Start with the 3 ultra-quick wins (Week 1) to validate the concept and drive early Pro conversions.
 
 **Next Step:** Begin development on Tool 1 (Time & Value Calculator) - estimated 1 day.
+

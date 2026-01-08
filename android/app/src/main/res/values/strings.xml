@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Numera</string>
-    <string name="title_activity_main">Numera</string>
-    <string name="package_name">com.numera.finance</string>
-    <string name="custom_url_scheme">com.numera.finance</string>
+    <string name="app_name">Solventless</string>
+    <string name="title_activity_main">Solventless</string>
+    <string name="package_name">com.Solventless.finance</string>
+    <string name="custom_url_scheme">com.Solventless.finance</string>
 </resources>
+

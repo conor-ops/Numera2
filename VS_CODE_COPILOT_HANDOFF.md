@@ -1,17 +1,17 @@
-# VS Code Copilot - Numera2 Project Coordination
+# VS Code Copilot - Solventless2 Project Coordination
 
 **Date:** December 18, 2025  
-**Project:** Numera2 - Financial Clarity Platform  
-**Workspace:** `C:\Users\conor\Documents\GitHub\Numera2\Numera2.code-workspace`
+**Project:** Solventless2 - Financial Clarity Platform  
+**Workspace:** `C:\Users\conor\Documents\GitHub\Solventless2\Solventless2.code-workspace`
 
 ---
 
 ## 🎯 Mission Overview
 
-You are working in coordination with GitHub Copilot CLI on the Numera2 project. This is a React + TypeScript financial management app for freelancers and contractors, with AI-powered insights using Google Gemini, deployed on Firebase.
+You are working in coordination with GitHub Copilot CLI on the Solventless2 project. This is a React + TypeScript financial management app for freelancers and contractors, with AI-powered insights using Google Gemini, deployed on Firebase.
 
 **Current Status:**
-- ✅ Live deployment at: https://numera-481417.web.app/
+- ✅ Live deployment at: https://Solventless-481417.web.app/
 - ✅ Core features working: BNE calculator, AR/AP tracking, recurring transactions
 - ✅ Freemium model with Stripe paywall ($10/year Pro tier)
 - ✅ Modern UI with gradient design (teal/purple theme)
@@ -51,7 +51,7 @@ Build out the **Tools** section with the following features:
 ## 📁 Project Structure
 
 ```
-Numera2/
+Solventless2/
 ├── src/
 │   ├── App.tsx                    # Main app component
 │   ├── components/
@@ -274,13 +274,13 @@ background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #312E81 100%);
 
 **LocalStorage Keys Pattern:**
 ```typescript
-'numera_bneTotals'
-'numera_accountsReceivable'
-'numera_accountsPayable'
-'numera_creditCards'
-'numera_recurringTransactions'
-'numera_isPro' // User subscription status
-'numera_tools_[toolName]' // Tool-specific data
+'Solventless_bneTotals'
+'Solventless_accountsReceivable'
+'Solventless_accountsPayable'
+'Solventless_creditCards'
+'Solventless_recurringTransactions'
+'Solventless_isPro' // User subscription status
+'Solventless_tools_[toolName]' // Tool-specific data
 ```
 
 ---
@@ -438,3 +438,4 @@ You have everything you need to create an amazing Tools section. Focus on:
 **First Task:** Create `src/components/Tools/ToolsMenu.tsx` and integrate it into the app. Start with the menu structure, then we'll build each tool one by one.
 
 Good luck! 🚀
+

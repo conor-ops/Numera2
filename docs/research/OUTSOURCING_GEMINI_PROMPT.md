@@ -1,17 +1,17 @@
 # Gemini Prompt: Create Contractor Outsourcing Package
 
 **Date:** December 18, 2025  
-**Purpose:** Generate complete job posts and handoff documentation for outsourcing Numera contractor tools
+**Purpose:** Generate complete job posts and handoff documentation for outsourcing Solventless contractor tools
 
 ---
 
 ## 🎯 Prompt for Gemini
 
 ```
-You are an expert technical project manager helping me outsource development work for my financial SaaS app called Numera. I need you to create a complete contractor outsourcing package.
+You are an expert technical project manager helping me outsource development work for my financial SaaS app called Solventless. I need you to create a complete contractor outsourcing package.
 
 CONTEXT:
-- App: Numera - A financial clarity app for freelancers/contractors
+- App: Solventless - A financial clarity app for freelancers/contractors
 - Tech Stack: React, TypeScript, Vite, Firebase, LocalStorage
 - Goal: Outsource 3 simple calculator tools to speed up development
 - Budget: $500-1,000 for 3 calculators
@@ -289,3 +289,4 @@ Once you paste the prompt into Gemini and get the output, share it with me and I
 - Create evaluation criteria
 
 **This approach lets us leverage AI to do the tedious documentation work while you focus on finding the right contractor!** 🚀
+

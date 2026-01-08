@@ -1,9 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import './services/firebase';
 // import './index.css'; // Disabled in favor of Tailwind CDN for restoration parity
 
-console.log('[Numera] Booting application...');
+console.log('[Solventless] Booting application...');
 
 window.onerror = (message, source, lineno, colno, error) => {
   console.error('[Global Error]', { message, source, lineno, colno, error });

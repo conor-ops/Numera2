@@ -1,4 +1,4 @@
-# Gemini Prompts for Numera Feature Development
+# Gemini Prompts for Solventless Feature Development
 
 ## 🎯 How to Use These Prompts
 
@@ -13,7 +13,7 @@
 ## 🔁 PROMPT 1: Recurring Transactions Feature
 
 ```
-I'm building a React + TypeScript financial tracking app called Numera. I need to add a RECURRING TRANSACTIONS feature.
+I'm building a React + TypeScript financial tracking app called Solventless. I need to add a RECURRING TRANSACTIONS feature.
 
 CONTEXT:
 - Users manually enter income/expenses currently
@@ -380,3 +380,4 @@ For each feature:
 5. **Request documentation** - Ask Gemini to add JSDoc comments
 
 Good luck! These prompts should give you everything you need to build these features yourself.
+

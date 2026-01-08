@@ -76,14 +76,14 @@ Replaced the old "Todo" button with a beautiful **Tools dropdown menu** containi
 ## 🚀 TO DEPLOY (2 COMMANDS):
 
 ```bash
-cd "C:\Users\conor\Documents\GitHub\Numera2\Numera2"
+cd "C:\Users\conor\Documents\GitHub\Solventless2\Solventless2"
 
 firebase login --reauth
 firebase deploy --only hosting
 ```
 
 **That's it!** Your app will be live at:
-👉 **https://numera-481417.web.app/**
+👉 **https://Solventless-481417.web.app/**
 
 ---
 
@@ -124,7 +124,7 @@ These 3 new tools were identified as **top priorities** in your AI research:
 
 ## 🎨 Design Quality
 
-All tools match Numera's signature style:
+All tools match Solventless's signature style:
 - ✅ Neo-brutalist bold borders
 - ✅ Gradient headers (unique per tool)
 - ✅ Clean, functional layouts
@@ -148,7 +148,7 @@ You now have features that competitors charge $20-50/month for:
 - QuickBooks: $30/month
 - FreshBooks: $19/month
 - Wave: Free but limited
-- **Numera: $10/YEAR** 🎉
+- **Solventless: $10/YEAR** 🎉
 
 ---
 
@@ -179,3 +179,4 @@ When you're ready to continue:
 4. Build **What-If Scenarios** for forecast (4-7 days)
 
 See `DEVELOPMENT_ROADMAP.md` for the full plan!
+

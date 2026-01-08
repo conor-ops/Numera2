@@ -1,7 +1,7 @@
-# Numera Feature Roadmap - Mockup Strategy
+# Solventless Feature Roadmap - Mockup Strategy
 
 ## Current Status
-✅ **Live App:** https://numera-481417.web.app
+✅ **Live App:** https://Solventless-481417.web.app
 ✅ **Freemium Model:** Working (1 AI insight/month, 3 accounts max)
 ✅ **Payment:** Stripe integration working
 ✅ **Core Feature:** BNE calculation + AI insights
@@ -182,3 +182,4 @@
 **My vote:** Option 2 (DIY sketch) → validate → then mock properly
 
 What do you think?
+

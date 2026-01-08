@@ -1,5 +1,5 @@
 {
-  "name": "numera-test-environment",
+  "name": "Solventless-test-environment",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -36,3 +36,4 @@
     "vite": "^6.2.0"
   }
 }
+

@@ -1,6 +1,6 @@
 import { RecurringTransaction, RecurringFrequency, Transaction } from '../types';
 
-const STORAGE_KEY = 'numera_recurring_transactions';
+const STORAGE_KEY = 'Solventless_recurring_transactions';
 
 /**
  * Load all recurring transactions from localStorage
@@ -226,3 +226,4 @@ export const formatNextOccurrence = (dateString: string): string => {
   
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
+

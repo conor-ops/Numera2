@@ -1,6 +1,6 @@
 # Deployment Security Checklist
 
-This document provides a comprehensive security checklist for deploying Numera to production environments.
+This document provides a comprehensive security checklist for deploying Solventless to production environments.
 
 ## Pre-Deployment Checklist
 
@@ -84,7 +84,7 @@ Verify all headers are configured in `firebase.json`:
 
 #### iOS App Store
 - [ ] Apple Developer account active
-- [ ] App ID registered with Bundle ID: `com.numera.finance`
+- [ ] App ID registered with Bundle ID: `com.Solventless.finance`
 - [ ] In-App Purchase configured in App Store Connect
 - [ ] RevenueCat iOS API key configured in `paymentService.ts`
 - [ ] Privacy Policy URL provided
@@ -317,3 +317,4 @@ For future cloud sync feature, implement E2E encryption:
 **Last Updated:** December 17, 2025  
 **Next Review:** Before production deployment  
 **Document Owner:** Engineering Team
+

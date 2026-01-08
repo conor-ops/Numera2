@@ -1,4 +1,4 @@
-# Numera Tools Architecture
+# Solventless Tools Architecture
 
 ## Component Hierarchy
 
@@ -148,7 +148,7 @@ CashFlowForecast Component:
 ## File System Layout
 
 ```
-Numera2/
+Solventless2/
 ├── components/
 │   ├── ToolsMenu.tsx              # 2.7 KB
 │   ├── PricingSheet.tsx           # 8.2 KB
@@ -321,3 +321,4 @@ components/tools/
 
 **Architecture Status**: ✅ Stable, Scalable, Maintainable
 **Last Updated**: December 18, 2025
+

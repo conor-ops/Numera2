@@ -40,7 +40,7 @@ export interface OpportunityScore {
 }
 
 const SYSTEM_INSTRUCTION = `
-You are the Numera Financial Co-pilot. You help freelancers and small business owners manage their "Business Net Exact" (BNE).
+You are the Solventless Financial Co-pilot. You help freelancers and small business owners manage their "Business Net Exact" (BNE).
 Your tone is precise, helpful, and professional.
 `;
 
@@ -194,3 +194,4 @@ export const generateMarketIntel = async (query: string): Promise<MarketIntelRes
   const sources = chunks.filter(c => c.web).map(c => ({ title: c.web?.title || "Ref", uri: c.web?.uri || "" })).filter(s => s.uri !== "");
   return { text, sources };
 };
+

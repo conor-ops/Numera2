@@ -1,4 +1,4 @@
-# AI Brainstorm Results: Numera Feature Expansion
+# AI Brainstorm Results: Solventless Feature Expansion
 **Date:** December 18, 2025  
 **Source:** AI Analysis via Perplexity  
 **Updated:** December 18, 2025 - Added Contractor-Focused Tools
@@ -7,7 +7,7 @@
 
 ## 🎯 Executive Summary
 
-**Numera's killer next wave is:** lightweight cash-flow forecasting, AI-powered categorization/insights, and tax-ready exports that stay fully local-first while creating strong reasons to upgrade to Pro. **Additionally, a focused set of contractor-specific financial tools will significantly enhance value for a key user segment, all while maintaining minimum liability through client-side processing.**
+**Solventless's killer next wave is:** lightweight cash-flow forecasting, AI-powered categorization/insights, and tax-ready exports that stay fully local-first while creating strong reasons to upgrade to Pro. **Additionally, a focused set of contractor-specific financial tools will significantly enhance value for a key user segment, all while maintaining minimum liability through client-side processing.**
 
 **Top 3 Priorities (All scored 81/100):**
 1. **Cash Flow Glidepath (30/60/90)** - Forward-looking forecast
@@ -69,7 +69,7 @@ Categorization is tedious but essential for taxes. Freelancers hate bookkeeping 
 **How it works:**
 - Enable "Smart Categories"
 - Gemini suggests category based on vendor, description, amount
-- User confirms/changes, Numera learns rules ("Always tag Figma as Software")
+- User confirms/changes, Solventless learns rules ("Always tag Figma as Software")
 
 **Freemium:**
 - Free: 30 AI categorizations/month, no rule saving
@@ -159,7 +159,7 @@ Dashboards and scores help non-finance users quickly grasp complex metrics and c
 **Score:** 64/100 (User Value: 8, Complexity: 4, Freemium: 8, Strategic: 8)
 
 **Problem it solves:**
-Tying goals to BNE, revenue, or tax savings provides motivation and daily reasons to open Numera.
+Tying goals to BNE, revenue, or tax savings provides motivation and daily reasons to open Solventless.
 
 **How it works:**
 - Define goals (target, date, metric: revenue/BNE/tax cushion)
@@ -253,7 +253,7 @@ Contractors often struggle with accurate bidding and understanding if a project 
 **How it works:**
 - Users input estimated project revenue, material costs, labor hours, hourly rates (for themselves and any team members), and other direct expenses
 - Tool calculates estimated gross profit and profit margin for that specific project
-- Can pull existing hourly rates or material costs if stored in Numera
+- Can pull existing hourly rates or material costs if stored in Solventless
 
 **Freemium hook:**
 - Free: Basic calculation with limited input fields (e.g., total revenue, total costs)
@@ -468,7 +468,7 @@ Contractors often wonder "Is this job worth my time?" This quick calculator show
 ## 🚀 Moonshots (High Effort, Transformative)
 
 ### 1. Full Bank Sync (Plaid)
-- **Impact:** Puts Numera closer to QuickBooks/Wave
+- **Impact:** Puts Solventless closer to QuickBooks/Wave
 - **Challenge:** Requires backend, security, ongoing costs
 - **Estimated:** 2-3 months + $50-100/month costs
 - **⚠️ Liability:** HIGH - Requires secure storage of financial credentials, PCI compliance considerations
@@ -603,7 +603,7 @@ This bundle easily justifies $10/year vs. QuickBooks/FreshBooks monthly fees ($1
 **Our advantage:** Simpler, local-first implementation **with AI at a fraction of the cost.**
 
 ### 4. Could we charge MORE ($50/year)?
-**"Numera Plus" tier targeting micro-agencies:**
+**"Solventless Plus" tier targeting micro-agencies:**
 - Bank sync (requires backend)
 - Peer benchmarks
 - Advanced analytics
@@ -776,7 +776,7 @@ Target micro-agencies (2-5 person teams)
 - **% contractors using Project Profitability (target: 50%+)**
 
 ### Competitive:
-- Why users choose Numera vs QuickBooks (survey)
+- Why users choose Solventless vs QuickBooks (survey)
 - Feature requests (what's missing?)
 - NPS score (target: 50+)
 
@@ -814,3 +814,4 @@ Limited appeal, commodity feature
 ---
 
 **Bottom Line:** Focus on shipping Cash Flow Forecast + AI Categorization + Tax Export + **Contractor Tools** in Q1 2026. These features alone justify Pro upgrades and compete directly with QuickBooks Self-Employed at 1/20th the price, **while maintaining minimum liability through client-side processing.**
+
