@@ -49,11 +49,11 @@ import {
   Hammer
 } from 'lucide-react';
 import { Decimal } from 'decimal.js';
-import { LineItem, BusinessDocument, Transaction, BusinessProfile, BudgetTargets, PricingItem, AuditResult, InventoryItem, AssetCategory } from '../types';
-import { triggerHaptic } from '../services/hapticService';
+import { LineItem, BusinessDocument, Transaction, BusinessProfile, BudgetTargets, PricingItem, AuditResult, InventoryItem, AssetCategory } from '@/types';
+import { triggerHaptic } from '@/services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
-import { saveDocument, getDocuments, deleteDocument, getSetting, setSetting } from '../services/databaseService';
-import { generateMarketIntel, MarketIntelResponse, performInvoiceAudit, parseContract, ContractExtraction, Milestone, scoreOpportunity, OpportunityScore } from '../services/geminiService';
+import { saveDocument, getDocuments, deleteDocument, getSetting, setSetting } from '@/services/databaseService';
+import { generateMarketIntel, MarketIntelResponse, performInvoiceAudit, parseContract, ContractExtraction, Milestone, scoreOpportunity, OpportunityScore } from '@/services/geminiService';
 import BudgetPlanner from '@/components/financial/BudgetPlanner';
 import PricingCalculator from '@/components/tools/PricingCalculator';
 

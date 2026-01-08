@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Zap, Clock, AlertTriangle, TrendingDown, Crown, RefreshCcw, Lock } from 'lucide-react';
 import { Decimal } from 'decimal.js';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { triggerHaptic } from '../services/hapticService';
+import { triggerHaptic } from '@/services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
 import { generateRunwayInsight } from '../services/geminiService';
 
