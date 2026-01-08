@@ -199,29 +199,39 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
     reader.readAsDataURL(file);
   };
 
-  const createNewDoc = (type: 'ESTIMATE' | 'INVOICE') => {
-    const newDoc: BusinessDocument = {
-      id: crypto.randomUUID(), number: (1000 + savedDocs.length).toString(),
-      date: new Date().toISOString().split('T')[0], dueDate: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-      clientName: '', clientAddress: '', items: [{ id: '1', description: '', quantity: 1, rate: 0 }],
-      taxRate: 0, discount: 0, notes: '', type, status: 'DRAFT', companyInfo: profile
+  const createNewJob = (type: 'ESTIMATE' | 'INVOICE') => {
+    const newJob: Job = {
+      id: crypto.randomUUID(),
+      title: 'New Job',
+      client: { id: crypto.randomUUID(), name: '' },
+      status: 'QUOTED',
+      createdAt: new Date().toISOString(),
+      quote: {
+        id: crypto.randomUUID(),
+        quoteNumber: (1000 + savedJobs.length).toString(),
+        lineItems: [{ id: '1', description: '', quantity: 1, rate: 0 }],
+        overheadPercent: 0,
+        profitMargin: 0,
+        total: 0,
+        status: 'DRAFT',
+      }
     };
-    setDoc(newDoc); setAuditResult(null); setActiveView('EDITOR');
+    setJob(newJob); setAuditResult(null); setActiveView('EDITOR');
   };
 
-  const openSavedDoc = (savedDoc: BusinessDocument) => {
+  const openSavedJob = (savedJob: Job) => {
     triggerHaptic(ImpactStyle.Light);
-    setDoc({ ...savedDoc });
+    setJob({ ...savedJob });
     setAuditResult(null);
     setActiveView('EDITOR');
   };
 
-  const handleDeleteDoc = async (id: string, e: React.MouseEvent) => {
+  const handleDeleteJob = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm("Delete this document?")) {
       triggerHaptic(ImpactStyle.Medium);
-      await deleteDocument(id);
-      await loadDocuments();
+      await deleteDocument(id); // TODO: This needs to be deleteJob()
+      await loadJobs();
     }
   };
 
