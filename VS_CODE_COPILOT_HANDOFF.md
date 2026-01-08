@@ -1,72 +1,63 @@
-# VS Code Copilot - Solventless2 Project Coordination
+# VS Code Copilot - Solventless Project Coordination
 
-**Date:** December 18, 2025  
-**Project:** Solventless2 - Financial Clarity Platform  
-**Workspace:** `C:\Users\conor\Documents\GitHub\Solventless2\Solventless2.code-workspace`
+**Date:** January 8, 2026
+**Project:** Solventless - The Job Site Profit Partner
+**Workspace:** `C:\Users\conor\OneDrive\Documents\GitHub\Numera2\Numera2.code-workspace`
 
 ---
 
 ## 🎯 Mission Overview
 
-You are working on **Solventless**, a financial strategic liquidity dashboard for business owners.
-The core philosophy is **"Precision Strategic Liquidity Control"**.
-We focus on **BNE (Business Net Exact)**, a proprietary solvency metric.
+You are working on **Solventless**, a financial dashboard being transformed into a **"Job Site Profit Partner"** for service-based contractors.
+The core philosophy is to provide tools that seamlessly integrate into the **"Contractor Core Loop"**: Quoting -> Execution -> Invoicing -> Profit Analysis.
 
 **Current Status:**
-- ✅ **Rebranded:** All "Numera" references removed. Now "Solventless".
-- ✅ **Design System:** "Swiss Style" / Brutalist. High contrast (Black/White), thick borders (`border-2 border-black`), shadows (`shadow-swiss`), monospace fonts. **NO ROUNDED CORNERS.**
-- ✅ **Mobile-First:** Wrapped with Capacitor for iOS/Android.
-- ✅ **Paywalls:** Strictly enforced for AI features.
-- ✅ **Deployed:** `https://solventless-finance.web.app`
+- ✅ **Strategic Pivot:** The project has shifted from a general finance app to a specialized tool for contractors.
+- ✅ **Design System:** "Swiss Style" / Brutalist. High contrast, `border-2 border-black`, `shadow-swiss`. **NO ROUNDED CORNERS.**
+- ✅ **Architecture:** Client-side only (React/Capacitor), using `localStorage` or SQLite. No backend database.
+- ✅ **Paywalls:** Strictly enforced for Pro features to drive upgrades.
 
 ---
 
 ## 🔧 Architectural Rules (CRITICAL)
 
-### 1. Component Structure
-- **Flat Architecture:** All components live in `src/components/`.
-- **Key Components:**
-    - `App.tsx`: Main state hub. Manages `isPro`, `data`, and global navigation.
-    - `BusinessTools.tsx`: The "Mega-Component" that handles the Tools Menu (Portal) and individual tool views (Lab, Scorer, Inventory, Pricing).
-    - `ChatBot.tsx`: The AI Co-pilot (Gemini).
-    - `RunwayPredictor.tsx`: The Cash Flow survival chart.
-
-### 2. The Paywall Protocol
-**Rule:** Advanced AI features are **PRO ONLY**.
+### 1. The Paywall Protocol
+**Rule:** Advanced features are **PRO ONLY**. This is driven by the cost of the Gemini AI and the need to fund development.
 - **State:** `isPro` (boolean) passed from `App.tsx`.
-- **Action:** If a user tries to access a Pro feature and `!isPro`, call `onShowPaywall()`.
-- **Enforced Areas:**
-    - **Expansion Lab:** View access blocked.
-    - **Opportunity Scorer:** View access blocked.
-    - **Contract Analysis:** Upload action blocked.
-    - **ChatBot:** Voice input and File upload blocked. Text chat is blocked for sending.
-    - **Runway Predictor:** "Stress Test" analysis blocked.
+- **Action:** If a user tries to access a Pro feature and `!isPro`, you MUST call the `onShowPaywall()` prop.
+- **Freemium Hooks:** New features must have clear limitations for free users (e.g., "3 free quotes per month").
 
-### 3. Styling Guidelines (Swiss Style)
+### 2. Styling Guidelines (Swiss Style)
 - **Borders:** `border-2 border-black` (or `border-4` for containers).
 - **Shadows:** `shadow-swiss` (Custom Tailwind class: hard black drop shadow).
-- **Colors:**
-    - Backgrounds: White (`bg-white`) or Light Gray (`bg-gray-50`).
-    - Accents: Brand Blue (`text-brand-blue`), Signal Green (`bg-green-500`), Alert Red (`bg-red-500`).
-- **Typography:**
-    - Headings: `font-black uppercase tracking-tight`.
-    - Data: `font-mono font-bold`.
-- **Interaction:**
-    - **Haptics:** ALways use `triggerHaptic(ImpactStyle.Medium)` on button clicks.
+- **Colors:** White/Gray backgrounds, Brand Blue accents, Green/Red for status.
+- **Typography:** `font-black uppercase` for headings, `font-mono` for data.
+- **Interaction:** Use `triggerHaptic` on button clicks for a better native feel.
+
+### 3. Data Flow
+- **`App.tsx` is the Hub:** It manages all primary state (`data`, `isPro`, etc.).
+- **Components are Presentational:** They receive data and callbacks via props. Do not add business logic to low-level components.
+- **Services are Abstracted:** Services in `src/services/` must use `Capacitor.getPlatform()` to differentiate between web (`localStorage`) and native (SQLite) implementations.
 
 ---
 
 ## 🚀 Current Development Focus
 
-### restored Features
-We have just restored strict paywall enforcement on the following:
-1.  **Business Tools:** The "Lab" and "Scorer" buttons in the Portal now check `isPro` before opening.
-2.  **Contract Analysis:** File upload checks `isPro`.
-3.  **ChatBot:** Sending text messages, voice recording, and file uploads now check `isPro`.
+Our immediate goal is to build the foundational tools for the "Contractor Core Loop."
 
 ### Next Tasks (For You)
-- **Verify Mobile UX:** Ensure the paywall modal looks good on small screens.
-- **Feature Polish:** The "Inventory" and "Pricing" tools are currently free. Maintain them as "Entry Level" features.
+1.  **Implement Quote & Invoice Generator:**
+    *   Build a new component that allows users to create a job cost estimate.
+    *   Use `jsPDF` or a similar library to generate a client-side PDF quote from that estimate.
+    *   Add functionality to convert a quote into an invoice, which should then be added to the `transactions` array in `App.tsx` as an Accounts Receivable item.
+    *   Enforce the freemium limit (e.g., 3 free quotes).
+
+2.  **Implement Simple Job Status Tracker:**
+    *   Create a new component that displays jobs in a simple Kanban-style board (e.g., Quoted, Scheduled, Invoiced, Paid).
+    *   This should be a purely visual tool for tracking the financial pipeline.
+
+3.  **Refactor `App.tsx` (Ongoing):**
+    *   As you add new features, look for opportunities to extract complex business logic from `App.tsx` into custom hooks (e.g., `useBusinessCalculations`).
 
 ---
 
@@ -83,23 +74,25 @@ const [isPro, setIsPro] = useState(false);
 />
 ```
 
-**Tool Implementation (BusinessTools.tsx):**
+**Paywall Gate Example (in a new component):**
 ```typescript
-// Example of Paywall Gate
-<button onClick={() => isPro ? setActiveView('LAB') : onShowPaywall()} ...>
+// Example of Paywall Gate for Quote Generator
+const handleGenerateQuote = () => {
+  if (!isPro && quoteCount >= 3) {
+    onShowPaywall();
+  } else {
+    // Proceed with quote generation
+  }
+};
 ```
-
-**Gemini AI (services/geminiService.ts):**
-- Handles all AI logic.
-- **Cost:** Expensive. This is WHY we enforce the paywall.
 
 ---
 
 ## 🤝 Handoff Instruction
 When picking up a task:
-1.  **Read `App.tsx`** to understand the global state.
-2.  **Read `BusinessTools.tsx`** if working on specific tools.
-3.  **Respect the Swiss Style.** Do not add rounded buttons or soft shadows.
-4.  **Test Paywalls.** Assume every AI feature needs a lock.
+1.  **Review the "Contractor Core Loop"** in `docs/DEVELOPMENT_ROADMAP.md`.
+2.  **Respect the Swiss Style.** Do not add rounded buttons or soft shadows.
+3.  **Test Paywalls.** Every new feature must have a clear Pro-tier hook.
+4.  **Build for the Client.** Remember, there is no backend database. All logic must be client-side.
 
 **"Solvency is not a metric. It is a survival skill."**
