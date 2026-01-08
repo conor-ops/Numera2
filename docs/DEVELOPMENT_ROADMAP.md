@@ -1,55 +1,55 @@
-# Development Roadmap: Precision Finance Iteration
+# Development Roadmap: The Job Site Profit Partner
 
-## 1. Current State Analysis
+This roadmap outlines the transformation of Solventless from a general financial tracker into an indispensable "Job Site Profit Partner" for service-based contractors (e.g., fencing, landscaping, painting).
 
-### Visual Identity & UI/UX
-*   **Design System:** The project uses a "Swiss Style" design system defined in `tailwind.config.js` and `index.css`.
-    *   **Palette:** Monochrome-heavy (Brand Black, White) with functional colors (Brand Blue, Gray) and semantic colors (Green/Red/Amber for status).
-    *   **Typography:** 'Inter' for UI, 'Roboto Mono' for data.
-    *   **Styling:** Heavy use of `border-2 border-black`, `shadow-swiss` (hard shadows), and high-contrast elements.
-    *   **Assessment:** The aesthetic is consistent and aligns with a "utilitarian/precision" vibe. No immediate legacy conflicts found, but `App.tsx` inline styles/classes should be monitored for consistency.
+## 1. Core Strategy: The "Contractor Core Loop"
 
-### Core Features
-*   **Business Net Equity (BNE):** Fully implemented in `App.tsx`. Live calculation of (Receivables - Payables) + (Bank - Credit).
-*   **Data Visualization:** `recharts` is integrated. `CashFlowRiver` exists for visualization.
-*   **Heads-Up Display (HUD):** Implemented in the `App.tsx` header ("Safe Draw", "Health Pulse", "Sandbox Mode").
-*   **Inputs:** `FinancialInput` and `BankInput` components handle core data entry.
-*   **Persistence:** `databaseService.ts` correctly implements the Local-First architecture (SQLite for native, localStorage for web).
+Our development will focus on providing seamless, client-side tools for every stage of a contractor's job lifecycle. This "core loop" represents the primary workflow where we can add the most value.
 
-### AI & CFO Capabilities
-*   **Integration:** `geminiService.ts` handles communication with Google's Gemini models.
-*   **Features:**
-    *   `generateFinancialInsight`: Basic summarization.
-    *   `scoreOpportunity`: Structured analysis of potential deals (Risk/Pros/Cons).
-    *   `performInvoiceAudit`: Proactive auditing of documents.
-*   **Status:** Functional, but the "Proactive CFO" personality could be deepened.
+1.  **Lead & Quote:** A potential client calls. The contractor needs to quickly and confidently calculate a profitable price on-site.
+    *   **Pain Point:** Fluctuating material costs, estimating labor, and ensuring profit margin under pressure.
 
-## 2. Gap Analysis (Precision Finance Vision)
+2.  **Project Prep & Execution:** The quote is accepted. The contractor schedules the job, buys materials, and manages the work.
+    *   **Pain Point:** Tracking expenses against the budget and preventing scope creep from eating into profits.
 
-The following features from the "Precision Finance" vision are **missing** or incomplete:
+3.  **Invoicing & Getting Paid:** The job is complete. An invoice must be generated, sent, and tracked.
+    *   **Pain Point:** Manual invoice creation and the cash flow stress of chasing late payments.
 
-*   **Scope Guard Calculator:** No component or logic found for calculating scope creep or project variances.
-*   **Lifestyle Parity Calculator:** No logic found for equating business profit to personal lifestyle costs.
-*   **Proactive Strategy:** While `scoreOpportunity` is good, the main dashboard AI insight is reactive ("Insight for BNE..."). It lacks a "Daily Briefing" or proactive "Warning" system based on trends.
+4.  **Post-Job Analysis:** The money is in the bank. The contractor needs to know if the job was truly profitable and how much they can safely pay themselves.
+    *   **Pain Point:** Distinguishing between revenue and actual profit after accounting for taxes and overhead.
 
-## 3. Technical Debt & Architecture
+## 2. Prioritized Feature Pipeline
 
-*   **Monolithic `App.tsx`:** The main component contains all business logic (`calculations` memo), state management, and UI layout. This makes it hard to maintain and test.
-*   **Action:** Logic should be extracted into custom hooks (e.g., `useBusinessMath`, `useFinancialData`).
-*   **Type Safety:** `types.ts` is used, but some `any` types were observed in service responses (`geminiService.ts` history).
+The following features will be developed to directly serve the Contractor Core Loop.
 
-## 4. Prioritized Development Tasks
+### High Priority: Quote & Invoice Generator
+*   **Description:** A tool to generate a professional quote from a cost calculation, which can then be converted into an invoice with one click.
+*   **User Value:** Connects the beginning and end of a job, automates manual work, and ensures quotes are profitable.
+*   **How it Works:**
+    1.  The user builds a job cost estimate (materials, labor, margin).
+    2.  The tool generates a clean PDF quote.
+    3.  Upon job completion, the quote is converted to an invoice, which automatically appears in Accounts Receivable (AR), updating the BNE.
+*   **Freemium Hook:** Free users get 3 quotes/invoices per month. Pro users get unlimited, customizable templates.
 
-### High Priority: New Features
-*   **Task:** Implement the 'Scope Guard' pricing calculator as a new component in `src/components/tools/` and integrate it into the `BusinessTools` menu.
-    *   *Goal:* Allow users to input original scope vs. actual requests and calculate the profitability impact.
-*   **Task:** Implement the 'Lifestyle Parity' calculator.
-    *   *Goal:* A tool to reverse-calculate required BNE based on desired personal monthly take-home pay.
+### Medium Priority: Simple Job Status Tracker
+*   **Description:** A simple visual board to track the financial status of all jobs (e.g., Quoted -> Scheduled -> In Progress -> Invoiced -> Paid).
+*   **User Value:** Provides a real-time view of the financial pipeline without the complexity of a full project management tool.
+*   **Freemium Hook:** Free users can track up to 5 active jobs. Pro users get unlimited jobs.
 
-### Medium Priority: Refactoring
-*   **Task:** Refactor `App.tsx` to extract financial calculations into a `useBusinessCalculations` hook.
-    *   *Goal:* Simplify the view layer and enable unit testing of the math logic.
-*   **Task:** Refactor `App.tsx` to extract data persistence logic into a `useBusinessData` hook.
+### Low Priority: "Profit First" Visual Buckets
+*   **Description:** A visual tool to allocate incoming revenue into virtual buckets for Profit, Owner's Pay, Tax, and Operating Expenses, based on the "Profit First" methodology.
+*   **User Value:** Directly addresses the "Can I pay myself?" anxiety by providing a clear, actionable plan for managing cash.
+*   **Freemium Hook:** Free users get 2 buckets. Pro users get all four and can customize percentages.
 
-### Low Priority: AI Enhancements
-*   **Task:** Refactor the AI prompt in `geminiService.ts` (`generateFinancialInsight`) to request proactive financial strategies (e.g., "Suggest 3 actions to improve liquidity") instead of a simple summary.
+## 3. Lean R&D Strategy
+
+As a solo-founder project, we will use a lean development process to mitigate risk:
+
+1.  **User Interviews:** Validate the "Contractor Core Loop" and its pain points by talking to 3-5 real contractors before building.
+2.  **Paper Prototyping:** Sketch and test user flows with contractors to get cheap and fast feedback.
+3.  **Build Minimum Viable Features (MVFs):** Ship the simplest functional version of a feature to test its value in the real world before adding complexity.
+
+## 4. Technical Considerations
+
+*   **Client-Side Generation:** PDF quotes and invoices will be generated client-side using libraries like `jsPDF` to align with our backend-less architecture.
+*   **Data Structure:** New top-level keys (`projects`, `materials`) will be added to the data structure in LocalStorage/SQLite to support these features.
