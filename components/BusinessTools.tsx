@@ -142,11 +142,11 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
 
   const runAudit = async () => {
     if (!isPro) { onShowPaywall(); return; }
-    if (!doc) return;
+    if (!job) return;
     setIsAuditing(true);
     triggerHaptic(ImpactStyle.Medium);
     try {
-      const result = await performInvoiceAudit(doc);
+      const result = await performInvoiceAudit(job.invoice as any);
       setAuditResult(result);
     } catch (e) { alert("Audit failed."); } finally { setIsAuditing(false); }
   };
