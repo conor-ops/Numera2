@@ -1,224 +1,55 @@
-# Numera2 Accelerated Development Roadmap
+# Development Roadmap: Precision Finance Iteration
 
-**Timeline**: Aggressive week-long sprints (parallel workstreams)  
-**Monetization**: Annual subscription + one-time purchases  
-**Target**: Store launches by Week 6
+## 1. Current State Analysis
 
----
+### Visual Identity & UI/UX
+*   **Design System:** The project uses a "Swiss Style" design system defined in `tailwind.config.js` and `index.css`.
+    *   **Palette:** Monochrome-heavy (Brand Black, White) with functional colors (Brand Blue, Gray) and semantic colors (Green/Red/Amber for status).
+    *   **Typography:** 'Inter' for UI, 'Roboto Mono' for data.
+    *   **Styling:** Heavy use of `border-2 border-black`, `shadow-swiss` (hard shadows), and high-contrast elements.
+    *   **Assessment:** The aesthetic is consistent and aligns with a "utilitarian/precision" vibe. No immediate legacy conflicts found, but `App.tsx` inline styles/classes should be monitored for consistency.
 
-## 🚀 Sprint 1: Web Payments (Days 1-7) ✅ IN PROGRESS
+### Core Features
+*   **Business Net Equity (BNE):** Fully implemented in `App.tsx`. Live calculation of (Receivables - Payables) + (Bank - Credit).
+*   **Data Visualization:** `recharts` is integrated. `CashFlowRiver` exists for visualization.
+*   **Heads-Up Display (HUD):** Implemented in the `App.tsx` header ("Safe Draw", "Health Pulse", "Sandbox Mode").
+*   **Inputs:** `FinancialInput` and `BankInput` components handle core data entry.
+*   **Persistence:** `databaseService.ts` correctly implements the Local-First architecture (SQLite for native, localStorage for web).
 
-### Stripe Integration (Core)
-- [x] Install `@stripe/stripe-js` and `@stripe/react-stripe-js`
-- [x] Create `StripePaymentModal.tsx` component with product selector UI
-- [x] Update `paymentService.ts`: platform-aware payment handler
-  - Web: Use Stripe Checkout
-  - Native: Fall back to RevenueCat (iOS/Android)
-- [x] Setup Firebase functions: `createStripeCheckoutSession` + `verifyStripeSession`
-- [ ] Test integration with Stripe test keys
+### AI & CFO Capabilities
+*   **Integration:** `geminiService.ts` handles communication with Google's Gemini models.
+*   **Features:**
+    *   `generateFinancialInsight`: Basic summarization.
+    *   `scoreOpportunity`: Structured analysis of potential deals (Risk/Pros/Cons).
+    *   `performInvoiceAudit`: Proactive auditing of documents.
+*   **Status:** Functional, but the "Proactive CFO" personality could be deepened.
 
-### One-Time Purchase Products (Config)
-- [x] Define in `config.ts`:
-  - **Starter** ($4.99): 3 months Pro access
-  - **Pro** ($9.99): 1 year Pro access
-  - **Business** ($24.99): Lifetime + email support
-- [ ] Create products in Stripe Dashboard
-- [ ] Configure product IDs in Firebase functions
+## 2. Gap Analysis (Precision Finance Vision)
 
-### Testing Checklist
-- [ ] Stripe test card: `4242 4242 4242 4242`
-- [ ] Manual workflow: web → payment modal → Stripe → success redirect
-- [ ] Verify localStorage `numera_pro_status` set after payment
-- [ ] Test cancel flow & error handling
+The following features from the "Precision Finance" vision are **missing** or incomplete:
 
-**Status**: Component & service layer ready. Pending Firebase deployment & Stripe config.
+*   **Scope Guard Calculator:** No component or logic found for calculating scope creep or project variances.
+*   **Lifestyle Parity Calculator:** No logic found for equating business profit to personal lifestyle costs.
+*   **Proactive Strategy:** While `scoreOpportunity` is good, the main dashboard AI insight is reactive ("Insight for BNE..."). It lacks a "Daily Briefing" or proactive "Warning" system based on trends.
 
----
+## 3. Technical Debt & Architecture
 
-## 🎯 Sprint 2: Payment Consolidation & Analytics (Days 8-14)
+*   **Monolithic `App.tsx`:** The main component contains all business logic (`calculations` memo), state management, and UI layout. This makes it hard to maintain and test.
+*   **Action:** Logic should be extracted into custom hooks (e.g., `useBusinessMath`, `useFinancialData`).
+*   **Type Safety:** `types.ts` is used, but some `any` types were observed in service responses (`geminiService.ts` history).
 
-### RevenueCat Alignment (iOS/Android)
-- [ ] Map Stripe products ↔ RevenueCat offerings in dashboard
-- [ ] Consolidate `isPro` sync: localStorage + RevenueCat subscription status
-- [ ] Test cross-platform payment status (web Stripe → native RevenueCat)
+## 4. Prioritized Development Tasks
 
-### Analytics Foundation
-- [ ] Extend `HistoryRecord` in `types.ts`:
-  ```typescript
-  type HistoryRecord = {
-    id: string;
-    date: string;
-    bne: number;
-    assets: number;
-    liabilities: number;
-    // NEW:
-    ar_total: number;        // Accounts Receivable sum
-    ap_total: number;        // Accounts Payable sum
-    cash_balance: number;    // Bank - Credit
-    runway_days?: number;    // Cash / daily burn estimate
-  };
-  ```
-- [ ] Add `calculateMetrics()` helper function for cash flow analysis
-- [ ] Extend history chart: BNE trend, cash runway, AR/AP breakdown
-- [ ] Pro paywall: 24-month history + forecasting
+### High Priority: New Features
+*   **Task:** Implement the 'Scope Guard' pricing calculator as a new component in `src/components/tools/` and integrate it into the `BusinessTools` menu.
+    *   *Goal:* Allow users to input original scope vs. actual requests and calculate the profitability impact.
+*   **Task:** Implement the 'Lifestyle Parity' calculator.
+    *   *Goal:* A tool to reverse-calculate required BNE based on desired personal monthly take-home pay.
 
-### AI Insights Enhancement
-- [ ] Update Gemini prompt to include: cash runway, expense trends, AR recommendations
-- [ ] Add "Forecast" button: predict next 90 days of cash position
-- [ ] Lock advanced insights behind Pro tier
+### Medium Priority: Refactoring
+*   **Task:** Refactor `App.tsx` to extract financial calculations into a `useBusinessCalculations` hook.
+    *   *Goal:* Simplify the view layer and enable unit testing of the math logic.
+*   **Task:** Refactor `App.tsx` to extract data persistence logic into a `useBusinessData` hook.
 
-**Deliverable**: Unified payment system + analytics dashboard MVP
-
----
-
-## 📱 Sprint 3: Mobile Store Submission (Days 15-21)
-
-### Pre-Store Setup
-- [ ] Generate assets: `npx capacitor-assets generate`
-  - Logo: `assets/logo.png` (1024x1024)
-  - Splash: `assets/splash.png` (2732x2732)
-- [ ] Update `capacitor.config.ts` with bundle IDs:
-  - iOS: `com.numeraapp.ios`
-  - Android: `com.numeraapp.android`
-- [ ] Create store listing copy (screenshots, tagline)
-
-### iOS Submission (TestFlight → App Store)
-- [ ] `npm run build && npx cap sync && npx cap open ios`
-- [ ] Xcode: Sign with development team
-- [ ] Add capability: In-App Purchase + Sign in with Apple (optional)
-- [ ] TestFlight: Internal testing (yourself + 1 tester)
-- [ ] Fix crashes → submit to App Store Review (5-7 days)
-
-### Android Submission (Closed Testing → Production)
-- [ ] `npm run build && npx cap sync && npx cap open android`
-- [ ] Android Studio: Generate signed AAB (new keystore, SAVE SAFELY)
-- [ ] Google Play Console: Closed Testing upload (48hr approval)
-- [ ] Create store listing + submit to Production
-
-### Cross-Platform QA
-- [ ] Test: login → purchase OTP → isPro unlocks features
-- [ ] Verify RevenueCat sandbox transactions set isPro
-- [ ] Test offline mode + sync on reconnect
-
-**Deliverable**: Both stores live (TestFlight + Google Play)
-
----
-
-## 💰 Sprint 4: Revenue Optimization (Days 22-28)
-
-### Paywall Improvements
-- [ ] A/B test pricing: $4.99 vs $7.99 Starter
-- [ ] Implement 7-day free Pro trial (RevenueCat backend)
-- [ ] "Upgrade upsell" modal after 5+ transactions
-- [ ] Referral system: "Share → both get $5 credit"
-
-### Retention Hooks
-- [ ] Email on churn: "We miss you — 50% off to return"
-- [ ] Push notifications: "Your runway is 30 days. Review forecasts."
-- [ ] Weekly digest: "Your BNE improved by 15%!"
-
-### Analytics Tracking
-- [ ] PostHog events:
-  - `user_purchased_otp` (product, price)
-  - `user_viewed_paywall` (dismissed/converted)
-  - `user_calculated_bne` (formula used)
-- [ ] Dashboard metrics: LTV, conversion, churn
-
-**Deliverable**: Revenue monitoring + retention framework
-
----
-
-## 📊 Sprint 5: Analytics Phase 2 (Days 29-35)
-
-### Cash Flow Forecasting
-- [ ] `forecastCashFlow(months: 3)` using linear regression
-- [ ] Predict: "If AR collects avg, you have 47 days runway"
-- [ ] Interactive slider: adjust collection rate assumptions
-- [ ] Pro-only feature
-
-### Expense Categorization
-- [ ] Add `category?: 'SALARY' | 'RENT' | 'MARKETING' | 'TOOLS' | 'OTHER'`
-- [ ] UI dropdown in transaction input
-- [ ] Pie chart: spend by category
-- [ ] Insight: "Salary is 65% (industry avg 50%)"
-
-### Export Features (Pro)
-- [ ] "Export to CSV": all transactions
-- [ ] "Export to PDF": formatted report + charts
-- [ ] Use `jspdf` + `pdfkit` library
-
-**Deliverable**: Full analytics suite unlocked for Pro users
-
----
-
-## 🔐 Ongoing (Parallel)
-
-### Security & Compliance
-- **Week 1**: Move Gemini API key → Cloud Function (no client exposure)
-- **Week 2**: Add request rate limiting to Firebase functions
-- **Week 3**: Encrypt RevenueCat tokens at rest
-- **Week 4+**: App Store privacy compliance review
-
-### Infrastructure
-- **Week 2**: Setup Sentry error tracking
-- **Week 3**: Configure PostHog analytics
-- **Week 4**: Database backup automation
-
----
-
-## 💻 Immediate Next Steps (Today)
-
-```bash
-# 1. Create Stripe account (or use existing test keys)
-# 2. Add to .env.local:
-VITE_STRIPE_PUBLIC_KEY=pk_test_YOUR_KEY
-VITE_GEMINI_API_KEY=your_key
-
-# 3. Deploy Firebase functions with secrets:
-firebase functions:secrets:set STRIPE_SECRET_KEY
-firebase functions:secrets:set STRIPE_WEBHOOK_SECRET
-
-# 4. Test build
-npm run build
-
-# 5. Start dev server
-npm run dev
-# Visit http://localhost:3000 → click "Upgrade" → test modal
-```
-
----
-
-## 📌 Success Metrics (28 Days)
-
-| Milestone | Week | Target |
-|-----------|------|--------|
-| Stripe web payments live | 1 | 5+ test purchases |
-| OTP products in Stripe + RevenueCat | 1 | Products created in both |
-| Analytics MVP (cash runway) | 2 | Pro users see 90-day forecast |
-| iOS TestFlight beta | 3 | 2 testers, 0 crashes |
-| Android Google Play (closed) | 3 | Closed testing group active |
-| Both stores public | 4 | Downloadable by public |
-| Revenue tracked in dashboard | 4 | LTV/conversion metrics live |
-
----
-
-## 🎬 Current Status
-
-**✅ Completed**: 
-- Stripe dependencies installed
-- StripePaymentModal component built
-- paymentService.ts updated with Stripe + RevenueCat logic
-- config.ts products configured
-- Firebase functions skeleton (Stripe checkout + verify)
-- Roadmap documentation
-
-**🔄 In Progress**:
-- Firebase function deployment
-- Stripe test account setup
-- Environment configuration
-
-**📋 Blocked On**:
-- Stripe secret key (need to add to Firebase)
-- Test payment terminal
-
-Let's ship this in 4 weeks. 🚀
+### Low Priority: AI Enhancements
+*   **Task:** Refactor the AI prompt in `geminiService.ts` (`generateFinancialInsight`) to request proactive financial strategies (e.g., "Suggest 3 actions to improve liquidity") instead of a simple summary.
