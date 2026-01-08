@@ -218,39 +218,39 @@ export const loadSnapshot = async (): Promise<BusinessData | null> => {
   }
 };
 
-export const saveDocument = async (doc: BusinessDocument): Promise<void> => {
+export const saveJob = async (job: Job): Promise<void> => {
   if (Capacitor.getPlatform() === 'web') {
-    const raw = localStorage.getItem('Solventless_docs') || '[]';
-    const docs = JSON.parse(raw);
-    const index = docs.findIndex((d: any) => d.id === doc.id);
-    if (index >= 0) docs[index] = doc;
-    else docs.unshift(doc);
-    localStorage.setItem('Solventless_docs', JSON.stringify(docs));
+    const raw = localStorage.getItem('Solventless_jobs') || '[]';
+    const jobs = JSON.parse(raw);
+    const index = jobs.findIndex((j: any) => j.id === job.id);
+    if (index >= 0) jobs[index] = job;
+    else jobs.unshift(job);
+    localStorage.setItem('Solventless_jobs', JSON.stringify(jobs));
     return;
   }
   if (!db) return;
-  await db.run('INSERT OR REPLACE INTO documents (id, data_json) VALUES (?, ?)', [doc.id, JSON.stringify(doc)]);
+  await db.run('INSERT OR REPLACE INTO jobs (id, data_json) VALUES (?, ?)', [job.id, JSON.stringify(job)]);
 };
 
-export const getDocuments = async (): Promise<BusinessDocument[]> => {
+export const getJobs = async (): Promise<Job[]> => {
   if (Capacitor.getPlatform() === 'web') {
-    const raw = localStorage.getItem('Solventless_docs') || '[]';
+    const raw = localStorage.getItem('Solventless_jobs') || '[]';
     return JSON.parse(raw);
   }
   if (!db) return [];
-  const result = await db.query('SELECT data_json FROM documents');
+  const result = await db.query('SELECT data_json FROM jobs');
   return (result.values || []).map(row => JSON.parse(row.data_json));
 };
 
-export const deleteDocument = async (id: string): Promise<void> => {
+export const deleteJob = async (id: string): Promise<void> => {
   if (Capacitor.getPlatform() === 'web') {
-    const raw = localStorage.getItem('Solventless_docs') || '[]';
-    const docs = JSON.parse(raw).filter((d: any) => d.id !== id);
-    localStorage.setItem('Solventless_docs', JSON.stringify(docs));
+    const raw = localStorage.getItem('Solventless_jobs') || '[]';
+    const jobs = JSON.parse(raw).filter((j: any) => j.id !== id);
+    localStorage.setItem('Solventless_jobs', JSON.stringify(jobs));
     return;
   }
   if (!db) return;
-  await db.run('DELETE FROM documents WHERE id = ?', [id]);
+  await db.run('DELETE FROM jobs WHERE id = ?', [id]);
 };
 
 export const getSetting = async (key: string): Promise<string | null> => {
