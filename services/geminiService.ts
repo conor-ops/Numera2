@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { CalculationResult, Transaction, BusinessDocument, PricingItem, AuditResult } from "../types";
+import { CalculationResult, Transaction, BusinessDocument, AuditResult } from "../types";
 
 const API_KEY = process.env.API_KEY;
 
@@ -119,10 +119,10 @@ export const parseContract = async (
   return JSON.parse(response.text || "{}");
 };
 
-export const performInvoiceAudit = async (doc: BusinessDocument, pricingSheet: PricingItem[]): Promise<AuditResult> => {
+export const performInvoiceAudit = async (doc: BusinessDocument): Promise<AuditResult> => {
   if (!API_KEY) throw new Error("API Key missing");
   const ai = new GoogleGenAI({ apiKey: API_KEY });
-  const prompt = `Perform audit on ${doc.type}. Invoice: ${JSON.stringify(doc)}. Pricing: ${JSON.stringify(pricingSheet)}`;
+  const prompt = `Perform audit on ${doc.type}. Invoice: ${JSON.stringify(doc)}.`;
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
