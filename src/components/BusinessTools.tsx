@@ -46,10 +46,7 @@ import {
   ArrowDownLeft,
   Factory,
   Boxes,
-  Hammer,
-  FileSearch,
-  CheckCircle,
-  Clock3
+  Hammer
 } from 'lucide-react';
 import { Decimal } from 'decimal.js';
 import { LineItem, BusinessDocument, Transaction, BusinessProfile, BudgetTargets, PricingItem, AuditResult, InventoryItem, AssetCategory } from '../types';
@@ -126,21 +123,6 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
     };
   }, [doc]);
 
-  const loadDocuments = async () => {
-    const docs = await getDocuments();
-    setSavedDocs(docs);
-  };
-
-  useEffect(() => {
-    const loadToolsData = async () => {
-      await loadDocuments();
-      const savedProfile = await getSetting('business_profile');
-      if (savedProfile) setProfile(JSON.parse(savedProfile));
-      setIsLoading(false);
-    };
-    loadToolsData();
-  }, []);
-
   const runAudit = async () => {
     if (!isPro) { onShowPaywall(); return; }
     if (!doc) return;
@@ -160,6 +142,17 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
       triggerHaptic(ImpactStyle.Light);
     }
   };
+
+  useEffect(() => {
+    const loadToolsData = async () => {
+      const docs = await getDocuments();
+      const savedProfile = await getSetting('business_profile');
+      if (savedProfile) setProfile(JSON.parse(savedProfile));
+      setSavedDocs(docs);
+      setIsLoading(false);
+    };
+    loadToolsData();
+  }, []);
 
   const totalGhostExpense = useMemo(() => 
     ghostExpenses.reduce((acc, exp) => acc + exp.amount, 0), [ghostExpenses]);
@@ -217,22 +210,6 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
     setDoc(newDoc); setAuditResult(null); setActiveView('EDITOR');
   };
 
-  const openSavedDoc = (savedDoc: BusinessDocument) => {
-    triggerHaptic(ImpactStyle.Light);
-    setDoc({ ...savedDoc });
-    setAuditResult(null);
-    setActiveView('EDITOR');
-  };
-
-  const handleDeleteDoc = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm("Delete this document?")) {
-      triggerHaptic(ImpactStyle.Medium);
-      await deleteDocument(id);
-      await loadDocuments();
-    }
-  };
-
   if (isLoading) return <div className="p-12 text-center animate-pulse">LOADING TOOLS...</div>;
 
   if (activeView === 'INVENTORY') {
@@ -242,8 +219,8 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
             <div className="flex items-center gap-3">
                <Package className="text-brand-blue" size={32} />
                <div>
-                  <h2 className="text-2xl font-black uppercase tracking-tighter">Asset & Material Tracker</h2>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase">Materials on Hand & Equipment</p>
+                  <h2 className="text-2xl font-black uppercase tracking-tighter">Business Asset Portfolio</h2>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase">Materials & Equipment Ledger</p>
                </div>
             </div>
             <button onClick={() => setActiveView('PORTAL')}><X size={24}/></button>
@@ -402,7 +379,7 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
 
   if (activeView === 'EDITOR' && doc) {
     return (
-      <div className="bg-white border-4 border-black shadow-swiss relative flex flex-col min-h-[700px]"><div className="bg-black text-white p-4 flex justify-between items-center"><div className="flex items-center gap-2"><ProBadge /><span className="text-xs font-black uppercase tracking-widest">{doc.type} #{doc.number}</span></div><div className="flex gap-4"><button onClick={runAudit} disabled={isAuditing} className="flex items-center gap-2 text-xs font-black uppercase hover:text-brand-blue">{isAuditing ? <RefreshCw className="animate-spin" size={14}/> : <ShieldCheck size={14}/>} {isAuditing ? "Auditing..." : "Audit with AI"}</button><button onClick={() => setActiveView('PORTAL')}><X size={20}/></button></div></div><div className="flex-grow flex flex-col lg:flex-row overflow-hidden"><div className="flex-grow p-6 md:p-10 space-y-8 overflow-y-auto"><div className="flex justify-between items-start border-b-2 border-black pb-6"><div><h2 className="text-3xl font-black uppercase tracking-tighter text-brand-blue">{doc.type}</h2></div><div className="text-right text-[10px] font-bold uppercase text-gray-400"><div>Date: <span className="text-black font-mono">{doc.date}</span></div><div>Number: <span className="text-black font-mono">#{doc.number}</span></div></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-8"><input value={doc.clientName} onChange={e => setDoc({...doc, clientName: e.target.value})} placeholder="Bill To (Client Name)" className="text-xl font-black border-b border-black outline-none w-full"/><textarea value={doc.clientAddress} onChange={e => setDoc({...doc, clientAddress: e.target.value})} placeholder="Client Address" className="w-full text-xs font-mono p-2 border border-gray-100 outline-none h-20"/></div><div className="border-2 border-black overflow-hidden"><table className="w-full text-left"><thead className="bg-black text-white text-[10px] uppercase"><tr><th className="p-2">Item</th><th className="p-2 text-center">Qty</th><th className="p-2 text-right">Rate</th><th className="p-2 text-right">Total</th><th className="p-2"></th></tr></thead><tbody className="divide-y border-b border-black">{doc.items.map(item => (<tr key={item.id} className="hover:bg-gray-50 group"><td className="p-2"><input value={item.description} onBlur={() => syncToPricingSheet(item.id, item.description)} onChange={e => setDoc({...doc, items: doc.items.map(i => i.id === item.id ? {...i, description: e.target.value} : i)})} className="w-full font-bold text-sm bg-transparent outline-none"/></td><td className="p-2 text-center w-20"><input type="number" value={item.quantity} onChange={e => setDoc({...doc, items: doc.items.map(i => i.id === item.id ? {...i, quantity: parseFloat(e.target.value) || 0} : i)})} className="w-full text-center font-mono text-sm outline-none"/></td><td className="p-2 text-right w-32"><input type="number" value={item.rate} onChange={e => setDoc({...doc, items: doc.items.map(i => i.id === item.id ? {...i, rate: parseFloat(e.target.value) || 0} : i)})} className="w-full text-right font-mono text-sm outline-none"/></td><td className="p-2 text-right font-mono font-bold text-sm">${(item.quantity * item.rate).toFixed(2)}</td><td className="p-2 text-center"><button onClick={() => setDoc({...doc, items: doc.items.filter(i => i.id !== item.id)})} className="text-gray-300 hover:text-red-500"><Trash2 size={14}/></button></td></tr>))}</tbody></table><button onClick={() => setDoc({...doc, items: [...doc.items, {id: crypto.randomUUID(), description: '', quantity: 1, rate: 0}]})} className="w-full py-2 bg-gray-50 hover:bg-white text-[9px] font-black uppercase">Add Item</button></div><div className="flex justify-end"><div className="w-64 bg-gray-50 border-2 border-black p-4 flex justify-between items-baseline"><span className="text-xs font-black uppercase tracking-widest">Total Due</span><span className="text-2xl font-mono font-bold text-brand-blue">${totals.total.toFixed(2)}</span></div></div></div>{auditResult && (<div className="w-full lg:w-96 bg-gray-50 border-l-4 border-black p-6 space-y-6 animate-in slide-in-from-right duration-300 overflow-y-auto"><div className="flex items-center justify-between border-b-2 border-black pb-4"><div className="flex items-center gap-2 text-brand-blue"><ShieldCheck /><h4 className="font-black uppercase text-xs">AI Risk Audit</h4></div><div className="text-xl font-black">{auditResult.score}/100</div></div><p className="text-xs font-mono font-medium text-gray-600 leading-relaxed italic">"{auditResult.summary}"</p><div className="space-y-4">{auditResult.issues.map((issue, i) => (<div key={i} className={`p-4 border-2 border-black bg-white shadow-swiss space-y-2`}><div className="flex items-center gap-2">{issue.type === 'CRITICAL' ? <AlertTriangle className="text-red-600" size={16}/> : <Lightbulb className="text-brand-blue" size={16}/>}<span className={`text-[9px] font-black uppercase ${issue.type === 'CRITICAL' ? 'text-red-600' : 'text-brand-blue'}`}>{issue.type}</span></div><p className="text-[11px] font-bold uppercase tracking-tight">{issue.message}</p>{issue.impact && <p className="text-[9px] font-mono text-gray-500">Impact: {issue.impact}</p>}</div>))}</div><button onClick={() => setAuditResult(null)} className="w-full py-2 border border-black text-[9px] font-black uppercase hover:bg-gray-200">Close Audit</button></div>)}</div><div className="p-6 border-t-2 border-black bg-white flex flex-col sm:flex-row gap-4 sticky bottom-0 z-10"><button onClick={async () => { await saveDocument(doc); await loadDocuments(); setActiveView('PORTAL'); }} className="flex-1 py-4 bg-black text-white font-bold uppercase text-sm border-2 border-black shadow-swiss flex items-center justify-center gap-2"><Database size={18}/> Save as Draft</button>{doc.type === 'INVOICE' && <button onClick={() => { onRecordToAR({ id: crypto.randomUUID(), name: `Invoice #${doc.number}`, amount: totals.total, type: 'INCOME', date_occurred: new Date().toISOString() }); saveDocument({ ...doc, status: 'RECORDED' }); loadDocuments(); setActiveView('PORTAL'); }} className="flex-1 py-4 bg-brand-blue text-white font-bold uppercase text-sm border-2 border-black shadow-swiss flex items-center justify-center gap-2"><CheckCircle2 size={18}/> Post to Ledger</button>}</div></div>
+      <div className="bg-white border-4 border-black shadow-swiss relative flex flex-col min-h-[700px]"><div className="bg-black text-white p-4 flex justify-between items-center"><div className="flex items-center gap-2"><ProBadge /><span className="text-xs font-black uppercase tracking-widest">{doc.type} #{doc.number}</span></div><div className="flex gap-4"><button onClick={runAudit} disabled={isAuditing} className="flex items-center gap-2 text-xs font-black uppercase hover:text-brand-blue">{isAuditing ? <RefreshCw className="animate-spin" size={14}/> : <ShieldCheck size={14}/>} {isAuditing ? "Auditing..." : "Audit with AI"}</button><button onClick={() => setActiveView('PORTAL')}><X size={20}/></button></div></div><div className="flex-grow flex flex-col lg:flex-row overflow-hidden"><div className="flex-grow p-6 md:p-10 space-y-8 overflow-y-auto"><div className="flex justify-between items-start border-b-2 border-black pb-6"><div><h2 className="text-3xl font-black uppercase tracking-tighter text-brand-blue">{doc.type}</h2></div><div className="text-right text-[10px] font-bold uppercase text-gray-400"><div>Date: <span className="text-black font-mono">{doc.date}</span></div><div>Number: <span className="text-black font-mono">#{doc.number}</span></div></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-8"><input value={doc.clientName} onChange={e => setDoc({...doc, clientName: e.target.value})} placeholder="Bill To (Client Name)" className="text-xl font-black border-b border-black outline-none w-full"/><textarea value={doc.clientAddress} onChange={e => setDoc({...doc, clientAddress: e.target.value})} placeholder="Client Address" className="w-full text-xs font-mono p-2 border border-gray-100 outline-none h-20"/></div><div className="border-2 border-black overflow-hidden"><table className="w-full text-left"><thead className="bg-black text-white text-[10px] uppercase"><tr><th className="p-2">Item</th><th className="p-2 text-center">Qty</th><th className="p-2 text-right">Rate</th><th className="p-2 text-right">Total</th><th className="p-2"></th></tr></thead><tbody className="divide-y border-b border-black">{doc.items.map(item => (<tr key={item.id} className="hover:bg-gray-50 group"><td className="p-2"><input value={item.description} onBlur={() => syncToPricingSheet(item.id, item.description)} onChange={e => setDoc({...doc, items: doc.items.map(i => i.id === item.id ? {...i, description: e.target.value} : i)})} className="w-full font-bold text-sm bg-transparent outline-none"/></td><td className="p-2 text-center w-20"><input type="number" value={item.quantity} onChange={e => setDoc({...doc, items: doc.items.map(i => i.id === item.id ? {...i, quantity: parseFloat(e.target.value) || 0} : i)})} className="w-full text-center font-mono text-sm outline-none"/></td><td className="p-2 text-right w-32"><input type="number" value={item.rate} onChange={e => setDoc({...doc, items: doc.items.map(i => i.id === item.id ? {...i, rate: parseFloat(e.target.value) || 0} : i)})} className="w-full text-right font-mono text-sm outline-none"/></td><td className="p-2 text-right font-mono font-bold text-sm">${(item.quantity * item.rate).toFixed(2)}</td><td className="p-2 text-center"><button onClick={() => setDoc({...doc, items: doc.items.filter(i => i.id !== item.id)})} className="text-gray-300 hover:text-red-500"><Trash2 size={14}/></button></td></tr>))}</tbody></table><button onClick={() => setDoc({...doc, items: [...doc.items, {id: crypto.randomUUID(), description: '', quantity: 1, rate: 0}]})} className="w-full py-2 bg-gray-50 hover:bg-white text-[9px] font-black uppercase">Add Item</button></div><div className="flex justify-end"><div className="w-64 bg-gray-50 border-2 border-black p-4 flex justify-between items-baseline"><span className="text-xs font-black uppercase tracking-widest">Total Due</span><span className="text-2xl font-mono font-bold text-brand-blue">${totals.total.toFixed(2)}</span></div></div></div>{auditResult && (<div className="w-full lg:w-96 bg-gray-50 border-l-4 border-black p-6 space-y-6 animate-in slide-in-from-right duration-300 overflow-y-auto"><div className="flex items-center justify-between border-b-2 border-black pb-4"><div className="flex items-center gap-2 text-brand-blue"><ShieldCheck /><h4 className="font-black uppercase text-xs">AI Risk Audit</h4></div><div className="text-xl font-black">{auditResult.score}/100</div></div><p className="text-xs font-mono font-medium text-gray-600 leading-relaxed italic">"{auditResult.summary}"</p><div className="space-y-4">{auditResult.issues.map((issue, i) => (<div key={i} className={`p-4 border-2 border-black bg-white shadow-swiss space-y-2`}><div className="flex items-center gap-2">{issue.type === 'CRITICAL' ? <AlertTriangle className="text-red-600" size={16}/> : <Lightbulb className="text-brand-blue" size={16}/>}<span className={`text-[9px] font-black uppercase ${issue.type === 'CRITICAL' ? 'text-red-600' : 'text-brand-blue'}`}>{issue.type}</span></div><p className="text-[11px] font-bold uppercase tracking-tight">{issue.message}</p>{issue.impact && <p className="text-[9px] font-mono text-gray-500">Impact: {issue.impact}</p>}</div>))}</div><button onClick={() => setAuditResult(null)} className="w-full py-2 border border-black text-[9px] font-black uppercase hover:bg-gray-200">Close Audit</button></div>)}</div><div className="p-6 border-t-2 border-black bg-white flex flex-col sm:flex-row gap-4 sticky bottom-0 z-10"><button onClick={async () => { await saveDocument(doc); setActiveView('PORTAL'); }} className="flex-1 py-4 bg-black text-white font-bold uppercase text-sm border-2 border-black shadow-swiss flex items-center justify-center gap-2"><Database size={18}/> Save as Draft</button>{doc.type === 'INVOICE' && <button onClick={() => onRecordToAR({ id: crypto.randomUUID(), name: `Invoice #${doc.number}`, amount: totals.total, type: 'INCOME', date_occurred: new Date().toISOString() })} className="flex-1 py-4 bg-brand-blue text-white font-bold uppercase text-sm border-2 border-black shadow-swiss flex items-center justify-center gap-2"><CheckCircle2 size={18}/> Post to Ledger</button>}</div></div>
     );
   }
 
@@ -436,62 +413,6 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
         <button onClick={() => setActiveView('SCORER')} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32">
           {!isPro && <div className="absolute top-2 right-2"><ProBadge/></div>}<Zap size={20} className="text-amber-500 mb-4" /><h4 className="text-[10px] font-bold uppercase">Scorer</h4>
         </button>
-      </div>
-
-      {/* Fetch Saved Drafts & Invoices */}
-      <div className="bg-white border-4 border-black p-8 shadow-swiss space-y-8">
-        <div className="flex justify-between items-center border-b-2 border-black pb-4">
-          <div className="flex items-center gap-3">
-             <FileSearch className="text-brand-blue" size={24} />
-             <h3 className="text-lg font-black uppercase tracking-tight">Recent Documents</h3>
-          </div>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{savedDocs.length} Total Documents</p>
-        </div>
-
-        {savedDocs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {savedDocs.map((sDoc) => (
-              <div 
-                key={sDoc.id} 
-                onClick={() => openSavedDoc(sDoc)}
-                className="group relative bg-gray-50 border-2 border-black p-6 cursor-pointer hover:bg-white hover:-translate-y-1 transition-all shadow-swiss hover:shadow-none"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className={`p-2 border-2 border-black ${sDoc.type === 'INVOICE' ? 'bg-black text-white' : 'bg-white text-black'}`}>
-                    {sDoc.type === 'INVOICE' ? <Receipt size={16} /> : <FileText size={16} />}
-                  </div>
-                  <div className="flex gap-2">
-                    <span className={`text-[8px] font-black uppercase px-2 py-0.5 border-2 border-black flex items-center gap-1 
-                      ${sDoc.status === 'RECORDED' ? 'bg-green-500 text-white' : sDoc.status === 'SENT' ? 'bg-brand-blue text-white' : 'bg-white text-black'}`}>
-                      {sDoc.status === 'RECORDED' ? <CheckCircle size={10} /> : sDoc.status === 'SENT' ? <ArrowRight size={10} /> : <Clock3 size={10} />}
-                      {sDoc.status}
-                    </span>
-                    <button 
-                      onClick={(e) => handleDeleteDoc(sDoc.id, e)}
-                      className="p-1 text-gray-300 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-                <div>
-                   <p className="text-[10px] font-black uppercase text-gray-400 mb-1">{sDoc.type} #{sDoc.number}</p>
-                   <h4 className="text-sm font-black uppercase truncate mb-2">{sDoc.clientName || 'Unnamed Client'}</h4>
-                   <div className="flex justify-between items-end border-t border-black/10 pt-2">
-                      <p className="text-[10px] font-mono font-bold text-gray-500">{sDoc.date}</p>
-                      <p className="text-lg font-mono font-black text-brand-blue">
-                        ${sDoc.items.reduce((sum, i) => sum + (i.quantity * i.rate), 0).toLocaleString()}
-                      </p>
-                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="py-12 text-center border-4 border-dashed border-black/10 text-gray-400 font-black uppercase text-sm">
-            No drafts or invoices found.
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

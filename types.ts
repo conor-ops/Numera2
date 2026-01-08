@@ -1,3 +1,4 @@
+
 export interface FinancialItem {
   id: string;
   name: string;
@@ -15,13 +16,9 @@ export interface BankAccount extends FinancialItem {
   type: AccountType;
 }
 
-export type TransactionStatus = 'PENDING' | 'PAID' | 'OVERDUE' | 'VOID';
-
 export interface Transaction extends FinancialItem {
   type: 'INCOME' | 'EXPENSE';
   date_occurred: string;
-  date_due?: string;
-  status?: TransactionStatus;
   linkedDocId?: string; // Link to a generated invoice
 }
 
@@ -46,28 +43,33 @@ export interface PricingItem {
   markupPercent: number;
 }
 
-export interface TodoItem {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: string;
+export enum AssetCategory {
+  MATERIAL = 'Material',
+  EQUIPMENT = 'Equipment',
+  STOCK = 'Finished Stock',
+  OTHER = 'Other'
 }
 
-export interface Business {
+export interface InventoryItem {
   id: string;
   name: string;
-  createdAt: string;
-  isDefault: boolean;
+  sku?: string;
+  quantity: number;
+  unitCost: number;
+  category: AssetCategory;
+  minThreshold?: number;
 }
 
 export interface BusinessData {
-  businessId: string;
   transactions: Transaction[];
   accounts: BankAccount[];
   targets: BudgetTargets;
   monthlyOverhead: FinancialItem[];
   annualOverhead: FinancialItem[];
   pricingSheet: PricingItem[];
+  inventory: InventoryItem[];
+  taxRate?: number; // Estimated tax rate for provisioning (e.g., 25)
+  reserveMonths?: number; // How many months of overhead to reserve as "Safety"
 }
 
 export interface CalculationResult {
@@ -80,6 +82,23 @@ export interface CalculationResult {
   netBank: number;
   bne: number;
   bneFormulaStr: string;
+  provisionedTax?: number;
+  postTaxBne?: number;
+  inventoryValue: number;
+  materialValue: number;
+  equipmentValue: number;
+}
+
+export interface AuditIssue {
+  type: 'WARNING' | 'OPTIMIZATION' | 'CRITICAL';
+  message: string;
+  impact?: string;
+}
+
+export interface AuditResult {
+  score: number; // 0-100
+  issues: AuditIssue[];
+  summary: string;
 }
 
 export interface HistoryRecord {
@@ -91,7 +110,7 @@ export interface HistoryRecord {
 }
 
 export interface LineItem {
-  id:string;
+  id: string;
   description: string;
   quantity: number;
   rate: number;
@@ -113,26 +132,4 @@ export interface BusinessDocument {
   type: 'ESTIMATE' | 'INVOICE';
   status: DocumentStatus;
   companyInfo?: BusinessProfile;
-}
-
-export interface Category {
-    id: string;
-    name: string;
-    icon_name?: string;
-    budget_limit?: number;
-    is_system_default: boolean;
-  }
-
-export interface RunwaySnapshot {
-  date: string;
-  daysRemaining: number;
-  bne: number;
-  monthlyBurn: number;
-}
-
-export interface TodoItem {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: string;
 }
