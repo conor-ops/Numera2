@@ -482,8 +482,6 @@ function App() {
                onRecordToAR={(tx) => updateField('transactions', [...currentData.transactions, tx])} 
                targets={currentData.targets} 
                onUpdateTargets={(t) => updateField('targets', t)}
-               pricingSheet={currentData.pricingSheet}
-               onUpdatePricing={(p) => updateField('pricingSheet', p)}
                onUpdateTaxRate={(r) => updateField('taxRate', r)}
                taxRate={currentData.taxRate}
                actuals={{ ar: calculations.totalAR, ap: calculations.totalAP, credit: calculations.totalCredit }}

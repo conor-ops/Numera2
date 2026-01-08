@@ -34,13 +34,7 @@ export interface BusinessProfile {
   phone: string;
 }
 
-export interface PricingItem {
-  id: string;
-  name: string;
-  supplierCost: number;
-  freightCost: number;
-  markupPercent: number;
-}
+
 
 export enum AssetCategory {
   MATERIAL = 'Material',
@@ -65,10 +59,7 @@ export interface BusinessData {
   targets: BudgetTargets;
   monthlyOverhead: FinancialItem[];
   annualOverhead: FinancialItem[];
-  pricingSheet: PricingItem[];
   inventory: InventoryItem[];
-  jobs: Job[];
-  clients: Client[];
   taxRate?: number; // Estimated tax rate for provisioning (e.g., 25)
   reserveMonths?: number; // How many months of overhead to reserve as "Safety"
 }
