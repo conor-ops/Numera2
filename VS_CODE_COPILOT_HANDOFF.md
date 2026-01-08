@@ -1,8 +1,8 @@
-# VS Code Copilot - Solventless Project Coordination
+# VS Code Copilot - Solventless2 Project Coordination
 
-**Date:** January 08, 2026
-**Project:** Solventless (formerly Numera)
-**Workspace:** `C:\Users\conor\OneDrive\Documents\GitHub\Numera2`
+**Date:** December 18, 2025  
+**Project:** Solventless2 - Financial Clarity Platform  
+**Workspace:** `C:\Users\conor\Documents\GitHub\Solventless2\Solventless2.code-workspace`
 
 ---
 
@@ -58,7 +58,7 @@ We focus on **BNE (Business Net Exact)**, a proprietary solvency metric.
 
 ## 🚀 Current Development Focus
 
-### Restored Features
+### restored Features
 We have just restored strict paywall enforcement on the following:
 1.  **Business Tools:** The "Lab" and "Scorer" buttons in the Portal now check `isPro` before opening.
 2.  **Contract Analysis:** File upload checks `isPro`.
@@ -70,26 +70,28 @@ We have just restored strict paywall enforcement on the following:
 
 ---
 
-## 🛠️ Developer Cheat Sheet (Operational Quirks)
+## 📝 Code Context
 
-### 1. Dependency Management
-- **Issue:** `rollup` binary conflict and Capacitor peer deps.
-- **Fix:** ALWAYS use `npm install --legacy-peer-deps`.
-- **Vite Config:** `vite.config.ts` has specific `optimizeDeps` for `recharts`. **DO NOT REMOVE** or the production build will crash.
+**State Management (App.tsx):**
+```typescript
+const [isPro, setIsPro] = useState(false);
+// ...
+<BusinessTools 
+  isPro={isPro} 
+  onShowPaywall={() => setShowPaywall(true)} 
+  // ... 
+/>
+```
 
-### 2. Deployment
-- **Target:** `solventless-finance` (Project ID: `solventless-7d0ef`).
-- **Command:** `firebase deploy --only hosting:solventless-finance`
-- **Note:** Do NOT deploy to the old `numera` target.
+**Tool Implementation (BusinessTools.tsx):**
+```typescript
+// Example of Paywall Gate
+<button onClick={() => isPro ? setActiveView('LAB') : onShowPaywall()} ...>
+```
 
-### 3. AI Service (`services/geminiService.ts`)
-- This service wraps the Google Generative AI client.
-- It expects a valid API key (handled in code/env).
-- **Usage:** Call high-level functions like `generateFinancialInsight` or `scoreOpportunity`, do not call the raw API directly from components.
-
-### 4. Component "Gotchas"
-- **`BusinessTools.tsx`:** This is a **Router**. It switches between 'PORTAL', 'LAB', 'SCORER', etc. using `activeView`. When adding a new tool, add it to the `activeView` type union and create a new `if (activeView === 'NEW_TOOL')` block.
-- **`ChatBot.tsx`:** Stores history locally in the component state. It does not persist to DB currently (by design, for privacy/simplicity).
+**Gemini AI (services/geminiService.ts):**
+- Handles all AI logic.
+- **Cost:** Expensive. This is WHY we enforce the paywall.
 
 ---
 

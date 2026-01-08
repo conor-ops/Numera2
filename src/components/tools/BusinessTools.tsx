@@ -54,8 +54,8 @@ import { triggerHaptic } from '../services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
 import { saveDocument, getDocuments, deleteDocument, getSetting, setSetting } from '../services/databaseService';
 import { generateMarketIntel, MarketIntelResponse, performInvoiceAudit, parseContract, ContractExtraction, Milestone, scoreOpportunity, OpportunityScore } from '../services/geminiService';
-import BudgetPlanner from './BudgetPlanner';
-import PricingCalculator from './PricingCalculator';
+import BudgetPlanner from '@/components/financial/BudgetPlanner';
+import PricingCalculator from '@/components/tools/PricingCalculator';
 
 interface BusinessToolsProps {
   onRecordToAR: (tx: Transaction) => void;
