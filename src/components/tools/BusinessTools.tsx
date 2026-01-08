@@ -56,48 +56,19 @@ import { saveDocument, getDocuments, deleteDocument, getSetting, setSetting } fr
 import { generateMarketIntel, MarketIntelResponse, performInvoiceAudit, parseContract, ContractExtraction, Milestone, scoreOpportunity, OpportunityScore } from '@/services/geminiService';
 import BudgetPlanner from '@/components/financial/BudgetPlanner';
 import PricingCalculator from '@/components/tools/PricingCalculator';
+import ScopeGuard from '@/components/tools/ScopeGuard';
 
 interface BusinessToolsProps {
-  onRecordToAR: (tx: Transaction) => void;
-  isPro: boolean;
-  onShowPaywall: () => void;
-  targets: BudgetTargets;
-  actuals: { ar: number; ap: number; credit: number; };
-  onUpdateTargets: (targets: BudgetTargets) => void;
-  pricingSheet: PricingItem[];
-  onUpdatePricing: (items: PricingItem[]) => void;
-  onUpdateTaxRate: (rate: number) => void;
-  taxRate?: number;
-  calculations: {
-    bne: number;
-    provisionedTax: number;
-    totalAP: number;
-    totalCredit: number;
-  };
-  reserveMonths: number;
-  onUpdateReserveMonths: (val: number) => void;
-  monthlyOverhead: number;
-  inventory: InventoryItem[];
-  onUpdateInventory: (inv: InventoryItem[]) => void;
+// ...
 }
 
-const ProBadge = () => (
-  <span className="flex items-center gap-1 bg-brand-blue text-white text-[9px] font-black px-1.5 py-0.5 rounded-sm uppercase tracking-tighter">
-    <Crown size={10} /> Pro
-  </span>
-);
+// ...
 
-const BusinessTools: React.FC<BusinessToolsProps> = ({ 
+const BusinessTools: React.FC<BusinessToolsProps> = ({
   onRecordToAR, isPro, onShowPaywall, targets, actuals, onUpdateTargets, pricingSheet, onUpdatePricing, onUpdateTaxRate, taxRate, calculations, reserveMonths, onUpdateReserveMonths, monthlyOverhead, inventory, onUpdateInventory
 }) => {
-  const [activeView, setActiveView] = useState<'PORTAL' | 'EDITOR' | 'PROFILE' | 'TARGETS' | 'PRICING' | 'INTEL' | 'CONTRACT' | 'LAB' | 'SCORER' | 'INVENTORY'>('PORTAL');
-  const [savedDocs, setSavedDocs] = useState<BusinessDocument[]>([]);
-  const [doc, setDoc] = useState<BusinessDocument | null>(null);
-  const [profile, setProfile] = useState<BusinessProfile>({ name: '', address: '', email: '', phone: '' });
-  const [isLoading, setIsLoading] = useState(true);
-  const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
-  const [isAuditing, setIsAuditing] = useState(false);
-
+  const [activeView, setActiveView] = useState<'PORTAL' | 'EDITOR' | 'PROFILE' | 'TARGETS' | 'PRICING' | 'INTEL' | 'CONTRACT' | 'LAB' | 'SCORER' | 'INVENTORY' | 'GUARD'>('PORTAL');
+  // ... existing code
   // Expansion Lab State
   const [ghostExpenses, setGhostExpenses] = useState<{ id: string, name: string, amount: number }[]>([]);
   
@@ -349,6 +320,20 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
     );
   }
 
+  if (activeView === 'GUARD') {
+    return (
+      <div className="relative">
+        <button 
+          onClick={() => setActiveView('PORTAL')} 
+          className="absolute top-4 right-4 z-10 p-2 bg-white border-2 border-black shadow-swiss"
+        >
+          <X size={20} />
+        </button>
+        <ScopeGuard />
+      </div>
+    );
+  }
+
   if (activeView === 'SCORER') {
     return (
       <div className="bg-white border-4 border-black shadow-swiss p-8 md:p-12 min-h-[600px] flex flex-col">
@@ -424,6 +409,12 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
           className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32"
         >
           {!isPro && <div className="absolute top-2 right-2"><ProBadge/></div>}<Zap size={20} className="text-amber-500 mb-4" /><h4 className="text-[10px] font-bold uppercase">Scorer</h4>
+        </button>
+        <button 
+          onClick={() => setActiveView('GUARD')} 
+          className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left h-32"
+        >
+          <ShieldAlert size={20} className="text-red-600 mb-4" /><h4 className="text-[10px] font-bold uppercase">Scope Guard</h4>
         </button>
       </div>
 
