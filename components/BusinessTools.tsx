@@ -67,8 +67,6 @@ interface BusinessToolsProps {
   targets: BudgetTargets;
   actuals: { ar: number; ap: number; credit: number; };
   onUpdateTargets: (targets: BudgetTargets) => void;
-  pricingSheet: PricingItem[];
-  onUpdatePricing: (items: PricingItem[]) => void;
   onUpdateTaxRate: (rate: number) => void;
   taxRate?: number;
   calculations: {
@@ -91,7 +89,7 @@ const ProBadge = () => (
 );
 
 const BusinessTools: React.FC<BusinessToolsProps> = ({ 
-  onRecordToAR, isPro, onShowPaywall, targets, actuals, onUpdateTargets, pricingSheet, onUpdatePricing, onUpdateTaxRate, taxRate, calculations, reserveMonths, onUpdateReserveMonths, monthlyOverhead, inventory, onUpdateInventory
+  onRecordToAR, isPro, onShowPaywall, targets, actuals, onUpdateTargets, onUpdateTaxRate, taxRate, calculations, reserveMonths, onUpdateReserveMonths, monthlyOverhead, inventory, onUpdateInventory
 }) => {
   const [activeView, setActiveView] = useState<'PORTAL' | 'EDITOR' | 'PROFILE' | 'TARGETS' | 'PRICING' | 'INTEL' | 'CONTRACT' | 'LAB' | 'SCORER' | 'INVENTORY'>('PORTAL');
   const [savedDocs, setSavedDocs] = useState<BusinessDocument[]>([]);
@@ -147,19 +145,12 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
     setIsAuditing(true);
     triggerHaptic(ImpactStyle.Medium);
     try {
-      const result = await performInvoiceAudit(doc, pricingSheet);
+      const result = await performInvoiceAudit(doc);
       setAuditResult(result);
     } catch (e) { alert("Audit failed."); } finally { setIsAuditing(false); }
   };
 
-  const syncToPricingSheet = (itemId: string, name: string) => {
-    const pricingItem = pricingSheet.find(p => p.name.toLowerCase() === name.toLowerCase());
-    if (pricingItem && doc) {
-      const srp = (pricingItem.supplierCost + pricingItem.freightCost) * (1 + pricingItem.markupPercent / 100);
-      setDoc({ ...doc, items: doc.items.map(i => i.id === itemId ? { ...i, rate: srp } : i) });
-      triggerHaptic(ImpactStyle.Light);
-    }
-  };
+
 
   const totalGhostExpense = useMemo(() => 
     ghostExpenses.reduce((acc, exp) => acc + exp.amount, 0), [ghostExpenses]);
