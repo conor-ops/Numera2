@@ -41,7 +41,43 @@ The following features will be developed to directly serve the Contractor Core L
 *   **User Value:** Directly addresses the "Can I pay myself?" anxiety by providing a clear, actionable plan for managing cash.
 *   **Freemium Hook:** Free users get 2 buckets. Pro users get all four and can customize percentages.
 
-## 3. Lean R&D Strategy
+## 3. The Intelligence Layer (Pro Tier Strategy)
+
+This layer transforms Solventless from a passive tool into a proactive business partner. It leverages the data from the core tools to provide timely, actionable advice. This is the primary driver for Pro subscription upgrades.
+
+### Pillar 1: Pipeline & Sales Intelligence
+*   **Goal:** Help users win more profitable work.
+*   **Features:**
+    *   **"Stale Quote" Nudge:** Prompts the user to follow up on quotes that haven't been actioned after a set period.
+    *   **"Profitability Insight" Nudge:** Highlights when a completed job was significantly more or less profitable than average, encouraging analysis.
+    *   **"Bidding Activity" Summary:** Provides a weekly/monthly digest of quoting activity and win/loss ratio.
+
+### Pillar 2: Real-Time Job Profitability Alerts
+*   **Goal:** Protect profit margins during a job's execution.
+*   **Features:**
+    *   **"Budget Creep" Alert:** Warns the user if job spending outpaces job completion percentage.
+    *   **"Price Book Mismatch" Alert:** Notifies the user if they pay more for a material than what is saved in their price book, prompting an update.
+
+### Pillar 3: Cash Flow & Financial Health Warnings
+*   **Goal:** Provide high-level financial decision support.
+*   **Features:**
+    *   **"Cash Low" Warning:** Projects future cash flow and warns if the balance is predicted to dip below a user-defined safety net.
+    *   **"Safe to Pay Yourself" Notification:** After a large payment is received, it recalculates and presents the new "Safe to Draw" amount.
+
+### Pillar 4: Administrative Automation & Reminders
+*   **Goal:** Reduce mental load and minimize administrative risks.
+*   **Features:**
+    *   **"Invoice Now" Prompt:** When a job is marked complete, it prompts the user to generate the final invoice.
+    *   **"Overdue Invoice" Reminder:** Automatically flags overdue invoices and suggests sending a reminder.
+    *   **"Subcontractor Insurance" Alert:** Tracks subcontractor insurance expiry dates and provides a warning, reducing liability.
+
+### UX for the Intelligence Layer
+*   **"Advisor" Tab:** A new, dedicated feed in the app for all intelligent nudges, prioritized by urgency.
+*   **Contextual Nudges:** Non-intrusive banners or notification dots on relevant screens.
+*   **Smart Push Notifications:** For critical, time-sensitive alerts only (e.g., Cash Flow Warnings).
+*   **Weekly "Business Health" Email:** An email digest summarizing key insights from the week.
+
+## 4. Lean R&D Strategy
 
 As a solo-founder project, we will use a lean development process to mitigate risk:
 
@@ -49,7 +85,7 @@ As a solo-founder project, we will use a lean development process to mitigate ri
 2.  **Paper Prototyping:** Sketch and test user flows with contractors to get cheap and fast feedback.
 3.  **Build Minimum Viable Features (MVFs):** Ship the simplest functional version of a feature to test its value in the real world before adding complexity.
 
-## 4. Technical Considerations
+## 5. Technical Considerations
 
 *   **Client-Side Generation:** PDF quotes and invoices will be generated client-side using libraries like `jsPDF` to align with our backend-less architecture.
 *   **Data Structure:** New top-level keys (`projects`, `materials`) will be added to the data structure in LocalStorage/SQLite to support these features.
