@@ -52,7 +52,7 @@ import {
   Clock3
 } from 'lucide-react';
 import { Decimal } from 'decimal.js';
-import { LineItem, BusinessDocument, Transaction, BusinessProfile, BudgetTargets, PricingItem, AuditResult, InventoryItem, AssetCategory } from '../types';
+import { LineItem, BusinessDocument, Transaction, BusinessProfile, BudgetTargets, AuditResult, InventoryItem, AssetCategory, Job, Quote, Invoice } from '../types';
 import { triggerHaptic } from '../services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
 import { saveDocument, getDocuments, deleteDocument, getSetting, setSetting } from '../services/databaseService';
@@ -92,8 +92,8 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
   onRecordToAR, isPro, onShowPaywall, targets, actuals, onUpdateTargets, onUpdateTaxRate, taxRate, calculations, reserveMonths, onUpdateReserveMonths, monthlyOverhead, inventory, onUpdateInventory
 }) => {
   const [activeView, setActiveView] = useState<'PORTAL' | 'EDITOR' | 'PROFILE' | 'TARGETS' | 'PRICING' | 'INTEL' | 'CONTRACT' | 'LAB' | 'SCORER' | 'INVENTORY'>('PORTAL');
-  const [savedDocs, setSavedDocs] = useState<BusinessDocument[]>([]);
-  const [doc, setDoc] = useState<BusinessDocument | null>(null);
+  const [savedJobs, setSavedJobs] = useState<Job[]>([]);
+  const [job, setJob] = useState<Job | null>(null);
   const [profile, setProfile] = useState<BusinessProfile>({ name: '', address: '', email: '', phone: '' });
   const [isLoading, setIsLoading] = useState(true);
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
@@ -114,15 +114,16 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
 
   // Computed totals for the current document
   const totals = useMemo(() => {
-    if (!doc) return { subtotal: 0, tax: 0, total: 0 };
-    const subtotal = doc.items.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
-    const tax = subtotal * ((doc.taxRate || 0) / 100);
+    if (!job || !job.quotes.length) return { subtotal: 0, tax: 0, total: 0 };
+    const quote = job.quotes[0];
+    const subtotal = quote.items.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
+    const tax = subtotal * ((quote.taxRate || 0) / 100);
     return {
       subtotal,
       tax,
-      total: subtotal + tax - (doc.discount || 0)
+      total: subtotal + tax - (quote.discount || 0)
     };
-  }, [doc]);
+  }, [job]);
 
   const loadDocuments = async () => {
     const docs = await getDocuments();

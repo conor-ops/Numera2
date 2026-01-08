@@ -1,7 +1,7 @@
 
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
-import { BusinessData, Transaction, BankAccount, AccountType, HistoryRecord, BudgetTargets, BusinessDocument, FinancialItem, PricingItem, InventoryItem } from '../types';
+import { BusinessData, Transaction, BankAccount, AccountType, HistoryRecord, BudgetTargets, BusinessDocument, FinancialItem, InventoryItem } from '../types';
 
 let sqlite: SQLiteConnection;
 let db: SQLiteDBConnection;
@@ -39,14 +39,6 @@ export const setupDatabase = async (): Promise<boolean> => {
         name TEXT NOT NULL,
         amount_cents INTEGER NOT NULL,
         frequency TEXT DEFAULT 'MONTHLY'
-      );
-      
-      CREATE TABLE IF NOT EXISTS pricing_sheet (
-        id TEXT PRIMARY KEY NOT NULL,
-        name TEXT NOT NULL,
-        supplier_cost_cents INTEGER NOT NULL,
-        freight_cost_cents INTEGER NOT NULL,
-        markup_percent REAL NOT NULL
       );
 
       CREATE TABLE IF NOT EXISTS inventory (
@@ -98,7 +90,6 @@ export const saveSnapshot = async (data: BusinessData): Promise<void> => {
     await db.execute('DELETE FROM accounts');
     await db.execute('DELETE FROM transactions');
     await db.execute('DELETE FROM recurring_expenses');
-    await db.execute('DELETE FROM pricing_sheet');
     await db.execute('DELETE FROM inventory');
 
     for (const acc of data.accounts) {
@@ -133,13 +124,6 @@ export const saveSnapshot = async (data: BusinessData): Promise<void> => {
       );
     }
 
-    for (const item of data.pricingSheet || []) {
-      await db.run(
-        'INSERT INTO pricing_sheet (id, name, supplier_cost_cents, freight_cost_cents, markup_percent) VALUES (?, ?, ?, ?, ?)',
-        [item.id, item.name, Math.round(item.supplierCost * 100), Math.round(item.freightCost * 100), item.markupPercent]
-      );
-    }
-
     for (const item of data.inventory || []) {
       await db.run(
         'INSERT INTO inventory (id, name, sku, quantity, unit_cost_cents, min_threshold) VALUES (?, ?, ?, ?, ?, ?)',
@@ -166,7 +150,6 @@ export const loadSnapshot = async (): Promise<BusinessData | null> => {
         if (!data.targets) data.targets = defaultTargets;
         if (!data.monthlyOverhead) data.monthlyOverhead = data.recurringExpenses || [];
         if (!data.annualOverhead) data.annualOverhead = [];
-        if (!data.pricingSheet) data.pricingSheet = [];
         if (!data.inventory) data.inventory = [];
         return data;
     }
@@ -212,15 +195,6 @@ export const loadSnapshot = async (): Promise<BusinessData | null> => {
         amount: row.amount_cents / 100
       }));
 
-    const pricingResult = await db.query('SELECT * FROM pricing_sheet');
-    const pricingSheet: PricingItem[] = (pricingResult.values || []).map(row => ({
-      id: row.id,
-      name: row.name,
-      supplierCost: row.supplier_cost_cents / 100,
-      freightCost: row.freight_cost_cents / 100,
-      markupPercent: row.markup_percent
-    }));
-
     const invResult = await db.query('SELECT * FROM inventory');
     const inventory: InventoryItem[] = (invResult.values || []).map(row => ({
       id: row.id,
@@ -237,7 +211,7 @@ export const loadSnapshot = async (): Promise<BusinessData | null> => {
         targets = JSON.parse(settingsResult.values[0].value);
     }
 
-    return { accounts, transactions, targets, monthlyOverhead, annualOverhead, pricingSheet, inventory };
+    return { accounts, transactions, targets, monthlyOverhead, annualOverhead, inventory };
   } catch (err) {
     console.error('Load Snapshot Failed:', err);
     return null;

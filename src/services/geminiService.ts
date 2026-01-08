@@ -137,7 +137,7 @@ export const parseContract = async (
   return JSON.parse(result.response.text());
 };
 
-export const performInvoiceAudit = async (doc: BusinessDocument, pricingSheet: PricingItem[]): Promise<AuditResult> => {
+export const performInvoiceAudit = async (doc: BusinessDocument): Promise<AuditResult> => {
   if (!API_KEY) throw new Error("API Key missing");
   const model = genAI.getGenerativeModel({ 
     model: "gemini-1.5-pro",
@@ -166,7 +166,7 @@ export const performInvoiceAudit = async (doc: BusinessDocument, pricingSheet: P
     }
   });
 
-  const prompt = `Perform audit on ${doc.type}. Invoice: ${JSON.stringify(doc)}. Pricing: ${JSON.stringify(pricingSheet)}`;
+  const prompt = `Perform audit on ${doc.type}. Document Details: ${JSON.stringify(doc)}. Analyze for errors, missing info, or optimization opportunities.`;
   const result = await model.generateContent(prompt);
   return JSON.parse(result.response.text());
 };
