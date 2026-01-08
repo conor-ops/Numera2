@@ -59,6 +59,17 @@ Our immediate goal is to build the foundational tools for the "Contractor Core L
 3.  **Refactor `App.tsx` (Ongoing):**
     *   As you add new features, look for opportunities to extract complex business logic from `App.tsx` into custom hooks (e.g., `useBusinessCalculations`).
 
+### The Intelligence Layer (Pro-Tier Focus)
+The ultimate goal is to build a proactive **Intelligence Layer** that transforms the app from a passive tracker into an active business partner. This is the core justification for the Pro subscription.
+
+- **Concept:** Automatically connect data points from across the app (quotes, jobs, expenses) to provide timely, actionable advice.
+- **Pillars:** This layer is structured around four pillars:
+    1.  **Pipeline & Sales Intelligence** (e.g., "Stale Quote" nudges)
+    2.  **Real-Time Job Profitability Alerts** (e.g., "Budget Creep" warnings)
+    3.  **Cash Flow & Financial Health** (e.g., "Cash Low" projections)
+    4.  **Administrative Automation** (e.g., "Overdue Invoice" reminders)
+- **Your Role:** As you build the foundational tools, think about what data points can be used to power this layer. The logic for these nudges will be implemented as a separate effort but relies on the data captured by the core tools.
+
 ---
 
 ## 📝 Code Context
