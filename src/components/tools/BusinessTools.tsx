@@ -46,29 +46,59 @@ import {
   ArrowDownLeft,
   Factory,
   Boxes,
-  Hammer
+  Hammer,
+  FileSearch,
+  CheckCircle,
+  Clock3
 } from 'lucide-react';
 import { Decimal } from 'decimal.js';
-import { LineItem, BusinessDocument, Transaction, BusinessProfile, BudgetTargets, PricingItem, AuditResult, InventoryItem, AssetCategory } from '@/types';
-import { triggerHaptic } from '@/services/hapticService';
+import { LineItem, BusinessDocument, Transaction, BusinessProfile, BudgetTargets, AuditResult, InventoryItem, AssetCategory, Job, Quote, Invoice } from '../types';
+import { triggerHaptic } from '../services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
-import { saveDocument, getDocuments, deleteDocument, getSetting, setSetting } from '@/services/databaseService';
-import { generateMarketIntel, MarketIntelResponse, performInvoiceAudit, parseContract, ContractExtraction, Milestone, scoreOpportunity, OpportunityScore } from '@/services/geminiService';
-import BudgetPlanner from '@/components/financial/BudgetPlanner';
-import PricingCalculator from '@/components/tools/PricingCalculator';
-import ScopeGuard from '@/components/tools/ScopeGuard';
+import { saveJob, getJobs, deleteJob, getSetting, setSetting } from '../services/databaseService';
+import { generateMarketIntel, MarketIntelResponse, performInvoiceAudit, parseContract, ContractExtraction, Milestone, scoreOpportunity, OpportunityScore } from '../services/geminiService';
+import BudgetPlanner from './BudgetPlanner';
+
 
 interface BusinessToolsProps {
-// ...
+  onRecordToAR: (tx: Transaction) => void;
+  isPro: boolean;
+  onShowPaywall: () => void;
+  targets: BudgetTargets;
+  actuals: { ar: number; ap: number; credit: number; };
+  onUpdateTargets: (targets: BudgetTargets) => void;
+  onUpdateTaxRate: (rate: number) => void;
+  taxRate?: number;
+  calculations: {
+    bne: number;
+    provisionedTax: number;
+    totalAP: number;
+    totalCredit: number;
+  };
+  reserveMonths: number;
+  onUpdateReserveMonths: (val: number) => void;
+  monthlyOverhead: number;
+  inventory: InventoryItem[];
+  onUpdateInventory: (inv: InventoryItem[]) => void;
 }
 
-// ...
+const ProBadge = () => (
+  <span className="flex items-center gap-1 bg-brand-blue text-white text-[9px] font-black px-1.5 py-0.5 rounded-sm uppercase tracking-tighter">
+    <Crown size={10} /> Pro
+  </span>
+);
 
-const BusinessTools: React.FC<BusinessToolsProps> = ({
-  onRecordToAR, isPro, onShowPaywall, targets, actuals, onUpdateTargets, pricingSheet, onUpdatePricing, onUpdateTaxRate, taxRate, calculations, reserveMonths, onUpdateReserveMonths, monthlyOverhead, inventory, onUpdateInventory
+const BusinessTools: React.FC<BusinessToolsProps> = ({ 
+  onRecordToAR, isPro, onShowPaywall, targets, actuals, onUpdateTargets, onUpdateTaxRate, taxRate, calculations, reserveMonths, onUpdateReserveMonths, monthlyOverhead, inventory, onUpdateInventory
 }) => {
-  const [activeView, setActiveView] = useState<'PORTAL' | 'EDITOR' | 'PROFILE' | 'TARGETS' | 'PRICING' | 'INTEL' | 'CONTRACT' | 'LAB' | 'SCORER' | 'INVENTORY' | 'GUARD'>('PORTAL');
-  // ... existing code
+  const [activeView, setActiveView] = useState<'PORTAL' | 'EDITOR' | 'PROFILE' | 'TARGETS' | 'INTEL' | 'CONTRACT' | 'LAB' | 'SCORER' | 'INVENTORY'>('PORTAL');
+  const [savedJobs, setSavedJobs] = useState<Job[]>([]);
+  const [job, setJob] = useState<Job | null>(null);
+  const [profile, setProfile] = useState<BusinessProfile>({ name: '', address: '', email: '', phone: '' });
+  const [isLoading, setIsLoading] = useState(true);
+  const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
+  const [isAuditing, setIsAuditing] = useState(false);
+
   // Expansion Lab State
   const [ghostExpenses, setGhostExpenses] = useState<{ id: string, name: string, amount: number }[]>([]);
   
@@ -84,46 +114,44 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
 
   // Computed totals for the current document
   const totals = useMemo(() => {
-    if (!doc) return { subtotal: 0, tax: 0, total: 0 };
-    const subtotal = doc.items.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
-    const tax = subtotal * ((doc.taxRate || 0) / 100);
+    if (!job) return { subtotal: 0, tax: 0, total: 0 };
+    const subtotal = job.quote.lineItems.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
+    // TODO: Re-implement tax and discount logic based on new data model
+    const tax = 0; 
     return {
       subtotal,
       tax,
-      total: subtotal + tax - (doc.discount || 0)
+      total: job.quote.total
     };
-  }, [doc]);
+  }, [job]);
 
-  const runAudit = async () => {
-    if (!isPro) { onShowPaywall(); return; }
-    if (!doc) return;
-    setIsAuditing(true);
-    triggerHaptic(ImpactStyle.Medium);
-    try {
-      const result = await performInvoiceAudit(doc, pricingSheet);
-      setAuditResult(result);
-    } catch (e) { alert("Audit failed."); } finally { setIsAuditing(false); }
-  };
-
-  const syncToPricingSheet = (itemId: string, name: string) => {
-    const pricingItem = pricingSheet.find(p => p.name.toLowerCase() === name.toLowerCase());
-    if (pricingItem && doc) {
-      const srp = (pricingItem.supplierCost + pricingItem.freightCost) * (1 + pricingItem.markupPercent / 100);
-      setDoc({ ...doc, items: doc.items.map(i => i.id === itemId ? { ...i, rate: srp } : i) });
-      triggerHaptic(ImpactStyle.Light);
-    }
+  const loadJobs = async () => {
+    const jobs = await getJobs();
+    setSavedJobs(jobs.map(j => ({...j, client: j.client || { id: '', name: ''}})));
   };
 
   useEffect(() => {
     const loadToolsData = async () => {
-      const docs = await getDocuments();
+      await loadJobs();
       const savedProfile = await getSetting('business_profile');
       if (savedProfile) setProfile(JSON.parse(savedProfile));
-      setSavedDocs(docs);
       setIsLoading(false);
     };
     loadToolsData();
   }, []);
+
+  const runAudit = async () => {
+    if (!isPro) { onShowPaywall(); return; }
+    if (!job) return;
+    setIsAuditing(true);
+    triggerHaptic(ImpactStyle.Medium);
+    try {
+      const result = await performInvoiceAudit(job.invoice as any);
+      setAuditResult(result);
+    } catch (e) { alert("Audit failed."); } finally { setIsAuditing(false); }
+  };
+
+
 
   const totalGhostExpense = useMemo(() => 
     ghostExpenses.reduce((acc, exp) => acc + exp.amount, 0), [ghostExpenses]);
@@ -171,14 +199,40 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
     reader.readAsDataURL(file);
   };
 
-  const createNewDoc = (type: 'ESTIMATE' | 'INVOICE') => {
-    const newDoc: BusinessDocument = {
-      id: crypto.randomUUID(), number: (1000 + savedDocs.length).toString(),
-      date: new Date().toISOString().split('T')[0], dueDate: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-      clientName: '', clientAddress: '', items: [{ id: '1', description: '', quantity: 1, rate: 0 }],
-      taxRate: 0, discount: 0, notes: '', type, status: 'DRAFT', companyInfo: profile
+  const createNewJob = (type: 'ESTIMATE' | 'INVOICE') => {
+    const newJob: Job = {
+      id: crypto.randomUUID(),
+      title: 'New Job',
+      client: { id: crypto.randomUUID(), name: '' },
+      status: 'QUOTED',
+      createdAt: new Date().toISOString(),
+      quote: {
+        id: crypto.randomUUID(),
+        quoteNumber: (1000 + savedJobs.length).toString(),
+        lineItems: [{ id: '1', description: '', quantity: 1, rate: 0 }],
+        overheadPercent: 0,
+        profitMargin: 0,
+        total: 0,
+        status: 'DRAFT',
+      }
     };
-    setDoc(newDoc); setAuditResult(null); setActiveView('EDITOR');
+    setJob(newJob); setAuditResult(null); setActiveView('EDITOR');
+  };
+
+  const openSavedJob = (savedJob: Job) => {
+    triggerHaptic(ImpactStyle.Light);
+    setJob({ ...savedJob });
+    setAuditResult(null);
+    setActiveView('EDITOR');
+  };
+
+  const handleDeleteJob = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm("Delete this document?")) {
+      triggerHaptic(ImpactStyle.Medium);
+      await deleteJob(id);
+      await loadJobs();
+    }
   };
 
   if (isLoading) return <div className="p-12 text-center animate-pulse">LOADING TOOLS...</div>;
@@ -190,8 +244,8 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
             <div className="flex items-center gap-3">
                <Package className="text-brand-blue" size={32} />
                <div>
-                  <h2 className="text-2xl font-black uppercase tracking-tighter">Business Asset Portfolio</h2>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase">Materials & Equipment Ledger</p>
+                  <h2 className="text-2xl font-black uppercase tracking-tighter">Asset & Material Tracker</h2>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase">Materials on Hand & Equipment</p>
                </div>
             </div>
             <button onClick={() => setActiveView('PORTAL')}><X size={24}/></button>
@@ -320,20 +374,6 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
     );
   }
 
-  if (activeView === 'GUARD') {
-    return (
-      <div className="relative">
-        <button 
-          onClick={() => setActiveView('PORTAL')} 
-          className="absolute top-4 right-4 z-10 p-2 bg-white border-2 border-black shadow-swiss"
-        >
-          <X size={20} />
-        </button>
-        <ScopeGuard />
-      </div>
-    );
-  }
-
   if (activeView === 'SCORER') {
     return (
       <div className="bg-white border-4 border-black shadow-swiss p-8 md:p-12 min-h-[600px] flex flex-col">
@@ -362,14 +402,14 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
     );
   }
 
-  if (activeView === 'EDITOR' && doc) {
+  if (activeView === 'EDITOR' && job) {
     return (
-      <div className="bg-white border-4 border-black shadow-swiss relative flex flex-col min-h-[700px]"><div className="bg-black text-white p-4 flex justify-between items-center"><div className="flex items-center gap-2"><ProBadge /><span className="text-xs font-black uppercase tracking-widest">{doc.type} #{doc.number}</span></div><div className="flex gap-4"><button onClick={runAudit} disabled={isAuditing} className="flex items-center gap-2 text-xs font-black uppercase hover:text-brand-blue">{isAuditing ? <RefreshCw className="animate-spin" size={14}/> : <ShieldCheck size={14}/>} {isAuditing ? "Auditing..." : "Audit with AI"}</button><button onClick={() => setActiveView('PORTAL')}><X size={20}/></button></div></div><div className="flex-grow flex flex-col lg:flex-row overflow-hidden"><div className="flex-grow p-6 md:p-10 space-y-8 overflow-y-auto"><div className="flex justify-between items-start border-b-2 border-black pb-6"><div><h2 className="text-3xl font-black uppercase tracking-tighter text-brand-blue">{doc.type}</h2></div><div className="text-right text-[10px] font-bold uppercase text-gray-400"><div>Date: <span className="text-black font-mono">{doc.date}</span></div><div>Number: <span className="text-black font-mono">#{doc.number}</span></div></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-8"><input value={doc.clientName} onChange={e => setDoc({...doc, clientName: e.target.value})} placeholder="Bill To (Client Name)" className="text-xl font-black border-b border-black outline-none w-full"/><textarea value={doc.clientAddress} onChange={e => setDoc({...doc, clientAddress: e.target.value})} placeholder="Client Address" className="w-full text-xs font-mono p-2 border border-gray-100 outline-none h-20"/></div><div className="border-2 border-black overflow-hidden"><table className="w-full text-left"><thead className="bg-black text-white text-[10px] uppercase"><tr><th className="p-2">Item</th><th className="p-2 text-center">Qty</th><th className="p-2 text-right">Rate</th><th className="p-2 text-right">Total</th><th className="p-2"></th></tr></thead><tbody className="divide-y border-b border-black">{doc.items.map(item => (<tr key={item.id} className="hover:bg-gray-50 group"><td className="p-2"><input value={item.description} onBlur={() => syncToPricingSheet(item.id, item.description)} onChange={e => setDoc({...doc, items: doc.items.map(i => i.id === item.id ? {...i, description: e.target.value} : i)})} className="w-full font-bold text-sm bg-transparent outline-none"/></td><td className="p-2 text-center w-20"><input type="number" value={item.quantity} onChange={e => setDoc({...doc, items: doc.items.map(i => i.id === item.id ? {...i, quantity: parseFloat(e.target.value) || 0} : i)})} className="w-full text-center font-mono text-sm outline-none"/></td><td className="p-2 text-right w-32"><input type="number" value={item.rate} onChange={e => setDoc({...doc, items: doc.items.map(i => i.id === item.id ? {...i, rate: parseFloat(e.target.value) || 0} : i)})} className="w-full text-right font-mono text-sm outline-none"/></td><td className="p-2 text-right font-mono font-bold text-sm">${(item.quantity * item.rate).toFixed(2)}</td><td className="p-2 text-center"><button onClick={() => setDoc({...doc, items: doc.items.filter(i => i.id !== item.id)})} className="text-gray-300 hover:text-red-500"><Trash2 size={14}/></button></td></tr>))}</tbody></table><button onClick={() => setDoc({...doc, items: [...doc.items, {id: crypto.randomUUID(), description: '', quantity: 1, rate: 0}]})} className="w-full py-2 bg-gray-50 hover:bg-white text-[9px] font-black uppercase">Add Item</button></div><div className="flex justify-end"><div className="w-64 bg-gray-50 border-2 border-black p-4 flex justify-between items-baseline"><span className="text-xs font-black uppercase tracking-widest">Total Due</span><span className="text-2xl font-mono font-bold text-brand-blue">${totals.total.toFixed(2)}</span></div></div></div>{auditResult && (<div className="w-full lg:w-96 bg-gray-50 border-l-4 border-black p-6 space-y-6 animate-in slide-in-from-right duration-300 overflow-y-auto"><div className="flex items-center justify-between border-b-2 border-black pb-4"><div className="flex items-center gap-2 text-brand-blue"><ShieldCheck /><h4 className="font-black uppercase text-xs">AI Risk Audit</h4></div><div className="text-xl font-black">{auditResult.score}/100</div></div><p className="text-xs font-mono font-medium text-gray-600 leading-relaxed italic">"{auditResult.summary}"</p><div className="space-y-4">{auditResult.issues.map((issue, i) => (<div key={i} className={`p-4 border-2 border-black bg-white shadow-swiss space-y-2`}><div className="flex items-center gap-2">{issue.type === 'CRITICAL' ? <AlertTriangle className="text-red-600" size={16}/> : <Lightbulb className="text-brand-blue" size={16}/>}<span className={`text-[9px] font-black uppercase ${issue.type === 'CRITICAL' ? 'text-red-600' : 'text-brand-blue'}`}>{issue.type}</span></div><p className="text-[11px] font-bold uppercase tracking-tight">{issue.message}</p>{issue.impact && <p className="text-[9px] font-mono text-gray-500">Impact: {issue.impact}</p>}</div>))}</div><button onClick={() => setAuditResult(null)} className="w-full py-2 border border-black text-[9px] font-black uppercase hover:bg-gray-200">Close Audit</button></div>)}</div><div className="p-6 border-t-2 border-black bg-white flex flex-col sm:flex-row gap-4 sticky bottom-0 z-10"><button onClick={async () => { await saveDocument(doc); setActiveView('PORTAL'); }} className="flex-1 py-4 bg-black text-white font-bold uppercase text-sm border-2 border-black shadow-swiss flex items-center justify-center gap-2"><Database size={18}/> Save as Draft</button>{doc.type === 'INVOICE' && <button onClick={() => onRecordToAR({ id: crypto.randomUUID(), name: `Invoice #${doc.number}`, amount: totals.total, type: 'INCOME', date_occurred: new Date().toISOString() })} className="flex-1 py-4 bg-brand-blue text-white font-bold uppercase text-sm border-2 border-black shadow-swiss flex items-center justify-center gap-2"><CheckCircle2 size={18}/> Post to Ledger</button>}</div></div>
+      <div className="bg-white border-4 border-black shadow-swiss relative flex flex-col min-h-[700px]"><div className="bg-black text-white p-4 flex justify-between items-center"><div className="flex items-center gap-2"><ProBadge /><span className="text-xs font-black uppercase tracking-widest">JOB: {job.title}</span></div><div className="flex gap-4"><button onClick={runAudit} disabled={isAuditing} className="flex items-center gap-2 text-xs font-black uppercase hover:text-brand-blue">{isAuditing ? <RefreshCw className="animate-spin" size={14}/> : <ShieldCheck size={14}/>} {isAuditing ? "Auditing..." : "Audit with AI"}</button><button onClick={() => setActiveView('PORTAL')}><X size={20}/></button></div></div><div className="flex-grow flex flex-col lg:flex-row overflow-hidden"><div className="flex-grow p-6 md:p-10 space-y-8 overflow-y-auto"><div className="flex justify-between items-start border-b-2 border-black pb-6"><div><h2 className="text-3xl font-black uppercase tracking-tighter text-brand-blue">QUOTE #{job.quote.quoteNumber}</h2></div><div className="text-right text-[10px] font-bold uppercase text-gray-400"><div>Date: <span className="text-black font-mono">{job.createdAt.split('T')[0]}</span></div><div>Job Status: <span className="text-black font-mono">{job.status}</span></div></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-8"><input value={job.client.name} onChange={e => setJob({...job, client: {...job.client, name: e.target.value}})} placeholder="Bill To (Client Name)" className="text-xl font-black border-b border-black outline-none w-full"/><textarea value={job.client.address} onChange={e => setJob({...job, client: {...job.client, address: e.target.value}})} placeholder="Client Address" className="w-full text-xs font-mono p-2 border border-gray-100 outline-none h-20"/></div><div className="border-2 border-black overflow-hidden"><table className="w-full text-left"><thead className="bg-black text-white text-[10px] uppercase"><tr><th className="p-2">Item</th><th className="p-2 text-center">Qty</th><th className="p-2 text-right">Rate</th><th className="p-2 text-right">Total</th><th className="p-2"></th></tr></thead><tbody className="divide-y border-b border-black">{job.quote.lineItems.map(item => (<tr key={item.id} className="hover:bg-gray-50 group"><td className="p-2"><input value={item.description} onChange={e => setJob({...job, quote: {...job.quote, lineItems: job.quote.lineItems.map(i => i.id === item.id ? {...i, description: e.target.value} : i)}})} className="w-full font-bold text-sm bg-transparent outline-none"/></td><td className="p-2 text-center w-20"><input type="number" value={item.quantity} onChange={e => setJob({...job, quote: {...job.quote, lineItems: job.quote.lineItems.map(i => i.id === item.id ? {...i, quantity: parseFloat(e.target.value) || 0} : i)}})} className="w-full text-center font-mono text-sm outline-none"/></td><td className="p-2 text-right w-32"><input type="number" value={item.rate} onChange={e => setJob({...job, quote: {...job.quote, lineItems: job.quote.lineItems.map(i => i.id === item.id ? {...i, rate: parseFloat(e.target.value) || 0} : i)}})} className="w-full text-right font-mono text-sm outline-none"/></td><td className="p-2 text-right font-mono font-bold text-sm">${(item.quantity * item.rate).toFixed(2)}</td><td className="p-2 text-center"><button onClick={() => setJob({...job, quote: {...job.quote, lineItems: job.quote.lineItems.filter(i => i.id !== item.id)}})} className="text-gray-300 hover:text-red-500"><Trash2 size={14}/></button></td></tr>))}</tbody></table><button onClick={() => setJob({...job, quote: {...job.quote, lineItems: [...job.quote.lineItems, {id: crypto.randomUUID(), description: '', quantity: 1, rate: 0}]}})} className="w-full py-2 bg-gray-50 hover:bg-white text-[9px] font-black uppercase">Add Item</button></div><div className="flex justify-end"><div className="w-64 bg-gray-50 border-2 border-black p-4 flex justify-between items-baseline"><span className="text-xs font-black uppercase tracking-widest">Total Due</span><span className="text-2xl font-mono font-bold text-brand-blue">${totals.total.toFixed(2)}</span></div></div></div>{auditResult && (<div className="w-full lg:w-96 bg-gray-50 border-l-4 border-black p-6 space-y-6 animate-in slide-in-from-right duration-300 overflow-y-auto"><div className="flex items-center justify-between border-b-2 border-black pb-4"><div className="flex items-center gap-2 text-brand-blue"><ShieldCheck /><h4 className="font-black uppercase text-xs">AI Risk Audit</h4></div><div className="text-xl font-black">{auditResult.score}/100</div></div><p className="text-xs font-mono font-medium text-gray-600 leading-relaxed italic">"{auditResult.summary}"</p><div className="space-y-4">{auditResult.issues.map((issue, i) => (<div key={i} className={`p-4 border-2 border-black bg-white shadow-swiss space-y-2`}><div className="flex items-center gap-2">{issue.type === 'CRITICAL' ? <AlertTriangle className="text-red-600" size={16}/> : <Lightbulb className="text-brand-blue" size={16}/>}<span className={`text-[9px] font-black uppercase ${issue.type === 'CRITICAL' ? 'text-red-600' : 'text-brand-blue'}`}>{issue.type}</span></div><p className="text-[11px] font-bold uppercase tracking-tight">{issue.message}</p>{issue.impact && <p className="text-[9px] font-mono text-gray-500">Impact: {issue.impact}</p>}</div>))}</div><button onClick={() => setAuditResult(null)} className="w-full py-2 border border-black text-[9px] font-black uppercase hover:bg-gray-200">Close Audit</button></div>)}</div><div className="p-6 border-t-2 border-black bg-white flex flex-col sm:flex-row gap-4 sticky bottom-0 z-10"><button onClick={async () => { await saveJob(job); await loadJobs(); setActiveView('PORTAL'); }} className="flex-1 py-4 bg-black text-white font-bold uppercase text-sm border-2 border-black shadow-swiss flex items-center justify-center gap-2"><Database size={18}/> Save Job</button>{job.invoice && <button onClick={() => { onRecordToAR({ id: crypto.randomUUID(), name: `Invoice #${job.invoice.invoiceNumber}`, amount: totals.total, type: 'INCOME', date_occurred: new Date().toISOString() }); saveJob({ ...job, status: 'INVOICED' }); loadJobs(); setActiveView('PORTAL'); }} className="flex-1 py-4 bg-brand-blue text-white font-bold uppercase text-sm border-2 border-black shadow-swiss flex items-center justify-center gap-2"><CheckCircle2 size={18}/> Post to Ledger</button>}</div></div>
     );
   }
 
   if (activeView === 'TARGETS') return <div className="relative"><button onClick={() => setActiveView('PORTAL')} className="absolute top-4 right-4 z-10 p-2 bg-white border-2 border-black shadow-swiss"><X size={20} /></button><BudgetPlanner targets={targets} actuals={actuals} onUpdate={onUpdateTargets} /></div>;
-  if (activeView === 'PRICING') return <PricingCalculator items={pricingSheet} onUpdate={onUpdatePricing} onClose={() => setActiveView('PORTAL')} isPro={isPro} onShowPaywall={onShowPaywall} />;
+  
   if (activeView === 'PROFILE') return (
     <div className="bg-white border-4 border-black p-8 shadow-swiss max-w-xl mx-auto"><div className="flex justify-between items-center mb-8 border-b-2 border-black pb-4"><h3 className="text-xl font-black uppercase">Company Profile</h3><button onClick={() => setActiveView('PORTAL')}><X/></button></div><div className="space-y-6"><div><label className="text-[10px] font-black uppercase text-gray-400">Company Name</label><input value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} className="w-full p-4 border-2 border-black font-bold outline-none"/></div><div><label className="text-[10px] font-black uppercase text-gray-400">Est. Tax Rate (%)</label><input type="number" value={taxRate} onChange={e => onUpdateTaxRate(parseFloat(e.target.value) || 0)} className="w-full p-4 border-2 border-black font-mono font-bold outline-none"/></div><button onClick={async () => { await setSetting('business_profile', JSON.stringify(profile)); setActiveView('PORTAL'); }} className="w-full py-4 bg-black text-white font-black uppercase tracking-widest border-2 border-black">Save & Finish</button></div></div>
   );
@@ -377,47 +417,82 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
   return (
     <div className="space-y-12">
       <div className="grid grid-cols-2 lg:grid-cols-7 gap-4">
-        <button 
-          onClick={() => { if (!isPro) { onShowPaywall(); return; } createNewDoc('ESTIMATE'); }} 
-          className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32"
-        >
-          {!isPro && <div className="absolute top-2 right-2"><ProBadge/></div>}<FileText size={20} className="text-brand-blue mb-4" /><h4 className="text-[10px] font-bold uppercase">Estimate</h4>
+        <button onClick={() => createNewJob('ESTIMATE')} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32">
+          {!isPro && <div className="absolute top-2 right-2"><ProBadge/></div>}<FileText size={20} className="text-brand-blue mb-4" /><h4 className="text-[10px] font-bold uppercase">New Job</h4>
         </button>
-        <button onClick={() => createNewDoc('INVOICE')} className="bg-brand-black text-white border-2 border-black p-4 shadow-swiss hover:bg-gray-900 text-left relative h-32">
-          <Receipt size={20} className="text-brand-blue mb-4" /><h4 className="text-[10px] font-bold uppercase">Invoice</h4>
+        <button onClick={() => createNewJob('INVOICE')} className="bg-brand-black text-white border-2 border-black p-4 shadow-swiss hover:bg-gray-900 text-left relative h-32">
+          <Receipt size={20} className="text-brand-blue mb-4" /><h4 className="text-[10px] font-bold uppercase">New Invoice</h4>
         </button>
-        <button 
-          onClick={() => { if (!isPro) { onShowPaywall(); return; } fileInputRef.current?.click(); }} 
-          className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32"
-        >
+        <button onClick={() => isPro ? fileInputRef.current?.click() : onShowPaywall()} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32">
           {!isPro && <div className="absolute top-2 right-2"><ProBadge/></div>}<FileSignature size={20} className="text-brand-blue mb-4" /><h4 className="text-[10px] font-bold uppercase">Contract</h4><input type="file" ref={fileInputRef} hidden onChange={handleContractUpload} accept="image/*,application/pdf" />
         </button>
         <button onClick={() => setActiveView('INVENTORY')} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left h-32">
           <Package size={20} className="text-amber-500 mb-4" /><h4 className="text-[10px] font-bold uppercase">Asset Portfolio</h4>
         </button>
-        <button onClick={() => setActiveView('PRICING')} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left h-32">
-          <Calculator size={20} className="text-brand-blue mb-4" /><h4 className="text-[10px] font-bold uppercase">Pricing</h4>
-        </button>
-        <button 
-          onClick={() => { if (!isPro) { onShowPaywall(); return; } setActiveView('LAB'); }} 
-          className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32"
-        >
+        
+        <button onClick={() => isPro ? setActiveView('LAB') : onShowPaywall()} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32">
           {!isPro && <div className="absolute top-2 right-2"><ProBadge/></div>}<Microscope size={20} className="text-brand-blue mb-4" /><h4 className="text-[10px] font-bold uppercase">Lab</h4>
         </button>
-        <button 
-          onClick={() => { if (!isPro) { onShowPaywall(); return; } setActiveView('SCORER'); }} 
-          className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32"
-        >
+        <button onClick={() => isPro ? setActiveView('SCORER') : onShowPaywall()} className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left relative h-32">
           {!isPro && <div className="absolute top-2 right-2"><ProBadge/></div>}<Zap size={20} className="text-amber-500 mb-4" /><h4 className="text-[10px] font-bold uppercase">Scorer</h4>
-        </button>
-        <button 
-          onClick={() => setActiveView('GUARD')} 
-          className="bg-white border-2 border-black p-4 shadow-swiss hover:bg-gray-50 text-left h-32"
-        >
-          <ShieldAlert size={20} className="text-red-600 mb-4" /><h4 className="text-[10px] font-bold uppercase">Scope Guard</h4>
         </button>
       </div>
 
+      {/* Fetch Saved Drafts & Invoices */}
+      <div className="bg-white border-4 border-black p-8 shadow-swiss space-y-8">
+        <div className="flex justify-between items-center border-b-2 border-black pb-4">
+          <div className="flex items-center gap-3">
+             <FileSearch className="text-brand-blue" size={24} />
+             <h3 className="text-lg font-black uppercase tracking-tight">Recent Jobs</h3>
+          </div>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{savedJobs.length} Total Jobs</p>
+        </div>
+
+        {savedJobs.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {savedJobs.map((sJob) => (
+              <div 
+                key={sJob.id} 
+                onClick={() => openSavedJob(sJob)}
+                className="group relative bg-gray-50 border-2 border-black p-6 cursor-pointer hover:bg-white hover:-translate-y-1 transition-all shadow-swiss hover:shadow-none"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className={`p-2 border-2 border-black ${sJob.invoice ? 'bg-black text-white' : 'bg-white text-black'}`}>
+                    {sJob.invoice ? <Receipt size={16} /> : <FileText size={16} />}
+                  </div>
+                  <div className="flex gap-2">
+                    <span className={`text-[8px] font-black uppercase px-2 py-0.5 border-2 border-black flex items-center gap-1 
+                      ${sJob.status === 'PAID' ? 'bg-green-500 text-white' : sJob.status === 'INVOICED' ? 'bg-brand-blue text-white' : 'bg-white text-black'}`}>
+                      {sJob.status === 'PAID' ? <CheckCircle size={10} /> : sJob.status === 'INVOICED' ? <ArrowRight size={10} /> : <Clock3 size={10} />}
+                      {sJob.status}
+                    </span>
+                    <button 
+                      onClick={(e) => handleDeleteJob(sJob.id, e)}
+                      className="p-1 text-gray-300 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+                <div>
+                   <p className="text-[10px] font-black uppercase text-gray-400 mb-1">JOB: {sJob.title}</p>
+                   <h4 className="text-sm font-black uppercase truncate mb-2">{sJob.client.name || 'Unnamed Client'}</h4>
+                   <div className="flex justify-between items-end border-t border-black/10 pt-2">
+                      <p className="text-[10px] font-mono font-bold text-gray-500">{sJob.createdAt.split('T')[0]}</p>
+                      <p className="text-lg font-mono font-black text-brand-blue">
+                        ${sJob.quote.total.toLocaleString()}
+                      </p>
+                   </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-12 text-center border-4 border-dashed border-black/10 text-gray-400 font-black uppercase text-sm">
+            No jobs found.
+          </div>
+        )}
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
          <div className="bg-white border-4 border-black p-8 shadow-swiss flex flex-col gap-6">
             <div className="flex justify-between items-start">

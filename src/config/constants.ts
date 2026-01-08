@@ -1,7 +1,7 @@
 export const APP_CONFIG = {
   branding: {
-    name: "Solventless", // Rebranded from FlowState to avoid trademark conflict (Class 009/036)
-    packageId: "com.Solventless.finance",
+    name: "Solventless",
+    packageId: "com.solventless.finance",
     description: "Precision financial clarity tool.",
     currencySymbol: "$",
   },

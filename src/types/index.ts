@@ -34,13 +34,7 @@ export interface BusinessProfile {
   phone: string;
 }
 
-export interface PricingItem {
-  id: string;
-  name: string;
-  supplierCost: number;
-  freightCost: number;
-  markupPercent: number;
-}
+
 
 export enum AssetCategory {
   MATERIAL = 'Material',
@@ -65,7 +59,6 @@ export interface BusinessData {
   targets: BudgetTargets;
   monthlyOverhead: FinancialItem[];
   annualOverhead: FinancialItem[];
-  pricingSheet: PricingItem[];
   inventory: InventoryItem[];
   taxRate?: number; // Estimated tax rate for provisioning (e.g., 25)
   reserveMonths?: number; // How many months of overhead to reserve as "Safety"
@@ -94,6 +87,50 @@ export interface AuditIssue {
   impact?: string;
 }
 
+export interface Client {
+  id: string;
+  name: string;
+  address?: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface Quote {
+  id: string;
+  quoteNumber: string;
+  sentDate?: string;
+  lineItems: LineItem[];
+  overheadPercent: number;
+  profitMargin: number;
+  notes?: string;
+  total: number;
+  status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED';
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  issuedDate: string;
+  dueDate: string;
+  lineItems: LineItem[];
+  total: number;
+  paidDate?: string;
+  status: 'DRAFT' | 'SENT' | 'PAID' | 'OVERDUE';
+}
+
+export type JobStatus = 'QUOTED' | 'SCHEDULED' | 'IN_PROGRESS' | 'INVOICED' | 'PAID' | 'ARCHIVED';
+
+export interface Job {
+  id: string;
+  title: string;
+  client: Client;
+  status: JobStatus;
+  createdAt: string;
+  quote: Quote;
+  invoice?: Invoice;
+  expenses?: FinancialItem[];
+}
+
 export interface AuditResult {
   score: number; // 0-100
   issues: AuditIssue[];
@@ -117,6 +154,10 @@ export interface LineItem {
 
 export type DocumentStatus = 'DRAFT' | 'SENT' | 'RECORDED';
 
+/**
+ * @deprecated The BusinessDocument interface is deprecated and will be removed in a future version.
+ * Please use the new Job, Quote, and Invoice interfaces instead.
+ */
 export interface BusinessDocument {
   id: string;
   number: string;
