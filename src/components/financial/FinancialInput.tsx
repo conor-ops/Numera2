@@ -4,10 +4,7 @@ import { Decimal } from 'decimal.js';
 import { FinancialItem } from '@/types';
 import { triggerHaptic } from '@/services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
-<<<<<<<< HEAD:src/components/financial/FinancialInput.tsx
 import { parseAmount, sanitizeText } from '@/utils/validation';
-========
->>>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a:components/FinancialInput.tsx
 
 interface FinancialInputProps {
   title: string;
@@ -18,6 +15,7 @@ interface FinancialInputProps {
   isPro?: boolean;
   onUpgradeClick?: () => void;
   isCreditCard?: boolean;
+  variant?: 'nested' | 'default';
 }
 
 const FinancialInput: React.FC<FinancialInputProps> = ({ 
@@ -27,7 +25,8 @@ const FinancialInput: React.FC<FinancialInputProps> = ({
   icon,
   isPro = false,
   onUpgradeClick,
-  isCreditCard = false
+  isCreditCard = false,
+  variant = 'default'
 }) => {
   const FREE_CC_LIMIT = 1;
   const canAddMore = !isCreditCard || isPro || items.length < FREE_CC_LIMIT;
@@ -67,11 +66,11 @@ const FinancialInput: React.FC<FinancialInputProps> = ({
   const total = items.reduce((acc, item) => acc.plus(new Decimal(item.amount || 0)), new Decimal(0)).toNumber();
 
   return (
-    <div className="p-4 md:p-6 bg-white border-2 border-black shadow-swiss flex flex-col">
+    <div className={`bg-white border-2 border-black flex flex-col ${variant === 'nested' ? 'p-4 border-l-4 shadow-none' : 'p-4 md:p-6 shadow-swiss'}`}>
       <div className="flex justify-between items-center mb-6 border-b-2 border-black pb-4 shrink-0">
         <div className="flex items-center gap-3">
           {icon}
-          <h3 className="text-lg font-bold uppercase tracking-tight">{title}</h3>
+          <h3 className={`font-bold uppercase tracking-tight ${variant === 'nested' ? 'text-sm text-gray-600' : 'text-lg'}`}>{title}</h3>
         </div>
         <span className="text-xl font-mono font-bold">
           ${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

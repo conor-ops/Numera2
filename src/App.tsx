@@ -97,6 +97,7 @@ const formatCurrency = (value: number) => {
 
 const HealthScoreDisplay = ({ bne, monthlyExpenses }: { bne: number, monthlyExpenses: number }) => {
   const ratio = monthlyExpenses > 0 ? bne / monthlyExpenses : 12;
+  const daysRunway = Math.floor(ratio * 30);
   
   let grade = 'F';
   let label = 'Critical';
@@ -104,17 +105,17 @@ const HealthScoreDisplay = ({ bne, monthlyExpenses }: { bne: number, monthlyExpe
 
   if (ratio > 10) { grade = 'A+'; label = 'Fortress'; color = 'text-brand-blue bg-blue-50'; }
   else if (ratio > 6) { grade = 'A'; label = 'Prime'; color = 'text-green-600 bg-green-50'; }
-  else if (ratio > 3) { grade = 'B'; label = 'Stable'; color = 'text-green-500 bg-green-50'; }
-  else if (ratio > 1) { grade = 'C'; label = 'Tight'; color = 'text-yellow-600 bg-yellow-50'; }
-  else if (ratio > 0) { grade = 'D'; label = 'At Risk'; color = 'text-orange-600 bg-orange-50'; }
+  else if (ratio > 3) { grade = 'B'; label = 'Stable'; color = 'text-green-600 bg-green-50'; }
+  else if (ratio > 1) { grade = 'C'; label = 'Tight'; color = 'text-yellow-700 bg-yellow-50'; }
+  else if (ratio > 0) { grade = 'D'; label = 'At Risk'; color = 'text-orange-700 bg-orange-50'; }
 
   return (
     <div className={`p-4 border-2 border-black shadow-swiss flex items-center gap-4 ${color}`}>
        <div className="text-4xl font-black">{grade}</div>
        <div className="h-10 w-0.5 bg-black/20"></div>
        <div>
-         <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Health Pulse</p>
-         <p className="text-sm font-black uppercase tracking-tight">{label}</p>
+         <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Runway Health</p>
+         <p className="text-sm font-black uppercase tracking-tight">{label} ({daysRunway} Days)</p>
        </div>
     </div>
   );
@@ -353,12 +354,12 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
            <div className={`lg:col-span-8 bg-white border-2 border-black p-8 shadow-swiss ${isSandbox ? 'bg-amber-50/50' : ''}`}>
               <div className="flex justify-between items-start mb-6">
-                <h2 className="text-xl font-bold uppercase tracking-tight">Business Net Exact</h2>
+                <h2 className="text-xl font-bold uppercase tracking-tight">Liquidity Runway (Exact)</h2>
                 <span className="font-mono text-[10px] bg-black text-white px-2 py-1 uppercase">{calculations.bneFormulaStr}</span>
               </div>
               <div className="flex flex-col md:flex-row items-baseline gap-4 mb-8">
-                <div className="font-mono text-5xl md:text-7xl font-bold tracking-tight text-black">${formatCurrency(calculations.bne)}</div>
-                {calculations.postTaxBne !== calculations.bne && <div className="font-mono text-2xl text-gray-400">→ ${formatCurrency(calculations.postTaxBne)} <span className="text-[10px] uppercase align-middle">Post-Tax</span></div>}
+                <div className={`font-mono text-5xl md:text-7xl font-bold tracking-tight ${calculations.bne >= 0 ? 'text-green-600' : 'text-red-600'}`}>${formatCurrency(calculations.bne)}</div>
+                {calculations.postTaxBne !== calculations.bne && <div className="font-mono text-2xl text-gray-600">→ ${formatCurrency(calculations.postTaxBne)} <span className="text-[10px] uppercase align-middle">Post-Tax</span></div>}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 border-t-2 border-black pt-6">
                 <div><span className="text-xs font-bold uppercase text-gray-500 block mb-1">Receivables</span><span className="text-2xl font-mono font-bold">${formatCurrency(calculations.netReceivables)}</span></div>
@@ -373,7 +374,7 @@ function App() {
                  <div className="text-4xl font-mono font-bold">${formatCurrency(calculations.totalBank)}</div>
               </div>
               <div className="bg-black text-white p-6 flex-1 shadow-swiss border-2 border-black">
-                 <h3 className="text-xs font-bold uppercase text-gray-400 mb-4">Total Liabilities</h3>
+                 <h3 className="text-xs font-bold uppercase text-gray-600 mb-4">Total Liabilities</h3>
                  <div className="text-4xl font-mono font-bold">${formatCurrency(calculations.totalAP + calculations.totalCredit)}</div>
               </div>
         </div>
@@ -384,21 +385,21 @@ function App() {
            <div className="p-6 bg-white border-2 border-black shadow-swiss flex items-center gap-4">
               <Boxes className="text-amber-500" size={32} />
               <div>
-                <p className="text-[10px] font-black uppercase text-gray-400">Materials on Hand</p>
+                <p className="text-[10px] font-black uppercase text-gray-600">Materials on Hand</p>
                 <p className="text-xl font-mono font-black">${formatCurrency(calculations.materialValue)}</p>
               </div>
            </div>
            <div className="p-6 bg-white border-2 border-black shadow-swiss flex items-center gap-4">
               <Package className="text-brand-blue" size={32} />
               <div>
-                <p className="text-[10px] font-black uppercase text-gray-400">Equipment Equity</p>
+                <p className="text-[10px] font-black uppercase text-gray-600">Equipment Equity</p>
                 <p className="text-xl font-mono font-black">${formatCurrency(calculations.equipmentValue)}</p>
               </div>
            </div>
            <div className="p-6 bg-gray-50 border-2 border-black shadow-swiss flex items-center gap-4 border-dashed">
               <Coins className="text-green-600" size={32} />
               <div>
-                <p className="text-[10px] font-black uppercase text-gray-400">Total Net Worth</p>
+                <p className="text-[10px] font-black uppercase text-gray-600">Total Net Worth</p>
                 <p className="text-xl font-mono font-black">${formatCurrency(calculations.bne + calculations.inventoryValue)}</p>
               </div>
            </div>

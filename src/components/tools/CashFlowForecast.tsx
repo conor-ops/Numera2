@@ -131,28 +131,6 @@ const CashFlowForecast: React.FC = () => {
               <XAxis 
                 dataKey="label" 
                 stroke="#000"
-<<<<<<< HEAD
-                style={{ fontSize: '12px', fontWeight: 'bold' }}
-              />
-              <YAxis 
-                stroke="#000"
-                style={{ fontSize: '12px', fontWeight: 'bold' }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-              />
-              <Tooltip 
-                formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']}
-                contentStyle={{ 
-                  border: '2px solid black', 
-                  backgroundColor: 'white',
-                  fontFamily: 'monospace',
-                  fontWeight: 'bold'
-                }}
-              />
-              <ReferenceLine y={5000} stroke="#ef4444" strokeDasharray="3 3" />
-              <Bar 
-                dataKey="balance" 
-                fill="#000000"
-=======
                 style={{ fontSize: '12px', fontWeight: 'bold', fontFamily: 'Roboto Mono' }}
               />
               <YAxis 
@@ -188,7 +166,6 @@ const CashFlowForecast: React.FC = () => {
                 dataKey="balance" 
                 fill="#000000"
                 radius={[4, 4, 0, 0]}
->>>>>>> 77ba376b604355ede97c1706d992f9306b3b7b4a
               />
             </BarChart>
           </ResponsiveContainer>
