@@ -238,12 +238,12 @@ function App() {
     await setSetting('pro_status', 'true');
   };
 
-  const handleResetPro = async () => {
-    logInfo('Resetting Pro Status');
-    setIsPro(false);
-    await setSetting('pro_status', 'false');
-    triggerHaptic(ImpactStyle.Heavy);
-    window.location.reload(); // Force reload to clear any cached states
+  const togglePro = async () => {
+    const nextStatus = !isPro;
+    logInfo('Toggling Pro Status', { to: nextStatus });
+    setIsPro(nextStatus);
+    await setSetting('pro_status', nextStatus ? 'true' : 'false');
+    triggerHaptic(ImpactStyle.Medium);
   };
 
   const accountsReceivable = currentData.transactions.filter(t => t.type === 'INCOME');
@@ -338,20 +338,19 @@ function App() {
 
   if (!isInitialized) return <div className="h-screen bg-brand-white flex items-center justify-center font-mono">BOOTING CORE...</div>;
 
-  console.log("App Rendering - Debug Toolbar Should Be Visible");
-
   return (
     <div className="min-h-screen bg-brand-white p-4 md:p-8 pb-32 relative">
       <div 
-        style={{ position: 'fixed', top: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 999999, display: 'flex', gap: '10px' }}
+        style={{ position: 'fixed', bottom: '24px', left: '24px', zIndex: 999999, display: 'flex', gap: '10px', alignItems: 'center' }}
         className="no-print"
       >
         <LogViewer />
         <button 
-          onClick={handleResetPro} 
-          className="bg-red-600 text-white px-4 py-2 rounded-none border-4 border-white shadow-lg font-black text-xs uppercase tracking-widest flex items-center gap-2"
+          onClick={togglePro} 
+          className={`${isPro ? 'bg-gray-800' : 'bg-red-600'} text-white px-4 py-2 rounded-none border-4 border-black shadow-[4px_4px_0px_0px_white] hover:scale-105 transition-all font-black text-[10px] uppercase tracking-widest flex items-center gap-2`}
         >
-          <Eraser size={14} /> Reset Pro
+          {isPro ? <X size={14} /> : <Crown size={14} />}
+          {isPro ? 'Set to Free' : 'Unlock Pro (Dev)'}
         </button>
       </div>
 
