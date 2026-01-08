@@ -338,6 +338,8 @@ function App() {
 
   if (!isInitialized) return <div className="h-screen bg-brand-white flex items-center justify-center font-mono">BOOTING CORE...</div>;
 
+  console.log("App Rendering - Debug Toolbar Should Be Visible");
+
   return (
     <div className="min-h-screen bg-brand-white p-4 md:p-8 pb-32 relative">
       <div 
@@ -363,7 +365,7 @@ function App() {
           <div className="flex-grow">
             <div className="flex items-center gap-3 mb-2">
               <SquareActivity className="text-brand-blue w-10 h-10" />
-              <h1 className="text-4xl font-extrabold tracking-tighter text-black uppercase">Solventless</h1>
+              <h1 className="text-4xl font-extrabold tracking-tighter text-black uppercase">Solventless (Debug)</h1>
               {isSandbox && <span className="bg-amber-500 text-white px-2 py-0.5 text-xs font-bold rounded-sm uppercase">Sandbox</span>}
               {isPro && <span className="bg-brand-blue text-white px-2 py-0.5 text-xs font-bold rounded-sm uppercase flex items-center gap-1"><Crown size={12}/> Pro</span>}
             </div>
