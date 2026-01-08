@@ -1,7 +1,7 @@
 
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
-import { BusinessData, Transaction, BankAccount, AccountType, HistoryRecord, BudgetTargets, BusinessDocument, FinancialItem, InventoryItem } from '../types';
+import { BusinessData, Transaction, BankAccount, AccountType, HistoryRecord, BudgetTargets, BusinessDocument, FinancialItem, InventoryItem, Job } from '../types';
 
 let sqlite: SQLiteConnection;
 let db: SQLiteDBConnection;
@@ -63,7 +63,7 @@ export const setupDatabase = async (): Promise<boolean> => {
         liabilities_cents INTEGER NOT NULL
       );
 
-      CREATE TABLE IF NOT EXISTS documents (
+      CREATE TABLE IF NOT EXISTS jobs (
         id TEXT PRIMARY KEY NOT NULL,
         data_json TEXT NOT NULL
       );
