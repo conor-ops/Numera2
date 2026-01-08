@@ -114,25 +114,25 @@ const BusinessTools: React.FC<BusinessToolsProps> = ({
 
   // Computed totals for the current document
   const totals = useMemo(() => {
-    if (!job || !job.quotes.length) return { subtotal: 0, tax: 0, total: 0 };
-    const quote = job.quotes[0];
-    const subtotal = quote.items.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
-    const tax = subtotal * ((quote.taxRate || 0) / 100);
+    if (!job) return { subtotal: 0, tax: 0, total: 0 };
+    const subtotal = job.quote.lineItems.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
+    // TODO: Re-implement tax and discount logic based on new data model
+    const tax = 0; 
     return {
       subtotal,
       tax,
-      total: subtotal + tax - (quote.discount || 0)
+      total: job.quote.total
     };
   }, [job]);
 
-  const loadDocuments = async () => {
-    const docs = await getDocuments();
-    setSavedDocs(docs);
+  const loadJobs = async () => {
+    const jobs = await getDocuments(); // TODO: This needs to be getJobs()
+    setSavedJobs(jobs.map(j => ({...j, client: j.client || { id: '', name: ''}})) as any); // Temporary cast
   };
 
   useEffect(() => {
     const loadToolsData = async () => {
-      await loadDocuments();
+      await loadJobs();
       const savedProfile = await getSetting('business_profile');
       if (savedProfile) setProfile(JSON.parse(savedProfile));
       setIsLoading(false);
