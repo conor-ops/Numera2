@@ -1,7 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { Plus, Trash2, Tag, Calculator, TrendingUp, Package, X, BarChart3, Coins } from 'lucide-react';
-import { PricingItem } from '../types';
+import { PricingItem } from '@/types';
 import { triggerHaptic } from '@/services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
 import { Decimal } from 'decimal.js';

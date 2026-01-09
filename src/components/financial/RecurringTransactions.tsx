@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCcw, Plus, Trash2, Pause, Play, Edit2 } from 'lucide-react';
-import { RecurringTransaction, RecurringFrequency } from '../../types';
+import { RecurringTransaction, RecurringFrequency } from '@/types';
 import {
   loadRecurringTransactions,
   addRecurringTransaction,
@@ -9,8 +9,8 @@ import {
   toggleRecurringActive,
   getFrequencyLabel,
   formatNextOccurrence
-} from '../../services/recurringService';
-import { triggerHaptic } from '../../services/hapticService';
+} from '@/services/recurringService';
+import { triggerHaptic } from '@/services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
 
 interface RecurringTransactionsProps {

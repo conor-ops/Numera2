@@ -52,12 +52,12 @@ import {
   Clock3
 } from 'lucide-react';
 import { Decimal } from 'decimal.js';
-import { LineItem, BusinessDocument, Transaction, BusinessProfile, BudgetTargets, AuditResult, InventoryItem, AssetCategory, Job, Quote, Invoice } from '../types';
-import { triggerHaptic } from '../services/hapticService';
+import { LineItem, BusinessDocument, Transaction, BusinessProfile, BudgetTargets, AuditResult, InventoryItem, AssetCategory, Job, Quote, Invoice } from '@/types';
+import { triggerHaptic } from '@/services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
-import { saveJob, getJobs, deleteJob, getSetting, setSetting } from '../services/databaseService';
-import { generateMarketIntel, MarketIntelResponse, performInvoiceAudit, parseContract, ContractExtraction, Milestone, scoreOpportunity, OpportunityScore } from '../services/geminiService';
-import BudgetPlanner from './BudgetPlanner';
+import { saveJob, getJobs, deleteJob, getSetting, setSetting } from '@/services/databaseService';
+import { generateMarketIntel, MarketIntelResponse, performInvoiceAudit, parseContract, ContractExtraction, Milestone, scoreOpportunity, OpportunityScore } from '@/services/geminiService';
+import BudgetPlanner from '@/components/financial/BudgetPlanner';
 
 
 interface BusinessToolsProps {

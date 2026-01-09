@@ -1,10 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, X, MessageSquare, BrainCircuit, Paperclip, Loader2, PlusCircle, CheckCircle, Crown, User, Mic, MicOff, Volume2, FileText } from 'lucide-react';
-import { sendChatMessage, ChatResponse } from '../services/geminiService';
-import { triggerHaptic } from '../services/hapticService';
+import { sendChatMessage, ChatResponse } from '@/services/geminiService';
+import { triggerHaptic } from '@/services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
-import { Transaction } from '../types';
+import { Transaction } from '@/types';
 
 interface ChatBotProps {
   isPro: boolean;

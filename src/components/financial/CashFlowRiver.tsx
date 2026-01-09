@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ArrowRight, Wallet, Receipt, Percent, Landmark, TrendingUp } from 'lucide-react';
-import { CalculationResult } from '../types';
+import { CalculationResult } from '@/types';
 
 interface CashFlowRiverProps {
   data: CalculationResult;

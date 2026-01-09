@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Plus, ArrowRight, Zap, Calculator, History, Settings, X, CreditCard, Wallet } from 'lucide-react';
-import { triggerHaptic } from '../services/hapticService';
+import { triggerHaptic } from '@/services/hapticService';
 import { ImpactStyle } from '@capacitor/haptics';
 
 interface CommandPaletteProps {
